@@ -39,7 +39,7 @@ export const notices: Notice[] = [
 ]
 // Autumn 2026 batch fee schedule supplied by the student. All dates are tentative.
 export const payments: Payment[] = [
-  { id: 'admission', title: 'Admission & registration', amount: 140000, dueDate: '', dateLabel: 'At admission', status: 'Due', admissionFee: 140000, universityExamFee: 0, collegeFee: 0, details: 'One-time, non-refundable admission fee.' },
+  { id: 'admission', title: 'Admission & registration', amount: 140000, dueDate: '', dateLabel: 'At admission', status: 'Paid', admissionFee: 140000, universityExamFee: 0, collegeFee: 0, details: 'One-time, non-refundable admission fee.' },
   { id: 'semester-1', title: '1st semester', amount: 264500, dueDate: '2026-09-15', dateLabel: 'Before 1st semester', status: 'Due', year: 1, semester: 1, admissionFee: 0, universityExamFee: 110000, collegeFee: 154500, details: '1st year university fee + 1st semester fee + MOE fee (NPR 1,500).' },
   { id: 'semester-2', title: '2nd semester', amount: 153000, dueDate: '2027-02-20', dateLabel: 'Before 2nd semester', status: 'Due', year: 1, semester: 2, admissionFee: 0, universityExamFee: 0, collegeFee: 153000, details: '2nd semester fee.' },
   { id: 'semester-3', title: '3rd semester', amount: 264500, dueDate: '2027-09-15', dateLabel: 'Before 3rd semester', status: 'Due', year: 2, semester: 3, admissionFee: 0, universityExamFee: 110000, collegeFee: 154500, details: '2nd year university fee + 3rd semester fee + MOE fee (NPR 1,500).' },

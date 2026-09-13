@@ -335,7 +335,7 @@
   background: #fff;
   color: #2f4635;
   text-align: left;
-  cursor: pointer;
+  cursor: default;
 }
 
 .schedule-row:last-child { border-bottom: 0; }
@@ -389,3 +389,33 @@
   .schedule-totals span { padding: 10px; }
   .schedule-totals strong { font-size: 12px; }
 }
+
+.schedule-amount .payment-status-select {
+  width: 112px;
+  padding: 6px 9px;
+  border: 1px solid #e5cfae;
+  border-radius: 7px;
+  background: #fff9ef;
+  color: #8a693a;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.schedule-amount .payment-status-select.is-paid {
+  border-color: #b9d9c0;
+  background: #edf8ef;
+  color: #367148;
+}
+
+.payment-pick-button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #4c8360;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.payment-pick-button:hover { text-decoration: underline; }

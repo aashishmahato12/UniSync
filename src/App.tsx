@@ -51,6 +51,7 @@ import Notices from './pages/Notices'
 import Events from './pages/Events'
 import Calendar from './pages/Calendar'
 import Payments from './pages/Payments'
+import { loadPaymentStatuses, savePaymentStatuses } from './services/paymentStatusStore'
 import Documents from './pages/Documents'
 import AskAI from './pages/AskAI'
 import Profile from './pages/Profile'
@@ -127,7 +128,11 @@ function Workspace({ email }: { email: string }) {
     useState(true)
 
   const [payments, setPayments] =
-    useState<Payment[]>(seedPayments)
+    useState<Payment[]>(() => loadPaymentStatuses(seedPayments))
+
+  useEffect(() => {
+    savePaymentStatuses(payments)
+  }, [payments])
 
   const [documents, setDocuments] =
     useState<DocumentItem[]>(seedDocuments)

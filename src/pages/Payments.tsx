@@ -21,6 +21,7 @@ Aashish Mahato`
 
 export default function Payments({
   payments,
+  setPayments,
   notify,
 }: {
   payments: Payment[]
@@ -47,6 +48,13 @@ export default function Payments({
     setBody(draftBody(payment))
     setFile(null)
     if (inputRef.current) inputRef.current.value = ''
+  }
+
+  const setStatus = (id: string, status: 'Due' | 'Paid') => {
+    setPayments(current => current.map(payment =>
+      payment.id === id ? { ...payment, status } : payment
+    ))
+    notify(status === 'Paid' ? 'Marked Paid by you. This is not a college confirmation.' : 'Marked Due by you.')
   }
 
   const onFile = (picked?: File) => {
@@ -84,7 +92,7 @@ export default function Payments({
       <div className="payment-stats">
         <div><span>FULL PROGRAM PLAN</span><strong>{money(paymentScheduleTotals.total)}</strong><small>Admission + six semesters</small></div>
         <div><span>NEXT TENTATIVE DATE</span><strong>{nextPayment ? dateText(nextPayment) : 'Check with college'}</strong><small>{nextPayment?.title || 'No later date in this schedule'}</small></div>
-        <div><span>NOT MARKED PAID</span><strong>{money(remaining)}</strong><small>No payments confirmed in this app</small></div>
+        <div><span>NOT MARKED PAID</span><strong>{money(remaining)}</strong><small>Based on your Due / Paid choices</small></div>
       </div>
 
       <section className="panel schedule-panel">
@@ -92,24 +100,35 @@ export default function Payments({
         <div className="schedule-note"><AlertCircle size={18} /><span>These are tentative dates from your printed schedule, not confirmed deadlines. The college says changes will be communicated at least 15 days before a fee payment date. Check the latest college notice before paying.</span></div>
         <div className="schedule-list">
           {payments.map(payment => (
-            <button
+            <div
               className={`schedule-row ${selectedPayment === payment.id ? 'selected' : ''}`}
               key={payment.id}
-              onClick={() => choosePayment(payment.id)}
             >
               <span className="schedule-period">
                 <span className="schedule-year">{payment.year ? `YEAR ${payment.year} · SEMESTER ${payment.semester}` : 'ONE-TIME'}</span>
                 <strong>{payment.title}</strong>
                 <small>{payment.details}</small>
               </span>
-              <span className="schedule-date"><small>TENTATIVE DATE</small><strong>{dateText(payment)}</strong><small>{payment.dateLabel}</small></span>
+              <span className="schedule-date"><small>{payment.dueDate ? 'TENTATIVE DATE' : 'WHEN'}</small><strong>{dateText(payment)}</strong>{payment.dueDate && <small>{payment.dateLabel}</small>}</span>
               <span className="schedule-breakdown">
                 {payment.admissionFee > 0 && <small>Admission {money(payment.admissionFee)}</small>}
                 {payment.universityExamFee > 0 && <small>University & exam {money(payment.universityExamFee)}</small>}
                 {payment.collegeFee > 0 && <small>College {money(payment.collegeFee)}</small>}
               </span>
-              <span className="schedule-amount"><strong>{money(payment.amount)}</strong>{badge(payment.status)}</span>
-            </button>
+              <span className="schedule-amount">
+                <strong>{money(payment.amount)}</strong>
+                <select
+                  className={`payment-status-select ${payment.status === 'Paid' ? 'is-paid' : ''}`}
+                  aria-label={`Status for ${payment.title}`}
+                  value={payment.status}
+                  onChange={event => setStatus(payment.id, event.target.value as 'Due' | 'Paid')}
+                >
+                  <option value="Due">Due</option>
+                  <option value="Paid">Paid by me</option>
+                </select>
+                <button type="button" className="payment-pick-button" onClick={() => choosePayment(payment.id)}>Use for receipt</button>
+              </span>
+            </div>
           ))}
         </div>
         <div className="schedule-totals">
@@ -156,7 +175,7 @@ export default function Payments({
               </button>
             ))}
           </div>
-          <div className="history-help"><ShieldCheck size={19} /><p>All entries begin as “Due” because this printed schedule does not confirm which payments you have made. Keep your original receipts until the college confirms each payment.</p></div>
+          <div className="history-help"><ShieldCheck size={19} /><p>You control Due and Paid statuses above. “Paid by me” is your own record, not a college confirmation. Keep your original receipts until the college confirms each payment.</p></div>
         </aside>
       </div>
 
