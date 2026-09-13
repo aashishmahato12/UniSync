@@ -1,4 +1,4 @@
-import './documents.css'
+import './Documents.css'
 import { useRef, useState } from 'react'
 import {
   FileText,
