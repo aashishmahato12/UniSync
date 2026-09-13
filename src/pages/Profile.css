@@ -182,3 +182,15 @@
     grid-template-columns: 1fr;
   }
 }
+
+.profile-signout {
+  width: 100%;
+  margin-top: 18px;
+  padding: 12px 18px;
+  border: 1px solid #d7e3d8;
+  border-radius: 9px;
+  background: #fff;
+  color: #3c7053;
+  font-size: 12px;
+  font-weight: 800;
+}

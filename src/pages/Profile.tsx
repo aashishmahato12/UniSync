@@ -10,11 +10,14 @@ import {
   PageIntro,
   SectionHeading,
 } from '../components/UI'
+import { supabase } from '../services/supabase'
 
 export default function Profile({
   notify,
+  email,
 }: {
   notify: (message: string) => void
+  email: string
 }) {
   const [notifications, setNotifications] =
     useState(true)
@@ -37,7 +40,7 @@ export default function Profile({
             <span className="profile-avatar">AM</span>
 
             <h2>Aashish Mahato</h2>
-            <p>Heritage College student</p>
+            <p>Herald College student</p>
 
             <div className="profile-details">
               <div>
@@ -52,7 +55,7 @@ export default function Profile({
 
               <div>
                 <span>Email</span>
-                <strong>Connect account</strong>
+                <strong>{email}</strong>
               </div>
             </div>
           </div>
@@ -123,6 +126,10 @@ export default function Profile({
 
             <span>Development</span>
           </div>
+
+          <button className="profile-signout" onClick={() => void supabase.auth.signOut()}>
+            Sign out
+          </button>
         </section>
       </div>
     </>

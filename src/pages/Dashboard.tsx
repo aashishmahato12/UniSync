@@ -75,7 +75,7 @@ export default function Dashboard({
             Good afternoon, Aashish <span className="wave">✳</span>
           </h1>
 
-          <p>Here’s what’s happening at Heritage College.</p>
+          <p>Here’s what’s happening at Herald College.</p>
         </div>
 
         <button

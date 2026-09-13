@@ -71,7 +71,7 @@ export default function AskAI() {
             </span>
 
             <div>
-              <strong>Heritage Assistant</strong>
+              <strong>Herald Assistant</strong>
               <small>Your student workspace assistant</small>
             </div>
 

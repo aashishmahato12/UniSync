@@ -54,6 +54,7 @@ import Payments from './pages/Payments'
 import Documents from './pages/Documents'
 import AskAI from './pages/AskAI'
 import Profile from './pages/Profile'
+import AuthGate from './components/AuthGate'
 
 type Page =
   | 'Dashboard'
@@ -106,6 +107,10 @@ const nav: {
 const initials = 'AM'
 
 export default function App() {
+  return <AuthGate>{email => <Workspace email={email} />}</AuthGate>
+}
+
+function Workspace({ email }: { email: string }) {
   const [page, setPage] =
     useState<Page>('Dashboard')
 
@@ -290,7 +295,7 @@ export default function App() {
 
           <div>
             <strong>
-              Heritage
+              Herald College
             </strong>
 
             <small>
@@ -554,6 +559,7 @@ export default function App() {
                   notify={
                     notify
                   }
+                  email={email}
                 />
               )}
             </>
