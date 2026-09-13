@@ -1,0 +1,172 @@
+.document-categories {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.document-categories button {
+  background: #fff;
+  border: 1px solid #e7ede8;
+  border-radius: 11px;
+  padding: 17px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+}
+
+.document-categories button:hover,
+.document-categories button.selected {
+  border-color: #8db89a;
+  background: #f8fbf7;
+}
+
+.folder-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: #eaf3e9;
+  color: #61a06e;
+  display: grid;
+  place-items: center;
+  margin-bottom: 6px;
+}
+
+.document-categories strong {
+  font-size: 12px;
+}
+
+.document-categories small {
+  font-size: 10px;
+  color: #a0ada3;
+}
+
+.document-panel {
+  padding: 21px;
+}
+
+.document-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.document-toolbar .section-heading {
+  margin: 0;
+}
+
+.document-search {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid #e4eae4;
+  border-radius: 8px;
+  padding: 7px 9px;
+  color: #9aaa9c;
+}
+
+.document-search input {
+  border: 0;
+  outline: 0;
+  font-size: 11px;
+  width: 140px;
+}
+
+.document-table-head,
+.document-row {
+  display: grid;
+  grid-template-columns: minmax(200px, 2fr) 1fr 1fr .6fr 30px;
+  gap: 10px;
+  align-items: center;
+}
+
+.document-table-head {
+  background: #f7f9f6;
+  border-radius: 7px;
+  padding: 11px 14px;
+  color: #a4afa5;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+
+.document-row {
+  padding: 12px 14px;
+  border-bottom: 1px solid #f0f3ef;
+  font-size: 11px;
+  color: #8e9d91;
+}
+
+.document-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.document-name strong,
+.document-name small {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.document-name strong {
+  font-size: 11px;
+  color: #3e5543;
+}
+
+.document-name small {
+  font-size: 10px;
+  color: #aab5aa;
+  margin-top: 3px;
+}
+
+.document-icon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  background: #eaf1e9;
+  color: #6c9d77;
+  border-radius: 7px;
+  flex: none;
+}
+
+.document-row button {
+  background: none;
+  border: 0;
+  color: #9eaba1;
+}
+
+@media (max-width: 760px) {
+  .document-categories {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .document-table-head,
+  .document-row {
+    grid-template-columns: minmax(0, 1fr) 65px 27px;
+  }
+
+  .document-table-head span:nth-child(2),
+  .document-table-head span:nth-child(3),
+  .document-row > span:nth-child(2),
+  .document-row > span:nth-child(3) {
+    display: none;
+  }
+
+  .document-row .document-name {
+    min-width: 0;
+  }
+
+  .document-search input {
+    width: 94px;
+  }
+}

@@ -1,0 +1,295 @@
+.payment-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.payment-stats > div {
+  background: #fff;
+  border: 1px solid #e7ede8;
+  border-radius: 11px;
+  padding: 19px 21px;
+  display: flex;
+  flex-direction: column;
+}
+
+.payment-stats span {
+  font-size: 10px;
+  letter-spacing: .1em;
+  font-weight: 800;
+  color: #9aaa9c;
+}
+
+.payment-stats strong {
+  font: 800 23px Manrope;
+  margin: 9px 0 2px;
+}
+
+.payment-stats small {
+  font-size: 11px;
+  color: #9bab9d;
+}
+
+.payment-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(280px, .9fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.payment-form-panel,
+.payment-history {
+  padding: 24px;
+}
+
+.demo-note {
+  display: flex;
+  gap: 9px;
+  background: #f6f7ec;
+  color: #838b64;
+  border-radius: 8px;
+  padding: 11px;
+  font-size: 11px;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+.demo-note svg {
+  flex: none;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.field.full {
+  grid-column: 1 / -1;
+}
+
+.field > span {
+  font-size: 11px;
+  font-weight: 800;
+  color: #5d7261;
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  border: 1px solid #e1e9e1;
+  border-radius: 8px;
+  padding: 10px 11px;
+  background: #fff;
+  color: #2f4635;
+  font-size: 12px;
+  outline: none;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  border-color: #6dad81;
+  box-shadow: 0 0 0 3px #e7f3e9;
+}
+
+.field textarea {
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.upload-zone {
+  width: 100%;
+  min-height: 99px;
+  border: 1.5px dashed #b7d0ba;
+  background: #f8fbf7;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  color: #66a075;
+}
+
+.upload-zone strong {
+  font-size: 12px;
+  color: #598365;
+}
+
+.upload-zone small {
+  font-size: 11px;
+  color: #a3b0a4;
+}
+
+.upload-zone.has-file {
+  border-style: solid;
+  background: #edf7ee;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  margin-top: 20px;
+}
+
+.form-footnote {
+  font-size: 10px;
+  color: #9fac9f;
+  text-align: right;
+  margin: 12px 0 0;
+}
+
+.history-list {
+  display: grid;
+}
+
+.history-row {
+  border: 0;
+  border-top: 1px solid #eff2ef;
+  background: transparent;
+  text-align: left;
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 14px 3px;
+  width: 100%;
+}
+
+.history-row.selected {
+  background: #f8fbf7;
+}
+
+.history-icon {
+  width: 31px;
+  height: 31px;
+  flex: none;
+  background: #f0f4ed;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  color: #6b9174;
+}
+
+.history-row > span:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+}
+
+.history-row strong,
+.history-row small {
+  display: block;
+}
+
+.history-row strong {
+  font-size: 11px;
+}
+
+.history-row small {
+  font-size: 10px;
+  color: #a2afa3;
+  margin-top: 5px;
+}
+
+.history-row .badge {
+  font-size: 9px;
+  padding: 5px;
+}
+
+.history-help {
+  display: flex;
+  gap: 10px;
+  background: #f5f8f1;
+  padding: 12px;
+  border-radius: 8px;
+  color: #799582;
+  margin-top: 20px;
+}
+
+.history-help svg {
+  flex: none;
+}
+
+.history-help p {
+  font-size: 11px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.email-preview > div {
+  display: flex;
+  gap: 15px;
+  border-bottom: 1px solid #eef2ee;
+  padding: 10px 0;
+  font-size: 11px;
+}
+
+.email-preview span {
+  width: 70px;
+  flex: none;
+  color: #9eaa9e;
+}
+
+.email-preview strong {
+  font-weight: 600;
+  color: #4c614f;
+}
+
+.email-preview pre {
+  white-space: pre-wrap;
+  font: 12px/1.65 'DM Sans';
+  color: #506653;
+  margin: 20px 0;
+}
+
+@media (max-width: 1200px) {
+  .payment-layout {
+    grid-template-columns: minmax(0, 1fr) 300px;
+  }
+}
+
+@media (max-width: 760px) {
+  .payment-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .payment-stats {
+    gap: 8px;
+  }
+
+  .payment-stats > div {
+    padding: 14px;
+  }
+
+  .payment-stats strong {
+    font-size: 17px;
+  }
+}
+
+@media (max-width: 520px) {
+  .payment-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .payment-stats > div:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .field.full {
+    grid-column: auto;
+  }
+}
