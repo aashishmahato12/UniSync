@@ -54,7 +54,9 @@ export default function Dashboard({
     .sort((a, b) => a.date.localeCompare(b.date))
     .slice(0, 3)
 
-  const due = payments.find(payment => payment.status === 'Due')
+  const due = [...payments]
+    .filter(payment => payment.status === 'Due' && payment.dueDate && payment.dueDate >= today)
+    .sort((a, b) => (a.dueDate || '').localeCompare(b.dueDate || ''))[0]
 
   return (
     <>
@@ -95,16 +97,16 @@ export default function Dashboard({
         <div className="hero-alert-copy">
           <span>NEEDS YOUR ATTENTION</span>
 
-          <h3>Semester fee payment is due soon</h3>
+          <h3>Upcoming tentative fee payment</h3>
 
           <p>
-            Complete your payment by{' '}
-            {due
-              ? formatDate(due.dueDate, {
+            {due?.dueDate
+              ? `${due.title}: ${formatDate(due.dueDate, {
                   month: 'long',
                   day: 'numeric',
-                })
-              : 'the deadline'}.
+                  year: 'numeric',
+                })}. Please confirm the final date with the college.`
+              : 'Review your fee schedule and confirm dates with the college.'}
           </p>
         </div>
 
@@ -264,8 +266,8 @@ export default function Dashboard({
             </span>
 
             <div>
-              <strong>Submit your fee receipt</strong>
-              <span>Upload proof of payment.</span>
+              <strong>Review your fee schedule</strong>
+              <span>Dates and amounts are shown in Payments.</span>
             </div>
 
             <button onClick={() => navigate('Payments')}>
