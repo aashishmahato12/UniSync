@@ -209,7 +209,9 @@ export default function Calendar({
                 <div className="day-event" key={event.id}>
                   <div>
                     {badge(event.category)}
-                    {badge(event.calendarState)}
+                    {badge(event.calendarState === 'Added'
+                      ? event.googleCalendarEventId ? 'Synced' : 'Syncing'
+                      : event.calendarState)}
                   </div>
 
                   <h3>{event.title}</h3>

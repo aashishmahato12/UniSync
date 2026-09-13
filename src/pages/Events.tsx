@@ -111,7 +111,9 @@ export default function Events({
               <div className="event-info">
                 <div className="event-badges">
                   {badge(event.category)}
-                  {badge(event.calendarState)}
+                  {badge(event.calendarState === 'Added'
+                    ? event.googleCalendarEventId ? 'Synced' : 'Syncing'
+                    : event.calendarState)}
                 </div>
 
                 <h3>{event.title}</h3>
@@ -140,25 +142,32 @@ export default function Events({
                 </button>
 
                 {event.calendarState === 'Pending' ? (
-                  <button
-                    className="primary-button"
-                    onClick={() =>
-                      updateCalendar(event, 'Added')
-                    }
-                  >
-                    <Plus size={16} />
-                    Add to calendar
-                  </button>
+                  <div className="event-approval-actions">
+                    <button
+                      className="secondary-button"
+                      onClick={() => updateCalendar(event, 'Ignored')}
+                    >
+                      Ignore
+                    </button>
+                    <button
+                      className="primary-button"
+                      onClick={() => updateCalendar(event, 'Added')}
+                    >
+                      <Plus size={16} />
+                      Add to calendar
+                    </button>
+                  </div>
                 ) : event.calendarState === 'Added' ? (
-                  <button
-                    className="secondary-button"
-                    onClick={() =>
-                      updateCalendar(event, 'Pending')
-                    }
-                  >
-                    <Check size={16} />
-                    Added
-                  </button>
+                  event.googleCalendarEventId ? (
+                    <a className="secondary-button" href="https://calendar.google.com/calendar/u/0/r" target="_blank" rel="noopener noreferrer">
+                      <Check size={16} />
+                      In Google Calendar
+                    </a>
+                  ) : (
+                    <span className="secondary-button" role="status">
+                      Approved · waiting to sync
+                    </span>
+                  )
                 ) : (
                   <button
                     className="secondary-button"

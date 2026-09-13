@@ -123,3 +123,15 @@
     width: calc(100% - 56px);
   }
 }
+.event-approval-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (max-width: 520px) {
+  .event-approval-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+}

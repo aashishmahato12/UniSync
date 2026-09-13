@@ -1,6 +1,6 @@
 # n8n first: Herald College email intake
 
-The draft workflow has been imported into n8n as [**Herald College — Gmail notices to Supabase**](http://192.168.0.58:30109/workflow/YD0z3UNcTATTb0p1). It is deliberately unpublished until the database tables, Supabase credential, and a test run are complete. The project reference is `qozetqmklegcnjgxtgpd`.
+The Gmail workflow is [**Herald College — Gmail notices to Supabase**](http://192.168.0.58:30109/workflow/YD0z3UNcTATTb0p1). The user reports that intake is working. The project reference is `qozetqmklegcnjgxtgpd`.
 
 ## What this first workflow does
 
@@ -26,7 +26,20 @@ The importable file is [heritage-gmail-to-supabase.json](./heritage-gmail-to-sup
 
 ## Data and access
 
-The SQL enables Row Level Security with no public policies, so the website cannot yet read these records. The secret key is for n8n only. When student sign-in is added, create user-scoped policies before connecting the website. Gmail mail bodies are sent to the configured Gemini API for extraction; the database stores only the derived fields and Gmail source reference.
+The owner-only access migration is in [002_single_owner_access.sql](./002_single_owner_access.sql) and has been applied according to the user. The secret key is for n8n only; the website uses a publishable key and the approved email's session. Gmail mail bodies are sent to the configured Gemini API for extraction; the database stores only the derived fields and Gmail source reference.
+
+## Google Calendar approval sync
+
+[Import the approval-sync workflow](./approved-events-to-google-calendar.json) as a **new, inactive** workflow in n8n. It checks Supabase every five minutes for events that the app marked `Added` but have no `google_calendar_event_id`. It creates a Google Calendar event on the connected account's primary calendar, then stores the Google event ID in Supabase.
+
+1. In **List Approved Events** and **Save Google Event ID**, select the same Supabase HTTP Header Auth credential used in the Gmail workflow.
+2. In **Create Google Calendar Event**, connect a Google Calendar OAuth2 credential for the account whose primary calendar should receive events. The workflow JSON contains no credentials.
+3. Test with one approved event. Verify its date and time in Google Calendar, and verify that Supabase now has its `google_calendar_event_id`. Then activate the workflow.
+4. If an event is already on the calendar but the database update failed, the workflow retries with the same deterministic Google ID. A duplicate response is treated as success.
+
+Untimed events are all-day events in Asia/Kathmandu. Timed events use the extracted start and end; if no valid end exists, they last one hour. This workflow does not delete or edit a Google event after sync. The app therefore does not offer an undo action once an event is approved.
+
+Run `node n8n/build-calendar-workflow.mjs` after changing the two calendar Code snippets, then run `node n8n/test-calendar-workflow.mjs`.
 
 ## References
 

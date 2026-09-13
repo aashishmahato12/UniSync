@@ -1,0 +1,208 @@
+{
+  "name": "UniSync — approved events to Google Calendar",
+  "nodes": [
+    {
+      "id": "67331054-bfda-47f8-a94d-73b5c4578b93",
+      "name": "Check Approved Events",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 5
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "a4803b6d-f055-42d5-996c-dbe71ffdd8b8",
+      "name": "List Approved Events",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        230,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://qozetqmklegcnjgxtgpd.supabase.co/rest/v1/college_events?select=id,title,event_date,start_time,end_time,location,description&calendar_state=eq.Added&google_calendar_event_id=is.null&order=event_date.asc&limit=50",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 15000
+        }
+      }
+    },
+    {
+      "id": "3d49e6de-89fb-47e1-9b53-8b3e0aaefc93",
+      "name": "Build Calendar Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// n8n Code node: Run Once for All Items.\nconst rows = $input.all().flatMap(item => Array.isArray(item.json) ? item.json : [item.json]);\nconst zone = 'Asia/Kathmandu';\nconst datePattern = /^\\d{4}-\\d{2}-\\d{2}$/;\nconst timePattern = /^\\d{2}:\\d{2}/;\n\nreturn rows.map(row => {\n  if (!/^[0-9a-f-]{36}$/i.test(String(row.id || '')) || !datePattern.test(String(row.event_date || ''))) {\n    throw new Error('Approved event has an invalid ID or date.');\n  }\n  const id = 'uni' + row.id.replace(/-/g, '').toLowerCase();\n  const startTime = timePattern.test(String(row.start_time || '')) ? String(row.start_time).slice(0, 8) : null;\n  let start;\n  let end;\n  if (startTime) {\n    const beginning = new Date(row.event_date + 'T' + startTime + '+05:45');\n    if (Number.isNaN(beginning.getTime())) throw new Error('Invalid event start time.');\n    const rawEnd = timePattern.test(String(row.end_time || '')) ? String(row.end_time).slice(0, 8) : null;\n    const explicitEnd = rawEnd ? new Date(row.event_date + 'T' + rawEnd + '+05:45') : null;\n    const ending = explicitEnd && explicitEnd > beginning ? explicitEnd : new Date(beginning.getTime() + 60 * 60 * 1000);\n    start = { dateTime: beginning.toISOString(), timeZone: zone };\n    end = { dateTime: ending.toISOString(), timeZone: zone };\n  } else {\n    const next = new Date(row.event_date + 'T00:00:00Z');\n    next.setUTCDate(next.getUTCDate() + 1);\n    start = { date: row.event_date };\n    end = { date: next.toISOString().slice(0, 10) };\n  }\n  const calendarEvent = {\n    id,\n    summary: String(row.title || 'College event').slice(0, 200),\n    description: [String(row.description || '').trim(), 'Approved in UniSync'].filter(Boolean).join('\\n\\n'),\n    location: row.location || undefined,\n    start,\n    end,\n  };\n  return { json: { id: row.id, calendarEventId: id, calendarEvent } };\n});\r\n\r\n"
+      }
+    },
+    {
+      "id": "2209d9b4-f639-4489-99a7-4db197526aad",
+      "name": "Create Google Calendar Event",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        690,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://www.googleapis.com/calendar/v3/calendars/primary/events",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleCalendarOAuth2Api",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.calendarEvent }}",
+        "options": {
+          "timeout": 15000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "57a81b41-aa3b-430a-bc10-734580a4cbef",
+      "name": "Check Calendar Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        920,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// n8n Code node: Run Once for Each Item.\nconst status = Number($json.statusCode);\nif (![200, 201, 409].includes(status)) {\n  const detail = $json.body?.error?.message || $json.body?.message || 'Unknown Google Calendar error';\n  throw new Error('Calendar creation failed (' + status + '): ' + detail);\n}\nconst approved = $('Build Calendar Payload').item.json;\nreturn { json: {\n  id: approved.id,\n  google_calendar_event_id: approved.calendarEventId,\n  updated_at: new Date().toISOString(),\n} };\r\n"
+      }
+    },
+    {
+      "id": "79cd2779-3b21-4185-a936-5d7d468d4bf2",
+      "name": "Save Google Event ID",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1150,
+        0
+      ],
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ \"https://qozetqmklegcnjgxtgpd.supabase.co/rest/v1/college_events?id=eq.\" + encodeURIComponent($json.id) + \"&calendar_state=eq.Added&google_calendar_event_id=is.null\" }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { google_calendar_event_id: $json.google_calendar_event_id, updated_at: $json.updated_at } }}",
+        "options": {
+          "timeout": 15000
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Check Approved Events": {
+      "main": [
+        [
+          {
+            "node": "List Approved Events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Approved Events": {
+      "main": [
+        [
+          {
+            "node": "Build Calendar Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Calendar Payload": {
+      "main": [
+        [
+          {
+            "node": "Create Google Calendar Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Google Calendar Event": {
+      "main": [
+        [
+          {
+            "node": "Check Calendar Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Calendar Result": {
+      "main": [
+        [
+          {
+            "node": "Save Google Event ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Kathmandu"
+  },
+  "active": false,
+  "tags": []
+}

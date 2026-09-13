@@ -100,6 +100,7 @@ export const studentService = {
 
       // Supabase snake_case -> React camelCase
       calendarState: row.calendar_state,
+      googleCalendarEventId: row.google_calendar_event_id ?? undefined,
     }))
   },
 

@@ -189,6 +189,15 @@ function Workspace({ email }: { email: string }) {
     load()
   }, [])
 
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      void studentService.getEvents()
+        .then(setEvents)
+        .catch(error => console.error('Could not refresh events:', error))
+    }, 30000)
+    return () => window.clearInterval(timer)
+  }, [])
+
   const notify = (
     message: string
   ) => {
@@ -220,22 +229,23 @@ function Workspace({ email }: { email: string }) {
       event: EventItem,
       state: CalendarState
     ) => {
-      await studentService.updateCalendarState(
-        event.id,
-        state
-      )
-
-      setEvents(previous =>
-        previous.map(item =>
-          item.id === event.id
-            ? {
-                ...item,
-                calendarState:
-                  state,
-              }
-            : item
+      try {
+        await studentService.updateCalendarState(event.id, state)
+        setEvents(previous =>
+          previous.map(item =>
+            item.id === event.id
+              ? { ...item, calendarState: state }
+              : item
+          )
         )
-      )
+        setSelectedEvent(null)
+        notify(state === 'Added'
+          ? 'Approved. Google Calendar will update after sync.'
+          : 'Calendar preference saved.')
+      } catch (error) {
+        console.error(error)
+        notify('Could not save this event. Please try again.')
+      }
     }
 
   const searchResults =
@@ -580,9 +590,9 @@ function Workspace({ email }: { email: string }) {
             {badge(
               selectedEvent.category
             )}
-            {badge(
-              selectedEvent.calendarState
-            )}
+            {badge(selectedEvent.calendarState === 'Added'
+              ? selectedEvent.googleCalendarEventId ? 'Synced' : 'Syncing'
+              : selectedEvent.calendarState)}
           </div>
 
           <h2>
@@ -597,18 +607,15 @@ function Workspace({ email }: { email: string }) {
             }
           </p>
 
-          <button
-            className="primary-button"
-            onClick={() =>
-              updateCalendar(
-                selectedEvent,
-                'Added'
-              )
-            }
-          >
-            <Plus size={16} />
-            Add to calendar
-          </button>
+          {selectedEvent.calendarState === 'Pending' && (
+            <button
+              className="primary-button"
+              onClick={() => updateCalendar(selectedEvent, 'Added')}
+            >
+              <Plus size={16} />
+              Add to calendar
+            </button>
+          )}
         </Modal>
       )}
 
