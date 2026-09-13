@@ -7,7 +7,7 @@ const dir = dirname(fileURLToPath(import.meta.url))
 const run = (name, input, lookup = () => null) => new Function('$json', '$', readFileSync(join(dir, name), 'utf8'))(input, lookup)
 const message = {
   id: 'gmail-test-001', threadId: 'thread-test-001', internalDate: String(Date.parse('2026-09-12T08:00:00Z')),
-  payload: { headers: [{name:'Subject', value:'Semester fee due 18 September'}, {name:'From', value:'Accounts Office <accounts@heritage.example>'}], parts: [
+  payload: { headers: [{name:'Subject', value:'Semester fee due 18 September'}, {name:'From', value:'Accounts Office <accounts@heraldcollege.edu.np>'}], parts: [
     { mimeType:'text/plain', body:{ data: Buffer.from('Pay your semester fee by 18 September 2026. Send the receipt to accounts.').toString('base64url') } },
     { mimeType:'application/pdf', filename:'fee-instructions.pdf', body:{} },
   ] },
@@ -16,6 +16,10 @@ const prepared = run('prepare-email.js', message)
 assert.equal(prepared.json.gmail_message_id, message.id)
 assert.deepEqual(prepared.json.attachment_names, ['fee-instructions.pdf'])
 assert.match(prepared.json.ai_input, /Pay your semester fee/)
+assert.throws(() => run('prepare-email.js', { ...message, from: 'Fake Office <accounts@other.example>' }), /outside the Herald College domain/)
+const parsed = run('prepare-email.js', { id: 'parsed-001', subject: 'Class update', from: { text: 'Academic Office <academic@heraldcollege.edu.np>', value: [{ address: 'academic@heraldcollege.edu.np' }] }, text: 'Classes begin Monday.', date: '2026-09-13T06:00:00Z' })
+assert.equal(parsed.json.sender, 'Academic Office <academic@heraldcollege.edu.np>')
+assert.match(parsed.json.ai_input, /Classes begin Monday/)
 
 const extraction = { output: { summary:'Semester fee is due 18 September 2026. Send the receipt after paying.', category:'Payments', priority:'High', events:[
   {title:'Semester fee deadline', date:'2026-09-18', start_time:'', end_time:'', location:'', category:'Deadline', description:'Pay semester fee.'},

@@ -1,4 +1,4 @@
-# Heritage College Student Assistant
+# Herald College Student Assistant
 
 A responsive React demo for college notices, events, a monthly calendar, payment receipts, documents, and a student AI assistant.
 

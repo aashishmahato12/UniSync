@@ -1,10 +1,10 @@
-# n8n first: Heritage College email intake
+# n8n first: Herald College email intake
 
-The draft workflow has been imported into n8n as [**Heritage College — Gmail notices to Supabase**](http://192.168.0.58:30109/workflow/YD0z3UNcTATTb0p1). It is deliberately unpublished while the college sender and Supabase project are being configured. The Supabase account and project have not been created yet.
+The draft workflow has been imported into n8n as [**Herald College — Gmail notices to Supabase**](http://192.168.0.58:30109/workflow/YD0z3UNcTATTb0p1). It is deliberately unpublished until the database tables, Supabase credential, and a test run are complete. The project reference is `qozetqmklegcnjgxtgpd`.
 
 ## What this first workflow does
 
-1. Poll Gmail every five minutes for messages matching the college sender filter.
+1. Poll Gmail every five minutes for messages from any `@heraldcollege.edu.np` sender.
 2. Fetch the full message, preserve its Gmail ID, and extract attachment names.
 3. Ask Gemini for a concise notice summary, category, priority, and explicit event/deadline dates.
 4. Validate the AI output. Dates without a clear day are excluded from event creation.
@@ -15,10 +15,10 @@ No Google Calendar event is created and no receipt email is sent by this workflo
 
 ## Finish setup
 
-1. Create a Supabase project. In its SQL Editor, run [001_college_core.sql](./001_college_core.sql).
+1. In the existing Supabase project, run [001_college_core.sql](./001_college_core.sql) in SQL Editor.
 2. In n8n, create an **HTTP Header Auth** credential with name `apikey` and value set to the Supabase **secret key**. Keep that key only in n8n. Do not put it in the website or this repository.
-3. In **Save Notice** and **Save Pending Events**, replace `YOUR-PROJECT` in the URL with your Supabase project reference, and select that HTTP Header Auth credential.
-4. In **Gmail Trigger**, replace `REPLACE_WITH_HERITAGE_SENDER` with the college sender address or an appropriate Gmail search query. Check the Gmail credential and polling interval.
+3. The **Save Notice** and **Save Pending Events** URLs already use your Supabase project. Select the HTTP Header Auth credential in both nodes.
+4. **Gmail Trigger** searches `from:(@heraldcollege.edu.np)` every five minutes. **Prepare Email** also rejects senders whose address does not end in that exact domain.
 5. Confirm the Gmail and Gemini credentials selected in **Gmail Trigger**, **Get Full Email**, and **Google Gemini Chat Model**.
 6. Test with one non-sensitive sample message first. Inspect the notice and event rows in Supabase, especially dates and category. Only then publish the n8n workflow.
 
