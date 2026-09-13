@@ -1,7 +1,14 @@
-import { useRef, useState } from 'react'
-import { AlertCircle, CreditCard, ShieldCheck, UploadCloud } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { AlertCircle, CreditCard, Send, ShieldCheck, UploadCloud } from 'lucide-react'
 import { badge, EmptyState, Modal, PageIntro, SectionHeading } from '../components/UI'
 import { formatDate, money, paymentScheduleTotals, today, type Payment } from '../data'
+import {
+  getReceiptJobs,
+  getReceiptSendingSettings,
+  queueReceipt,
+  type ReceiptJob,
+  type ReceiptSendingSettings,
+} from '../services/paymentReceipts'
 import './Payments.css'
 
 const dateText = (payment: Payment) =>
@@ -37,6 +44,32 @@ export default function Payments({
   const [body, setBody] = useState(firstPayment ? draftBody(firstPayment) : '')
   const [file, setFile] = useState<File | null>(null)
   const [preview, setPreview] = useState(false)
+  const [receiptSettings, setReceiptSettings] = useState<ReceiptSendingSettings | null>(null)
+  const [receiptJobs, setReceiptJobs] = useState<ReceiptJob[]>([])
+  const [receiptSetupError, setReceiptSetupError] = useState(false)
+  const [sending, setSending] = useState(false)
+
+  useEffect(() => {
+    let active = true
+    async function refresh() {
+      try {
+        const [settings, jobs] = await Promise.all([
+          getReceiptSendingSettings(),
+          getReceiptJobs(),
+        ])
+        if (!active) return
+        setReceiptSettings(settings)
+        setReceiptJobs(jobs)
+        setReceiptSetupError(false)
+      } catch {
+        if (active) setReceiptSetupError(true)
+      }
+    }
+    void refresh()
+    const timer = window.setInterval(() => { void refresh() }, 15000)
+    return () => { active = false; window.clearInterval(timer) }
+  }, [])
+
   const inputRef = useRef<HTMLInputElement>(null)
   const selected = payments.find(p => p.id === selectedPayment) || firstPayment
 
@@ -69,6 +102,43 @@ export default function Payments({
     }
     setFile(picked)
     notify('Receipt attached to your draft on this device.')
+  }
+
+  const submit = async () => {
+    if (!receiptSettings?.enabled || !receiptSettings.recipient_label) {
+      notify('Receipt sending is not connected yet.')
+      return
+    }
+    if (!file || !Number.isFinite(Number(amount)) || Number(amount) <= 0 ||
+        !paidOn || transactionId.trim().length < 3 || !body.trim()) {
+      notify('Add a receipt, a positive amount, payment date, transaction ID, and email body.')
+      return
+    }
+    if (sending) return
+    setSending(true)
+    try {
+      const job = await queueReceipt({
+        paymentId: selectedPayment,
+        paymentTitle: selected.title,
+        amount: Number(amount),
+        paidOn,
+        transactionId,
+        paymentType,
+        body,
+        file,
+      })
+      setReceiptJobs(current => [job, ...current])
+      setPreview(false)
+      notify('Receipt queued for n8n. Check its status here before assuming it was sent.')
+    } catch (error) {
+      const duplicate = typeof error === 'object' && error !== null &&
+        'code' in error && error.code === '23505'
+      notify(duplicate
+        ? 'That transaction ID already has a receipt request. Check its status below.'
+        : 'Could not queue the receipt. Nothing was emailed; please try again.')
+    } finally {
+      setSending(false)
+    }
   }
 
   if (!selected) {
@@ -143,7 +213,11 @@ export default function Payments({
       <div className="payment-layout">
         <section className="panel payment-form-panel">
           <SectionHeading eyebrow="PAYMENT PROOF" title="Prepare a receipt email" />
-          <div className="demo-note"><AlertCircle size={17} /><span>Email sending is not connected. You can fill in and preview a draft here, but it will not be sent or saved. Your selected file stays on this device.</span></div>
+          <div className="demo-note"><AlertCircle size={17} /><span>{receiptSettings?.enabled && receiptSettings.recipient_label
+            ? `Ready to queue through n8n for ${receiptSettings.recipient_label}. A receipt is only marked Sent after Gmail accepts it.`
+            : receiptSetupError
+              ? 'Receipt sending needs the Supabase setup. Your draft has not been sent.'
+              : 'Receipt sending is waiting for the college email address and n8n setup. You can still prepare a draft.'}</span></div>
           <div className="form-grid">
             <label className="field full"><span>Payment for</span><select value={selectedPayment} onChange={e => choosePayment(e.target.value)}>{payments.map(p => <option key={p.id} value={p.id}>{p.title} · {money(p.amount)}</option>)}</select></label>
             <label className="field"><span>Amount paid (NPR)</span><input type="number" min="1" value={amount} onChange={e => setAmount(e.target.value)} /></label>
@@ -161,7 +235,12 @@ export default function Payments({
             </div>
             <label className="field full"><span>Email body</span><textarea rows={8} value={body} onChange={e => setBody(e.target.value)} /></label>
           </div>
-          <div className="form-actions"><button className="primary-button" onClick={() => setPreview(true)}>Preview email</button></div>
+          <div className="form-actions">
+            <button className="secondary-button" onClick={() => setPreview(true)}>Preview email</button>
+            <button className="primary-button" onClick={submit} disabled={!receiptSettings?.enabled || !receiptSettings.recipient_label || sending}>
+              {sending ? 'Queuing…' : 'Send receipt'} <Send size={16} />
+            </button>
+          </div>
         </section>
 
         <aside className="panel payment-history">
@@ -170,7 +249,7 @@ export default function Payments({
             {payments.map(p => (
               <button className={`history-row ${selectedPayment === p.id ? 'selected' : ''}`} key={p.id} onClick={() => choosePayment(p.id)}>
                 <span className="history-icon"><CreditCard size={18} /></span>
-                <span><strong>{p.title}</strong><small>{dateText(p)} · {money(p.amount)}</small>{p.transactionId && <small>Txn: {p.transactionId}</small>}</span>
+                <span><strong>{p.title}</strong><small>{dateText(p)} · {money(p.amount)}</small>{p.transactionId && <small>Txn: {p.transactionId}</small>}{receiptJobs.find(job => job.payment_id === p.id) && <small>Latest receipt: {receiptJobs.find(job => job.payment_id === p.id)?.status}</small>}</span>
                 {badge(p.status)}
               </button>
             ))}
@@ -182,14 +261,19 @@ export default function Payments({
       {preview && (
         <Modal title="Email preview" onClose={() => setPreview(false)}>
           <div className="email-preview">
-            <div><span>To</span><strong>Accounts Office · address not configured</strong></div>
+            <div><span>To</span><strong>{receiptSettings?.recipient_label || 'Accounts Office · address not configured'}</strong></div>
             <div><span>Subject</span><strong>Payment receipt — {selected.title}</strong></div>
             <div><span>Details</span><strong>{money(Number(amount) || 0)} · {paidOn ? formatDate(paidOn, { day: 'numeric', month: 'long', year: 'numeric' }) : 'Date missing'} · {transactionId || 'Transaction ID missing'} · {paymentType}</strong></div>
             <div><span>Attachment</span><strong>{file?.name || 'No receipt attached'}</strong></div>
             <pre>{body}</pre>
           </div>
-          <div className="demo-note"><AlertCircle size={17} /><span>This is a preview only. No email or attachment has been sent.</span></div>
-          <div className="modal-actions"><button className="secondary-button" onClick={() => setPreview(false)}>Edit details</button></div>
+          <div className="demo-note"><AlertCircle size={17} /><span>This is a preview. Sending queues the receipt in Supabase; n8n will deliver it through Gmail.</span></div>
+          <div className="modal-actions">
+            <button className="secondary-button" onClick={() => setPreview(false)}>Edit details</button>
+            <button className="primary-button" onClick={submit} disabled={!receiptSettings?.enabled || !receiptSettings.recipient_label || sending}>
+              {sending ? 'Queuing…' : 'Send receipt'} <Send size={16} />
+            </button>
+          </div>
         </Modal>
       )}
     </>
