@@ -1,15 +1,154 @@
-import { events, notices, payments, documents, type EventItem, type Notice, type Payment, type DocumentItem } from '../data'
+import { supabase } from './supabase'
 
-export type ReceiptSubmission = { paymentId: string; amount: number; paidOn: string; transactionId: string; paymentType: string; body: string; fileName: string }
-const delay = (ms = 250) => new Promise(resolve => setTimeout(resolve, ms))
+import {
+  payments,
+  documents,
+  type EventItem,
+  type Notice,
+  type Payment,
+  type DocumentItem,
+} from '../data'
 
-// Replace these functions with Supabase queries or n8n webhooks when credentials are available.
+export type ReceiptSubmission = {
+  paymentId: string
+  amount: number
+  paidOn: string
+  transactionId: string
+  paymentType: string
+  body: string
+  fileName: string
+}
+
+const delay = (ms = 250) =>
+  new Promise(resolve => setTimeout(resolve, ms))
+
 export const studentService = {
-  async getEvents(): Promise<EventItem[]> { await delay(); return structuredClone(events) },
-  async getNotices(): Promise<Notice[]> { await delay(); return structuredClone(notices) },
-  async getPayments(): Promise<Payment[]> { await delay(); return structuredClone(payments) },
-  async getDocuments(): Promise<DocumentItem[]> { await delay(); return structuredClone(documents) },
-  async updateCalendarState(_eventId: string, _state: EventItem['calendarState']) { await delay(); return { ok: true } },
-  async submitReceipt(_submission: ReceiptSubmission) { await delay(550); return { ok: true, mode: 'mock' as const } },
-  async askAI(question: string) { await delay(500); const q = question.toLowerCase(); if (q.includes('fee') || q.includes('pay')) return 'Your semester tuition of NPR 28,500 is due on the 18th. You can upload your mobile banking receipt in Payments, preview the email, then send it to the accounts office when email integration is connected.'; if (q.includes('exam') || q.includes('practical')) return 'Your Physics practical is on the 17th at 9:00 AM in Science Lab 2. Bring your lab record and college ID, and arrive by 8:30 AM.'; if (q.includes('event') || q.includes('showcase')) return 'The student innovation showcase is on the 25th at 11:00 AM in the Main Auditorium. It is pending in Events, where you can add it to your calendar.'; return 'I can help you find information in your Herald College notices, events, payments, and documents. Try asking about the fee deadline, practical exam, or upcoming showcase.' },
+
+  async getNotices(): Promise<Notice[]> {
+
+    const { data, error } = await supabase
+      .from('college_notices')
+      .select('*')
+      .order('received_at', { ascending: false })
+
+    if (error) {
+      console.error('Supabase notices error:', error)
+      throw error
+    }
+
+    return (data ?? []).map(row => ({
+      id: row.id,
+
+      // Supabase "subject" -> frontend "title"
+      title: row.subject,
+
+      date:
+        row.received_at?.split('T')[0] ??
+        row.created_at?.split('T')[0],
+
+      category: row.category,
+
+      priority: row.priority as 'High' | 'Normal',
+
+      summary: row.summary,
+
+      // Take first attachment if one exists
+      attachment:
+        Array.isArray(row.attachment_names)
+          ? row.attachment_names[0]
+          : undefined,
+
+      source:
+        row.sender
+          ? `${row.sender} · Email`
+          : 'College Email',
+    }))
+  },
+
+
+  async getEvents(): Promise<EventItem[]> {
+
+    const { data, error } = await supabase
+      .from('college_events')
+      .select('*')
+      .order('event_date', { ascending: true })
+
+    if (error) {
+      console.error('Supabase events error:', error)
+      throw error
+    }
+
+    return (data ?? []).map(row => ({
+      id: row.id,
+
+      title: row.title,
+
+      // Supabase event_date -> frontend date
+      date: row.event_date,
+
+      time: row.start_time
+        ? row.start_time.slice(0, 5)
+        : undefined,
+
+      location: row.location ?? undefined,
+
+      category: row.category,
+
+      description: row.description ?? '',
+
+      source: 'College Email',
+
+      // Supabase snake_case -> React camelCase
+      calendarState: row.calendar_state,
+    }))
+  },
+
+
+  // Keep these mocked for now because you don't
+  // have Supabase tables for them yet.
+  async getPayments(): Promise<Payment[]> {
+    await delay()
+    return structuredClone(payments)
+  },
+
+  async getDocuments(): Promise<DocumentItem[]> {
+    await delay()
+    return structuredClone(documents)
+  },
+
+
+  async updateCalendarState(
+    eventId: string,
+    state: EventItem['calendarState']
+  ) {
+
+    const { error } = await supabase
+      .from('college_events')
+      .update({
+        calendar_state: state,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', eventId)
+
+    if (error) throw error
+
+    return { ok: true }
+  },
+
+
+  async submitReceipt(_submission: ReceiptSubmission) {
+    await delay(550)
+
+    return {
+      ok: true,
+      mode: 'mock' as const,
+    }
+  },
+
+
+  async askAI(question: string) {
+    await delay(500)
+
+    return `AI integration is not connected yet. You asked: "${question}"`
+  },
 }

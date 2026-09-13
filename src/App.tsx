@@ -1,95 +1,3503 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Bell, CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, Clock3, CreditCard, ExternalLink, FileText, FolderOpen, Home, Menu, MessageCircle, MoreHorizontal, Paperclip, Plus, Search, Send, Settings2, ShieldCheck, Sparkles, UploadCloud, X, ArrowRight, AlertCircle, BookOpen, GraduationCap, LogOut } from 'lucide-react'
-import { documents as seedDocuments, events as seedEvents, formatDate, money, notices as seedNotices, payments as seedPayments, today, type CalendarState, type DocumentItem, type EventItem, type Notice, type Payment } from './data'
-import { studentService, type ReceiptSubmission } from './services/mockService'
+import {
+  Bell,
+  CalendarDays,
+  Check,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Clock3,
+  CreditCard,
+  ExternalLink,
+  FileText,
+  FolderOpen,
+  Home,
+  Menu,
+  MoreHorizontal,
+  Paperclip,
+  Plus,
+  Search,
+  Send,
+  Settings2,
+  ShieldCheck,
+  Sparkles,
+  UploadCloud,
+  X,
+  ArrowRight,
+  AlertCircle,
+  BookOpen,
+} from 'lucide-react'
 
-type Page = 'Dashboard' | 'Notices' | 'Events' | 'Calendar' | 'Payments' | 'Documents' | 'Ask AI' | 'Profile'
+import {
+  documents as seedDocuments,
+  formatDate,
+  money,
+  payments as seedPayments,
+  today,
+  type CalendarState,
+  type DocumentItem,
+  type EventItem,
+  type Notice,
+  type Payment,
+} from './data'
+
+import {
+  studentService,
+  type ReceiptSubmission,
+} from './services/mockService'
+
+type Page =
+  | 'Dashboard'
+  | 'Notices'
+  | 'Events'
+  | 'Calendar'
+  | 'Payments'
+  | 'Documents'
+  | 'Ask AI'
+  | 'Profile'
+
 const nav: { name: Page; icon: typeof Home }[] = [
-  { name: 'Dashboard', icon: Home }, { name: 'Notices', icon: Bell }, { name: 'Events', icon: CalendarDays }, { name: 'Calendar', icon: Clock3 },
-  { name: 'Payments', icon: CreditCard }, { name: 'Documents', icon: FolderOpen }, { name: 'Ask AI', icon: Sparkles }, { name: 'Profile', icon: Settings2 },
+  { name: 'Dashboard', icon: Home },
+  { name: 'Notices', icon: Bell },
+  { name: 'Events', icon: CalendarDays },
+  { name: 'Calendar', icon: Clock3 },
+  { name: 'Payments', icon: CreditCard },
+  { name: 'Documents', icon: FolderOpen },
+  { name: 'Ask AI', icon: Sparkles },
+  { name: 'Profile', icon: Settings2 },
 ]
-const fullDate = (date: string) => formatDate(date, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
-const badge = (value: string) => <span className={`badge badge-${value.toLowerCase().replaceAll(' ', '-')}`}>{value}</span>
-const initials = 'AS'
 
-function SectionHeading({ eyebrow, title, action }: { eyebrow?: string; title: string; action?: React.ReactNode }) { return <div className="section-heading"><div>{eyebrow && <div className="eyebrow">{eyebrow}</div>}<h2>{title}</h2></div>{action}</div> }
-function EmptyState({ title, copy }: { title: string; copy: string }) { return <div className="empty-state"><FolderOpen size={28}/><strong>{title}</strong><span>{copy}</span></div> }
+const fullDate = (date: string) =>
+  formatDate(date, {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  })
+
+const badge = (value: string) => (
+  <span
+    className={`badge badge-${value
+      .toLowerCase()
+      .replaceAll(' ', '-')}`}
+  >
+    {value}
+  </span>
+)
+
+const initials = 'AM'
+
+function SectionHeading({
+  eyebrow,
+  title,
+  action,
+}: {
+  eyebrow?: string
+  title: string
+  action?: React.ReactNode
+}) {
+  return (
+    <div className="section-heading">
+      <div>
+        {eyebrow && <div className="eyebrow">{eyebrow}</div>}
+        <h2>{title}</h2>
+      </div>
+
+      {action}
+    </div>
+  )
+}
+
+function EmptyState({
+  title,
+  copy,
+}: {
+  title: string
+  copy: string
+}) {
+  return (
+    <div className="empty-state">
+      <FolderOpen size={28} />
+      <strong>{title}</strong>
+      <span>{copy}</span>
+    </div>
+  )
+}
 
 export default function App() {
   const [page, setPage] = useState<Page>('Dashboard')
   const [menuOpen, setMenuOpen] = useState(false)
-  const [events, setEvents] = useState<EventItem[]>(seedEvents)
-  const [notices] = useState<Notice[]>(seedNotices)
-  const [payments, setPayments] = useState<Payment[]>(seedPayments)
-  const [documents, setDocuments] = useState<DocumentItem[]>(seedDocuments)
+
+  // REAL SUPABASE DATA
+  const [events, setEvents] = useState<EventItem[]>([])
+  const [notices, setNotices] = useState<Notice[]>([])
+  const [loading, setLoading] = useState(true)
+
+  // STILL MOCKED FOR NOW
+  const [payments, setPayments] =
+    useState<Payment[]>(seedPayments)
+
+  const [documents, setDocuments] =
+    useState<DocumentItem[]>(seedDocuments)
+
   const [toast, setToast] = useState('')
-  const [selectedEvent, setSelectedEvent] = useState<EventItem | null>(null)
-  const [selectedNotice, setSelectedNotice] = useState<Notice | null>(null)
+  const [selectedEvent, setSelectedEvent] =
+    useState<EventItem | null>(null)
+
+  const [selectedNotice, setSelectedNotice] =
+    useState<Notice | null>(null)
+
   const [searchOpen, setSearchOpen] = useState(false)
   const [globalSearch, setGlobalSearch] = useState('')
-  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  useEffect(() => { const onKey = (event: KeyboardEvent) => { if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); setSearchOpen(true) } }; window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey) }, [])
-  const notify = (message: string) => { setToast(message); if (toastTimer.current) clearTimeout(toastTimer.current); toastTimer.current = setTimeout(() => setToast(''), 4200) }
-  const navigate = (target: Page) => { setPage(target); setMenuOpen(false); setSearchOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }
-  const updateCalendar = async (event: EventItem, state: CalendarState) => { await studentService.updateCalendarState(event.id, state); setEvents(prev => prev.map(item => item.id === event.id ? { ...item, calendarState: state } : item)); setSelectedEvent(prev => prev?.id === event.id ? { ...prev, calendarState: state } : prev); notify(state === 'Added' ? 'Added to your calendar in this demo.' : state === 'Ignored' ? 'Event marked as ignored.' : 'Event moved back to pending.') }
-  const searchResults = useMemo(() => { const q = globalSearch.trim().toLowerCase(); if (!q) return []; return [
-    ...notices.filter(n => `${n.title} ${n.summary}`.toLowerCase().includes(q)).map(n => ({ label: n.title, type: 'Notice', page: 'Notices' as Page })),
-    ...events.filter(e => `${e.title} ${e.description}`.toLowerCase().includes(q)).map(e => ({ label: e.title, type: 'Event', page: 'Events' as Page })),
-    ...documents.filter(d => d.name.toLowerCase().includes(q)).map(d => ({ label: d.name, type: 'Document', page: 'Documents' as Page })),
-  ].slice(0, 7) }, [globalSearch, notices, events, documents])
 
-  return <div className="app-shell">
-    <aside className={`sidebar ${menuOpen ? 'is-open' : ''}`}>
-      <div className="brand"><div className="brand-mark">H<span>.</span></div><div><strong>Herald</strong><small>STUDENT SPACE</small></div></div>
-      <div className="sidebar-label">WORKSPACE</div>
-      <nav className="side-nav" aria-label="Main navigation">{nav.map(({ name, icon: Icon }) => <button key={name} className={`nav-item ${page === name ? 'active' : ''}`} onClick={() => navigate(name)}><Icon size={18} strokeWidth={1.9}/><span>{name}</span>{name === 'Notices' && <em>4</em>}</button>)}</nav>
-      <div className="sidebar-bottom"><div className="help-card"><div className="help-icon"><BookOpen size={17}/></div><strong>Need a hand?</strong><p>Ask about deadlines, notices or your next steps.</p><button onClick={() => navigate('Ask AI')}>Ask AI <ArrowRight size={15}/></button></div><button className="sidebar-profile" onClick={() => navigate('Profile')}><span className="avatar">{initials}</span><span><strong>Aashish Sharma</strong><small>Student account</small></span><MoreHorizontal size={17}/></button></div>
-    </aside>
-    {menuOpen && <button className="mobile-scrim" aria-label="Close menu" onClick={() => setMenuOpen(false)}/>}
-    <div className="main-column">
-      <header className="topbar"><div className="topbar-left"><button className="icon-button mobile-menu" aria-label="Open menu" onClick={() => setMenuOpen(true)}><Menu size={21}/></button><span className="breadcrumb">Workspace</span><ChevronRight size={15}/><strong>{page}</strong></div><div className="topbar-actions"><button className="search-trigger" onClick={() => setSearchOpen(true)}><Search size={17}/><span>Search anything...</span><kbd>⌘ K</kbd></button><button className="icon-button notification-button" aria-label="Open notices" onClick={() => navigate('Notices')}><Bell size={19}/><i/></button><button className="top-avatar" onClick={() => navigate('Profile')} aria-label="Open profile">{initials}</button></div></header>
-      <main className="content">
-        {page === 'Dashboard' && <Dashboard events={events} notices={notices} payments={payments} navigate={navigate} onNotice={setSelectedNotice} />}
-        {page === 'Notices' && <Notices notices={notices} onNotice={setSelectedNotice} />}
-        {page === 'Events' && <Events events={events} onEvent={setSelectedEvent} updateCalendar={updateCalendar} />}
-        {page === 'Calendar' && <Calendar events={events} onEvent={setSelectedEvent} updateCalendar={updateCalendar} />}
-        {page === 'Payments' && <Payments payments={payments} setPayments={setPayments} notify={notify} />}
-        {page === 'Documents' && <Documents documents={documents} setDocuments={setDocuments} notify={notify} />}
-        {page === 'Ask AI' && <AskAI />}
-        {page === 'Profile' && <Profile notify={notify} />}
-      </main>
+  const toastTimer =
+    useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // LOAD REAL DATA FROM SUPABASE
+  useEffect(() => {
+    async function loadCollegeData() {
+      try {
+        setLoading(true)
+
+        const [noticeData, eventData] =
+          await Promise.all([
+            studentService.getNotices(),
+            studentService.getEvents(),
+          ])
+
+        console.log('REAL NOTICES:', noticeData)
+        console.log('REAL EVENTS:', eventData)
+
+        setNotices(noticeData)
+        setEvents(eventData)
+      } catch (error) {
+        console.error(
+          'Failed to load college data:',
+          error
+        )
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadCollegeData()
+  }, [])
+
+  // CMD/CTRL + K SEARCH
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (
+        (event.metaKey || event.ctrlKey) &&
+        event.key.toLowerCase() === 'k'
+      ) {
+        event.preventDefault()
+        setSearchOpen(true)
+      }
+    }
+
+    window.addEventListener('keydown', onKey)
+
+    return () =>
+      window.removeEventListener('keydown', onKey)
+  }, [])
+
+  const notify = (message: string) => {
+    setToast(message)
+
+    if (toastTimer.current) {
+      clearTimeout(toastTimer.current)
+    }
+
+    toastTimer.current = setTimeout(
+      () => setToast(''),
+      4200
+    )
+  }
+
+  const navigate = (target: Page) => {
+    setPage(target)
+    setMenuOpen(false)
+    setSearchOpen(false)
+
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    })
+  }
+
+  const updateCalendar = async (
+    event: EventItem,
+    state: CalendarState
+  ) => {
+    try {
+      await studentService.updateCalendarState(
+        event.id,
+        state
+      )
+
+      setEvents(prev =>
+        prev.map(item =>
+          item.id === event.id
+            ? {
+                ...item,
+                calendarState: state,
+              }
+            : item
+        )
+      )
+
+      setSelectedEvent(prev =>
+        prev?.id === event.id
+          ? {
+              ...prev,
+              calendarState: state,
+            }
+          : prev
+      )
+
+      notify(
+        state === 'Added'
+          ? 'Event marked as added.'
+          : state === 'Ignored'
+            ? 'Event marked as ignored.'
+            : 'Event moved back to pending.'
+      )
+    } catch (error) {
+      console.error(error)
+      notify('Could not update event.')
+    }
+  }
+
+  const searchResults = useMemo(() => {
+    const q = globalSearch
+      .trim()
+      .toLowerCase()
+
+    if (!q) return []
+
+    return [
+      ...notices
+        .filter(n =>
+          `${n.title} ${n.summary}`
+            .toLowerCase()
+            .includes(q)
+        )
+        .map(n => ({
+          label: n.title,
+          type: 'Notice',
+          page: 'Notices' as Page,
+        })),
+
+      ...events
+        .filter(e =>
+          `${e.title} ${e.description}`
+            .toLowerCase()
+            .includes(q)
+        )
+        .map(e => ({
+          label: e.title,
+          type: 'Event',
+          page: 'Events' as Page,
+        })),
+
+      ...documents
+        .filter(d =>
+          d.name
+            .toLowerCase()
+            .includes(q)
+        )
+        .map(d => ({
+          label: d.name,
+          type: 'Document',
+          page: 'Documents' as Page,
+        })),
+    ].slice(0, 7)
+  }, [
+    globalSearch,
+    notices,
+    events,
+    documents,
+  ])
+
+  return (
+    <div className="app-shell">
+
+      <aside
+        className={`sidebar ${
+          menuOpen ? 'is-open' : ''
+        }`}
+      >
+        <div className="brand">
+          <div className="brand-mark">
+            H<span>.</span>
+          </div>
+
+          <div>
+            <strong>Heritage</strong>
+            <small>STUDENT SPACE</small>
+          </div>
+        </div>
+
+        <div className="sidebar-label">
+          WORKSPACE
+        </div>
+
+        <nav
+          className="side-nav"
+          aria-label="Main navigation"
+        >
+          {nav.map(
+            ({
+              name,
+              icon: Icon,
+            }) => (
+              <button
+                key={name}
+                className={`nav-item ${
+                  page === name
+                    ? 'active'
+                    : ''
+                }`}
+                onClick={() =>
+                  navigate(name)
+                }
+              >
+                <Icon
+                  size={18}
+                  strokeWidth={1.9}
+                />
+
+                <span>{name}</span>
+
+                {name === 'Notices' &&
+                  notices.length > 0 && (
+                    <em>
+                      {notices.length}
+                    </em>
+                  )}
+              </button>
+            )
+          )}
+        </nav>
+
+        <div className="sidebar-bottom">
+          <div className="help-card">
+            <div className="help-icon">
+              <BookOpen size={17} />
+            </div>
+
+            <strong>
+              Need a hand?
+            </strong>
+
+            <p>
+              Ask about deadlines,
+              notices or your next steps.
+            </p>
+
+            <button
+              onClick={() =>
+                navigate('Ask AI')
+              }
+            >
+              Ask AI
+              <ArrowRight size={15} />
+            </button>
+          </div>
+
+          <button
+            className="sidebar-profile"
+            onClick={() =>
+              navigate('Profile')
+            }
+          >
+            <span className="avatar">
+              {initials}
+            </span>
+
+            <span>
+              <strong>
+                Aashish Mahato
+              </strong>
+              <small>
+                Student account
+              </small>
+            </span>
+
+            <MoreHorizontal
+              size={17}
+            />
+          </button>
+        </div>
+      </aside>
+
+      {menuOpen && (
+        <button
+          className="mobile-scrim"
+          aria-label="Close menu"
+          onClick={() =>
+            setMenuOpen(false)
+          }
+        />
+      )}
+
+      <div className="main-column">
+
+        <header className="topbar">
+
+          <div className="topbar-left">
+            <button
+              className="icon-button mobile-menu"
+              aria-label="Open menu"
+              onClick={() =>
+                setMenuOpen(true)
+              }
+            >
+              <Menu size={21} />
+            </button>
+
+            <span className="breadcrumb">
+              Workspace
+            </span>
+
+            <ChevronRight
+              size={15}
+            />
+
+            <strong>{page}</strong>
+          </div>
+
+          <div className="topbar-actions">
+
+            <button
+              className="search-trigger"
+              onClick={() =>
+                setSearchOpen(true)
+              }
+            >
+              <Search size={17} />
+              <span>
+                Search anything...
+              </span>
+              <kbd>⌘ K</kbd>
+            </button>
+
+            <button
+              className="icon-button notification-button"
+              aria-label="Open notices"
+              onClick={() =>
+                navigate('Notices')
+              }
+            >
+              <Bell size={19} />
+
+              {notices.length > 0 && (
+                <i />
+              )}
+            </button>
+
+            <button
+              className="top-avatar"
+              onClick={() =>
+                navigate('Profile')
+              }
+              aria-label="Open profile"
+            >
+              {initials}
+            </button>
+          </div>
+        </header>
+
+        <main className="content">
+
+          {loading ? (
+            <div className="panel">
+              <p>
+                Loading your college data...
+              </p>
+            </div>
+          ) : (
+            <>
+              {page === 'Dashboard' && (
+                <Dashboard
+                  events={events}
+                  notices={notices}
+                  payments={payments}
+                  navigate={navigate}
+                  onNotice={
+                    setSelectedNotice
+                  }
+                />
+              )}
+
+              {page === 'Notices' && (
+                <Notices
+                  notices={notices}
+                  onNotice={
+                    setSelectedNotice
+                  }
+                />
+              )}
+
+              {page === 'Events' && (
+                <Events
+                  events={events}
+                  onEvent={
+                    setSelectedEvent
+                  }
+                  updateCalendar={
+                    updateCalendar
+                  }
+                />
+              )}
+
+              {page === 'Calendar' && (
+                <Calendar
+                  events={events}
+                  onEvent={
+                    setSelectedEvent
+                  }
+                  updateCalendar={
+                    updateCalendar
+                  }
+                />
+              )}
+
+              {page === 'Payments' && (
+                <Payments
+                  payments={payments}
+                  setPayments={
+                    setPayments
+                  }
+                  notify={notify}
+                />
+              )}
+
+              {page ===
+                'Documents' && (
+                <Documents
+                  documents={
+                    documents
+                  }
+                  setDocuments={
+                    setDocuments
+                  }
+                  notify={notify}
+                />
+              )}
+
+              {page === 'Ask AI' && (
+                <AskAI />
+              )}
+
+              {page === 'Profile' && (
+                <Profile
+                  notify={notify}
+                />
+              )}
+            </>
+          )}
+        </main>
+      </div>
+
+      {selectedEvent && (
+        <Modal
+          title="Event details"
+          onClose={() =>
+            setSelectedEvent(null)
+          }
+        >
+          <div className="modal-category">
+            {badge(
+              selectedEvent.category
+            )}
+
+            {badge(
+              selectedEvent.calendarState
+            )}
+          </div>
+
+          <h2 className="modal-title">
+            {selectedEvent.title}
+          </h2>
+
+          <div className="detail-grid">
+
+            <div>
+              <CalendarDays
+                size={17}
+              />
+              {fullDate(
+                selectedEvent.date
+              )}
+            </div>
+
+            {selectedEvent.time && (
+              <div>
+                <Clock3
+                  size={17}
+                />
+                {selectedEvent.time}
+              </div>
+            )}
+
+            {selectedEvent.location && (
+              <div>
+                <Home
+                  size={17}
+                />
+                {selectedEvent.location}
+              </div>
+            )}
+          </div>
+
+          <p className="detail-copy">
+            {selectedEvent.description}
+          </p>
+
+          <div className="source-box">
+            <span>
+              Original source
+            </span>
+
+            <strong>
+              {selectedEvent.source}
+            </strong>
+
+            <small>
+              This event was extracted
+              from your college email.
+            </small>
+          </div>
+
+          <div className="modal-actions">
+
+            {selectedEvent.calendarState !==
+              'Added' && (
+              <button
+                className="primary-button"
+                onClick={() =>
+                  updateCalendar(
+                    selectedEvent,
+                    'Added'
+                  )
+                }
+              >
+                <Plus size={16} />
+                Add to calendar
+              </button>
+            )}
+
+            {selectedEvent.calendarState ===
+              'Added' && (
+              <button
+                className="secondary-button"
+                onClick={() =>
+                  updateCalendar(
+                    selectedEvent,
+                    'Pending'
+                  )
+                }
+              >
+                Remove from calendar
+              </button>
+            )}
+
+            {selectedEvent.calendarState !==
+              'Ignored' && (
+              <button
+                className="ghost-button"
+                onClick={() =>
+                  updateCalendar(
+                    selectedEvent,
+                    'Ignored'
+                  )
+                }
+              >
+                Ignore event
+              </button>
+            )}
+          </div>
+        </Modal>
+      )}
+
+      {selectedNotice && (
+        <Modal
+          title="Notice"
+          onClose={() =>
+            setSelectedNotice(null)
+          }
+        >
+          <div className="modal-category">
+            {badge(
+              selectedNotice.priority
+            )}
+
+            {badge(
+              selectedNotice.category
+            )}
+          </div>
+
+          <h2 className="modal-title">
+            {selectedNotice.title}
+          </h2>
+
+          <p className="muted">
+            {fullDate(
+              selectedNotice.date
+            )}
+            {' · '}
+            {selectedNotice.source}
+          </p>
+
+          <div className="ai-summary">
+            <Sparkles size={17} />
+
+            <div>
+              <strong>
+                AI summary
+              </strong>
+
+              <p>
+                {selectedNotice.summary}
+              </p>
+            </div>
+          </div>
+
+          {selectedNotice.attachment && (
+            <div className="attachment-row">
+              <FileText size={18} />
+
+              <span>
+                {
+                  selectedNotice.attachment
+                }
+              </span>
+
+              <span className="attachment-note">
+                Attachment
+              </span>
+            </div>
+          )}
+
+          <div className="source-box">
+            <span>
+              Original source
+            </span>
+
+            <strong>
+              {selectedNotice.source}
+            </strong>
+
+            <small>
+              Original email linking
+              can be added later.
+            </small>
+          </div>
+        </Modal>
+      )}
+
+      {searchOpen && (
+        <Modal
+          title="Search"
+          onClose={() =>
+            setSearchOpen(false)
+          }
+        >
+          <div className="global-search">
+            <Search size={19} />
+
+            <input
+              autoFocus
+              placeholder="Search notices, events and documents"
+              value={globalSearch}
+              onChange={e =>
+                setGlobalSearch(
+                  e.target.value
+                )
+              }
+            />
+          </div>
+
+          <div className="search-results">
+            {globalSearch.trim() ? (
+              searchResults.length ? (
+                searchResults.map(
+                  (result, i) => (
+                    <button
+                      key={i}
+                      onClick={() =>
+                        navigate(
+                          result.page
+                        )
+                      }
+                    >
+                      <span>
+                        {
+                          result.label
+                        }
+                      </span>
+
+                      <small>
+                        {
+                          result.type
+                        }
+                      </small>
+
+                      <ArrowRight
+                        size={15}
+                      />
+                    </button>
+                  )
+                )
+              ) : (
+                <EmptyState
+                  title="No results found"
+                  copy="Try a different keyword."
+                />
+              )
+            ) : (
+              <p className="search-hint">
+                Try “fee”,
+                “practical”, or
+                “routine”.
+              </p>
+            )}
+          </div>
+        </Modal>
+      )}
+
+      {toast && (
+        <div
+          className="toast"
+          role="status"
+        >
+          <Check size={18} />
+
+          {toast}
+
+          <button
+            aria-label="Dismiss notification"
+            onClick={() =>
+              setToast('')
+            }
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
     </div>
-    {selectedEvent && <Modal title="Event details" onClose={() => setSelectedEvent(null)}><div className="modal-category">{badge(selectedEvent.category)}{badge(selectedEvent.calendarState)}</div><h2 className="modal-title">{selectedEvent.title}</h2><div className="detail-grid"><div><CalendarDays size={17}/>{fullDate(selectedEvent.date)}</div>{selectedEvent.time && <div><Clock3 size={17}/>{selectedEvent.time}</div>}{selectedEvent.location && <div><Home size={17}/>{selectedEvent.location}</div>}</div><p className="detail-copy">{selectedEvent.description}</p><div className="source-box"><span>Original source</span><strong>{selectedEvent.source}</strong><small>Demo source preview. Connect your college mailbox to open the original message.</small></div><div className="modal-actions">{selectedEvent.calendarState !== 'Added' && <button className="primary-button" onClick={() => updateCalendar(selectedEvent, 'Added')}><Plus size={16}/> Add to calendar</button>}{selectedEvent.calendarState === 'Added' && <button className="secondary-button" onClick={() => updateCalendar(selectedEvent, 'Pending')}>Remove from calendar</button>}{selectedEvent.calendarState !== 'Ignored' && <button className="ghost-button" onClick={() => updateCalendar(selectedEvent, 'Ignored')}>Ignore event</button>}</div></Modal>}
-    {selectedNotice && <Modal title="Notice" onClose={() => setSelectedNotice(null)}><div className="modal-category">{badge(selectedNotice.priority)}{badge(selectedNotice.category)}</div><h2 className="modal-title">{selectedNotice.title}</h2><p className="muted">{fullDate(selectedNotice.date)} · {selectedNotice.source}</p><div className="ai-summary"><Sparkles size={17}/><div><strong>AI summary</strong><p>{selectedNotice.summary}</p></div></div>{selectedNotice.attachment && <div className="attachment-row"><FileText size={18}/><span>{selectedNotice.attachment}</span><span className="attachment-note">Preview only</span></div>}<div className="source-box"><span>Original source</span><strong>{selectedNotice.source}</strong><small>Connect your college mailbox to open the original email and attachments.</small></div></Modal>}
-    {searchOpen && <Modal title="Search" onClose={() => setSearchOpen(false)}><div className="global-search"><Search size={19}/><input autoFocus placeholder="Search notices, events and documents" value={globalSearch} onChange={e => setGlobalSearch(e.target.value)}/></div><div className="search-results">{globalSearch.trim() ? searchResults.length ? searchResults.map((result, i) => <button key={i} onClick={() => navigate(result.page)}><span>{result.label}</span><small>{result.type}</small><ArrowRight size={15}/></button>) : <EmptyState title="No results found" copy="Try a different keyword."/> : <p className="search-hint">Try “fee”, “practical”, or “routine”.</p>}</div></Modal>}
-    {toast && <div className="toast" role="status"><Check size={18}/>{toast}<button aria-label="Dismiss notification" onClick={() => setToast('')}><X size={16}/></button></div>}
-  </div>
+  )
 }
 
-function Dashboard({ events, notices, payments, navigate, onNotice }: { events: EventItem[]; notices: Notice[]; payments: Payment[]; navigate: (page: Page) => void; onNotice: (notice: Notice) => void }) {
-  const upcoming = [...events].filter(e => e.date >= today && e.calendarState !== 'Ignored').sort((a,b) => a.date.localeCompare(b.date)).slice(0,3)
-  const due = payments.find(p => p.status === 'Due')
-  return <><div className="page-intro"><div><div className="eyebrow">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }).toUpperCase()}</div><h1>Good afternoon, Aashish <span className="wave">✳</span></h1><p>Here’s what’s happening at Herald College.</p></div><button className="outline-button" onClick={() => navigate('Calendar')}><CalendarDays size={17}/> View calendar</button></div>
-    <div className="hero-alert"><div className="alert-symbol"><AlertCircle size={23}/></div><div className="hero-alert-copy"><span>NEEDS YOUR ATTENTION</span><h3>Semester fee payment is due soon</h3><p>Complete your payment by {due ? formatDate(due.dueDate, { month: 'long', day: 'numeric' }) : 'the deadline'} and send your mobile banking receipt.</p></div><button onClick={() => navigate('Payments')}>Review payment <ArrowRight size={17}/></button></div>
-    <div className="dashboard-grid"><section className="panel upcoming-panel"><SectionHeading eyebrow="YOUR SCHEDULE" title="Upcoming" action={<button className="text-link" onClick={() => navigate('Events')}>View all <ArrowRight size={15}/></button>}/><div className="upcoming-list">{upcoming.map(event => <button className="upcoming-row" key={event.id} onClick={() => navigate('Events')}><div className="date-tile"><strong>{new Date(`${event.date}T12:00:00`).getDate()}</strong><span>{formatDate(event.date, { month: 'short' }).toUpperCase()}</span></div><div><strong>{event.title}</strong><span>{event.time ? `${event.time} · ` : ''}{event.category}</span></div><ChevronRight size={17}/></button>)}</div></section>
-    <section className="panel notice-panel"><SectionHeading eyebrow="LATEST UPDATES" title="Recent notices" action={<button className="text-link" onClick={() => navigate('Notices')}>View all <ArrowRight size={15}/></button>}/><div className="notice-mini-list">{notices.slice(0,3).map(notice => <button className="notice-mini" key={notice.id} onClick={() => onNotice(notice)}><span className={`notice-mini-icon ${notice.priority === 'High' ? 'urgent' : ''}`}><FileText size={17}/></span><span><strong>{notice.title}</strong><small>{notice.category} · {formatDate(notice.date)}</small></span><ChevronRight size={17}/></button>)}</div></section>
-    <section className="panel ai-brief-panel"><div className="brief-heading"><div className="brief-icon"><Sparkles size={19}/></div><div><span className="eyebrow">MADE FOR YOU</span><h2>AI brief</h2></div></div><p>You have <strong>2 things to prepare for this week.</strong> Your Physics practical is on the 17th, followed by the semester fee deadline on the 18th.</p><button className="text-link" onClick={() => navigate('Ask AI')}>Ask a follow-up <ArrowRight size={15}/></button></section>
-    <section className="panel action-panel"><SectionHeading eyebrow="NEXT STEPS" title="Action required"/><div className="action-item"><span className="action-check"><CreditCard size={17}/></span><div><strong>Submit your fee receipt</strong><span>Upload proof of payment for semester tuition.</span></div><button onClick={() => navigate('Payments')}>Continue <ArrowRight size={14}/></button></div><div className="action-item"><span className="action-check"><CalendarDays size={17}/></span><div><strong>Review pending events</strong><span>Choose which dates go on your calendar.</span></div><button onClick={() => navigate('Events')}>Review <ArrowRight size={14}/></button></div></section></div></>
+function Dashboard({
+  events,
+  notices,
+  payments,
+  navigate,
+  onNotice,
+}: {
+  events: EventItem[]
+  notices: Notice[]
+  payments: Payment[]
+  navigate: (page: Page) => void
+  onNotice: (notice: Notice) => void
+}) {
+  const upcoming = [...events]
+    .filter(
+      e =>
+        e.date >= today &&
+        e.calendarState !== 'Ignored'
+    )
+    .sort((a, b) =>
+      a.date.localeCompare(b.date)
+    )
+    .slice(0, 3)
+
+  const due = payments.find(
+    p => p.status === 'Due'
+  )
+
+  return (
+    <>
+      <div className="page-intro">
+        <div>
+          <div className="eyebrow">
+            {new Date()
+              .toLocaleDateString(
+                'en-US',
+                {
+                  weekday: 'long',
+                  month: 'long',
+                  day: 'numeric',
+                  year: 'numeric',
+                }
+              )
+              .toUpperCase()}
+          </div>
+
+          <h1>
+            Good afternoon,
+            Aashish{' '}
+            <span className="wave">
+              ✳
+            </span>
+          </h1>
+
+          <p>
+            Here’s what’s happening
+            at Heritage College.
+          </p>
+        </div>
+
+        <button
+          className="outline-button"
+          onClick={() =>
+            navigate('Calendar')
+          }
+        >
+          <CalendarDays size={17} />
+          View calendar
+        </button>
+      </div>
+
+      <div className="hero-alert">
+
+        <div className="alert-symbol">
+          <AlertCircle size={23} />
+        </div>
+
+        <div className="hero-alert-copy">
+
+          <span>
+            NEEDS YOUR ATTENTION
+          </span>
+
+          <h3>
+            Semester fee payment
+            is due soon
+          </h3>
+
+          <p>
+            Complete your payment
+            by{' '}
+            {due
+              ? formatDate(
+                  due.dueDate,
+                  {
+                    month: 'long',
+                    day: 'numeric',
+                  }
+                )
+              : 'the deadline'}{' '}
+            and send your mobile
+            banking receipt.
+          </p>
+        </div>
+
+        <button
+          onClick={() =>
+            navigate('Payments')
+          }
+        >
+          Review payment
+          <ArrowRight size={17} />
+        </button>
+      </div>
+
+      <div className="dashboard-grid">
+
+        <section className="panel upcoming-panel">
+
+          <SectionHeading
+            eyebrow="YOUR SCHEDULE"
+            title="Upcoming"
+            action={
+              <button
+                className="text-link"
+                onClick={() =>
+                  navigate('Events')
+                }
+              >
+                View all
+                <ArrowRight
+                  size={15}
+                />
+              </button>
+            }
+          />
+
+          <div className="upcoming-list">
+
+            {upcoming.length ? (
+              upcoming.map(event => (
+                <button
+                  className="upcoming-row"
+                  key={event.id}
+                  onClick={() =>
+                    navigate('Events')
+                  }
+                >
+                  <div className="date-tile">
+                    <strong>
+                      {new Date(
+                        `${event.date}T12:00:00`
+                      ).getDate()}
+                    </strong>
+
+                    <span>
+                      {formatDate(
+                        event.date,
+                        {
+                          month:
+                            'short',
+                        }
+                      ).toUpperCase()}
+                    </span>
+                  </div>
+
+                  <div>
+                    <strong>
+                      {event.title}
+                    </strong>
+
+                    <span>
+                      {event.time
+                        ? `${event.time} · `
+                        : ''}
+                      {event.category}
+                    </span>
+                  </div>
+
+                  <ChevronRight
+                    size={17}
+                  />
+                </button>
+              ))
+            ) : (
+              <EmptyState
+                title="No upcoming events"
+                copy="Detected events will appear here."
+              />
+            )}
+          </div>
+        </section>
+
+        <section className="panel notice-panel">
+
+          <SectionHeading
+            eyebrow="LATEST UPDATES"
+            title="Recent notices"
+            action={
+              <button
+                className="text-link"
+                onClick={() =>
+                  navigate('Notices')
+                }
+              >
+                View all
+                <ArrowRight
+                  size={15}
+                />
+              </button>
+            }
+          />
+
+          <div className="notice-mini-list">
+
+            {notices.length ? (
+              notices
+                .slice(0, 3)
+                .map(notice => (
+                  <button
+                    className="notice-mini"
+                    key={notice.id}
+                    onClick={() =>
+                      onNotice(
+                        notice
+                      )
+                    }
+                  >
+                    <span
+                      className={`notice-mini-icon ${
+                        notice.priority ===
+                        'High'
+                          ? 'urgent'
+                          : ''
+                      }`}
+                    >
+                      <FileText
+                        size={17}
+                      />
+                    </span>
+
+                    <span>
+                      <strong>
+                        {
+                          notice.title
+                        }
+                      </strong>
+
+                      <small>
+                        {
+                          notice.category
+                        }{' '}
+                        ·{' '}
+                        {formatDate(
+                          notice.date
+                        )}
+                      </small>
+                    </span>
+
+                    <ChevronRight
+                      size={17}
+                    />
+                  </button>
+                ))
+            ) : (
+              <EmptyState
+                title="No notices yet"
+                copy="Your processed college emails will appear here."
+              />
+            )}
+          </div>
+        </section>
+
+        <section className="panel ai-brief-panel">
+
+          <div className="brief-heading">
+            <div className="brief-icon">
+              <Sparkles
+                size={19}
+              />
+            </div>
+
+            <div>
+              <span className="eyebrow">
+                MADE FOR YOU
+              </span>
+
+              <h2>
+                AI brief
+              </h2>
+            </div>
+          </div>
+
+          <p>
+            {events.length
+              ? `You currently have ${events.length} detected event${
+                  events.length === 1
+                    ? ''
+                    : 's'
+                } and ${notices.length} recent notice${
+                  notices.length === 1
+                    ? ''
+                    : 's'
+                }.`
+              : 'No important upcoming events have been detected yet.'}
+          </p>
+
+          <button
+            className="text-link"
+            onClick={() =>
+              navigate('Ask AI')
+            }
+          >
+            Ask a follow-up
+            <ArrowRight size={15} />
+          </button>
+        </section>
+
+        <section className="panel action-panel">
+
+          <SectionHeading
+            eyebrow="NEXT STEPS"
+            title="Action required"
+          />
+
+          <div className="action-item">
+            <span className="action-check">
+              <CreditCard
+                size={17}
+              />
+            </span>
+
+            <div>
+              <strong>
+                Submit your fee receipt
+              </strong>
+
+              <span>
+                Upload proof of payment
+                for semester tuition.
+              </span>
+            </div>
+
+            <button
+              onClick={() =>
+                navigate(
+                  'Payments'
+                )
+              }
+            >
+              Continue
+              <ArrowRight
+                size={14}
+              />
+            </button>
+          </div>
+
+          <div className="action-item">
+            <span className="action-check">
+              <CalendarDays
+                size={17}
+              />
+            </span>
+
+            <div>
+              <strong>
+                Review pending events
+              </strong>
+
+              <span>
+                Choose which dates go
+                on your calendar.
+              </span>
+            </div>
+
+            <button
+              onClick={() =>
+                navigate('Events')
+              }
+            >
+              Review
+              <ArrowRight
+                size={14}
+              />
+            </button>
+          </div>
+        </section>
+      </div>
+    </>
+  )
 }
 
-function Notices({ notices, onNotice }: { notices: Notice[]; onNotice: (notice: Notice) => void }) { const [filter, setFilter] = useState('All'); const categories = ['All', 'Payments', 'Exams', 'Academics', 'Campus life']; const filtered = filter === 'All' ? notices : notices.filter(n => n.category === filter); return <><PageIntro title="Notices" copy="The important details from every college update, in one place."/><div className="page-toolbar"><div className="tab-filters">{categories.map(c => <button key={c} className={filter === c ? 'selected' : ''} onClick={() => setFilter(c)}>{c}</button>)}</div><span className="result-count">{filtered.length} notices</span></div><div className="notice-cards">{filtered.map(notice => <article className="notice-card" key={notice.id}><div className="notice-card-top"><div className="notice-mark"><FileText size={20}/></div><div>{badge(notice.category)} {notice.priority === 'High' && badge('High')}</div></div><h3>{notice.title}</h3><p className="notice-meta">{formatDate(notice.date, { month: 'long', day: 'numeric' })} · {notice.source}</p><div className="summary-preview"><Sparkles size={16}/><p>{notice.summary}</p></div><div className="notice-card-footer">{notice.attachment ? <span><Paperclip size={15}/>{notice.attachment}</span> : <span>No attachment</span>}<button className="text-link" onClick={() => onNotice(notice)}>View source <ExternalLink size={15}/></button></div></article>)}</div></> }
+function Notices({
+  notices,
+  onNotice,
+}: {
+  notices: Notice[]
+  onNotice: (notice: Notice) => void
+}) {
+  const [filter, setFilter] =
+    useState('All')
 
-function Events({ events, onEvent, updateCalendar }: { events: EventItem[]; onEvent: (event: EventItem) => void; updateCalendar: (event: EventItem, state: CalendarState) => void }) { const [filter, setFilter] = useState('All'); const [stateFilter, setStateFilter] = useState('All states'); const categories = ['All', 'Exam', 'Deadline', 'College event', 'Holiday']; const filtered = events.filter(e => (filter === 'All' || e.category === filter) && (stateFilter === 'All states' || e.calendarState === stateFilter)).sort((a,b) => a.date.localeCompare(b.date)); return <><PageIntro title="Events & deadlines" copy="Review dates found in your college updates and decide what belongs on your calendar."/><div className="page-toolbar"><div className="tab-filters">{categories.map(c => <button key={c} className={filter === c ? 'selected' : ''} onClick={() => setFilter(c)}>{c === 'College event' ? 'Events' : c === 'Deadline' ? 'Deadlines' : c === 'Exam' ? 'Exams' : c === 'Holiday' ? 'Holidays' : c}</button>)}</div><label className="select-wrap"><select value={stateFilter} onChange={e => setStateFilter(e.target.value)}><option>All states</option><option>Pending</option><option>Added</option><option>Ignored</option></select><ChevronDown size={15}/></label></div><div className="event-list">{filtered.length ? filtered.map(event => <article className="event-card" key={event.id}><div className="event-date"><strong>{new Date(`${event.date}T12:00:00`).getDate()}</strong><span>{formatDate(event.date, { month: 'short' }).toUpperCase()}</span></div><div className="event-info"><div className="event-badges">{badge(event.category)}{badge(event.calendarState)}</div><h3>{event.title}</h3><p>{formatDate(event.date, { weekday: 'long', month: 'long', day: 'numeric' })}{event.time ? ` · ${event.time}` : ''}{event.location ? ` · ${event.location}` : ''}</p><span>{event.description}</span></div><div className="event-actions"><button className="text-link" onClick={() => onEvent(event)}>View source <ExternalLink size={15}/></button>{event.calendarState === 'Pending' ? <button className="primary-button" onClick={() => updateCalendar(event, 'Added')}><Plus size={16}/> Add to calendar</button> : event.calendarState === 'Added' ? <button className="secondary-button" onClick={() => updateCalendar(event, 'Pending')}><Check size={16}/> Added</button> : <button className="secondary-button" onClick={() => updateCalendar(event, 'Pending')}>Restore event</button>}</div></article>) : <EmptyState title="No events match" copy="Try a different category or calendar state."/>}</div></> }
+  const categories = [
+    'All',
+    'Payments',
+    'Exams',
+    'Academics',
+    'Campus life',
+    'General',
+  ]
 
-function Calendar({ events, onEvent, updateCalendar }: { events: EventItem[]; onEvent: (event: EventItem) => void; updateCalendar: (event: EventItem, state: CalendarState) => void }) { const now = new Date(); const [month, setMonth] = useState(new Date(now.getFullYear(), now.getMonth(), 1)); const [selected, setSelected] = useState(today); const start = new Date(month.getFullYear(), month.getMonth(), 1).getDay(); const days = new Date(month.getFullYear(), month.getMonth()+1, 0).getDate(); const dateString = (day: number) => `${month.getFullYear()}-${String(month.getMonth()+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`; const selectedEvents = events.filter(e => e.date === selected && e.calendarState !== 'Ignored'); const shift = (amount: number) => { const next = new Date(month.getFullYear(), month.getMonth()+amount, 1); setMonth(next); setSelected(`${next.getFullYear()}-${String(next.getMonth()+1).padStart(2,'0')}-01`) }; return <><PageIntro title="Calendar" copy="Your schedule, with events you can review before adding."/><div className="calendar-layout"><section className="panel calendar-panel"><div className="calendar-toolbar"><h2>{month.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</h2><div><button className="today-button" onClick={() => { setMonth(new Date(now.getFullYear(),now.getMonth(),1)); setSelected(today) }}>Today</button><button className="icon-button" aria-label="Previous month" onClick={() => shift(-1)}><ChevronLeft size={19}/></button><button className="icon-button" aria-label="Next month" onClick={() => shift(1)}><ChevronRight size={19}/></button></div></div><div className="calendar-grid">{['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(day => <div key={day} className="weekday">{day}</div>)}{Array.from({length: start}, (_,i) => <div key={`blank-${i}`} className="calendar-cell blank"/>)}{Array.from({length: days}, (_,i) => { const d = dateString(i+1); const hits = events.filter(e => e.date === d && e.calendarState !== 'Ignored'); return <button key={d} className={`calendar-cell ${selected === d ? 'selected' : ''} ${today === d ? 'today' : ''}`} onClick={() => setSelected(d)}><span>{i+1}</span><div className="calendar-dots">{hits.map(e => <i key={e.id} className={e.calendarState === 'Added' ? 'added' : 'pending'}/>)}</div>{hits[0] && <small>{hits[0].title}</small>}</button> })}</div><div className="calendar-legend"><span><i className="added"/> Added to calendar</span><span><i className="pending"/> Pending review</span></div></section><aside className="panel day-panel"><div className="eyebrow">SELECTED DAY</div><h2>{formatDate(selected, { weekday: 'long', month: 'long', day: 'numeric' })}</h2>{selectedEvents.length ? <div className="day-events">{selectedEvents.map(event => <div className="day-event" key={event.id}><div>{badge(event.category)}{badge(event.calendarState)}</div><h3>{event.title}</h3><p>{event.time || 'All day'}{event.location && ` · ${event.location}`}</p><div><button className="text-link" onClick={() => onEvent(event)}>Details <ArrowRight size={14}/></button>{event.calendarState === 'Pending' && <button className="text-link" onClick={() => updateCalendar(event, 'Added')}>Add to calendar <Plus size={14}/></button>}</div></div>)}</div> : <EmptyState title="Nothing scheduled" copy="Select another day to see its events."/>}</aside></div></> }
+  const filtered =
+    filter === 'All'
+      ? notices
+      : notices.filter(
+          n =>
+            n.category === filter
+        )
 
-function Payments({ payments, setPayments, notify }: { payments: Payment[]; setPayments: React.Dispatch<React.SetStateAction<Payment[]>>; notify: (message: string) => void }) { const [selectedPayment, setSelectedPayment] = useState(payments[0].id); const [amount, setAmount] = useState(String(payments[0].amount)); const [paidOn, setPaidOn] = useState(today); const [transactionId, setTransactionId] = useState(''); const [paymentType, setPaymentType] = useState('Mobile banking'); const [body, setBody] = useState('Dear Accounts Office,\n\nI have paid my semester tuition through mobile banking. Please find the receipt attached for your records. Kindly confirm when the payment has been received.\n\nThank you,\nAashish Sharma\nStudent ID: HC-2024-0187'); const [file, setFile] = useState<File | null>(null); const [preview, setPreview] = useState(false); const [sending, setSending] = useState(false); const [sent, setSent] = useState(false); const inputRef = useRef<HTMLInputElement>(null); const selected = payments.find(p => p.id === selectedPayment)!; const changePayment = (id: string) => { setSelectedPayment(id); setAmount(String(payments.find(p => p.id === id)?.amount || '')); setSent(false) }; const onFile = (picked?: File) => { if (!picked) return; if (!['application/pdf','image/jpeg','image/png'].includes(picked.type)) { notify('Please choose a PDF, JPG, or PNG receipt.'); return } if (picked.size > 10*1024*1024) { notify('Please choose a file smaller than 10 MB.'); return } setFile(picked); setPayments(prev => prev.map(p => p.id === selectedPayment && p.status === 'Due' ? { ...p, status: 'Receipt Uploaded' } : p)); notify('Receipt attached to your draft.') }; const submit = async () => { if (!file || !amount || !paidOn || !transactionId.trim() || !body.trim()) { notify('Complete the details and attach a receipt before sending.'); return } setSending(true); const payload: ReceiptSubmission = { paymentId: selectedPayment, amount: Number(amount), paidOn, transactionId, paymentType, body, fileName: file.name }; await studentService.submitReceipt(payload); setPayments(prev => prev.map(p => p.id === selectedPayment ? { ...p, status: 'Receipt Sent', transactionId } : p)); setSending(false); setSent(true); setPreview(false); notify('Demo submission saved. No email was sent.'); }; return <><PageIntro title="Payments" copy="Keep fee deadlines and proof of payment together."/><div className="payment-stats"><div><span>UPCOMING DUE</span><strong>{money(payments.filter(p => p.status === 'Due' || p.status === 'Receipt Uploaded').reduce((sum,p) => sum+p.amount,0))}</strong><small>Semester tuition · {formatDate(payments[0].dueDate)}</small></div><div><span>AWAITING CONFIRMATION</span><strong>{payments.filter(p => ['Receipt Sent','Awaiting Confirmation'].includes(p.status)).length}</strong><small>Receipt status updates</small></div><div><span>CONFIRMED</span><strong>{payments.filter(p => p.status === 'Confirmed').length}</strong><small>Completed payments</small></div></div><div className="payment-layout"><section className="panel payment-form-panel"><SectionHeading eyebrow="SEND A PAYMENT RECEIPT" title="Receipt details"/><div className="demo-note"><AlertCircle size={17}/><span>This is a working demo. The final button records a mock submission; it does not send email until your integration is connected.</span></div><div className="form-grid"><label className="field full"><span>Payment for</span><select value={selectedPayment} onChange={e => changePayment(e.target.value)}>{payments.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}</select></label><label className="field"><span>Amount paid (NPR)</span><input type="number" min="0" value={amount} onChange={e => setAmount(e.target.value)} placeholder="0"/></label><label className="field"><span>Payment date</span><input type="date" value={paidOn} onChange={e => setPaidOn(e.target.value)}/></label><label className="field"><span>Transaction ID</span><input value={transactionId} onChange={e => setTransactionId(e.target.value)} placeholder="e.g. MB-842791"/></label><label className="field"><span>Payment type</span><select value={paymentType} onChange={e => setPaymentType(e.target.value)}><option>Mobile banking</option><option>Bank transfer</option><option>eSewa</option><option>Khalti</option><option>Other</option></select></label><div className="field full"><span>Receipt</span><input ref={inputRef} type="file" accept=".pdf,.jpg,.jpeg,.png" hidden onChange={e => onFile(e.target.files?.[0])}/><button className={`upload-zone ${file ? 'has-file' : ''}`} onClick={() => inputRef.current?.click()} onDragOver={e => e.preventDefault()} onDrop={e => { e.preventDefault(); onFile(e.dataTransfer.files[0]) }}><UploadCloud size={23}/><strong>{file ? file.name : 'Click to upload or drag a file here'}</strong><small>{file ? `${(file.size/1024).toFixed(0)} KB · Click to replace` : 'PDF, JPG or PNG · Up to 10 MB'}</small></button></div><label className="field full"><span>Email body</span><textarea rows={8} value={body} onChange={e => setBody(e.target.value)}/></label></div><div className="form-actions"><button className="secondary-button" onClick={() => setPreview(true)}>Preview email</button><button className="primary-button" onClick={submit} disabled={sending}>{sending ? 'Submitting...' : sent ? 'Send again' : 'Send receipt'} <Send size={16}/></button></div><p className="form-footnote">Email sending and confirmation updates will activate when a mailbox or n8n workflow is connected.</p></section><aside className="panel payment-history"><SectionHeading eyebrow="YOUR RECORDS" title="Payment history"/><div className="history-list">{payments.map(p => <button className={`history-row ${selectedPayment === p.id ? 'selected' : ''}`} key={p.id} onClick={() => changePayment(p.id)}><span className="history-icon"><CreditCard size={18}/></span><span><strong>{p.title}</strong><small>Due {formatDate(p.dueDate)} · {money(p.amount)}</small>{p.transactionId && <small>Txn: {p.transactionId}</small>}</span>{badge(p.status)}</button>)}</div><div className="history-help"><ShieldCheck size={19}/><p>Keep your original receipt until the college confirms your payment.</p></div></aside></div>{preview && <Modal title="Email preview" onClose={() => setPreview(false)}><div className="email-preview"><div><span>To</span><strong>Accounts Office · address pending integration</strong></div><div><span>Subject</span><strong>Payment receipt — {selected.title} — HC-2024-0187</strong></div><div><span>Details</span><strong>{money(Number(amount) || 0)} · {paidOn ? fullDate(paidOn) : 'Date missing'} · {transactionId || 'Transaction ID missing'}</strong></div><div><span>Attachment</span><strong>{file?.name || 'No receipt attached'}</strong></div><pre>{body}</pre></div><div className="modal-actions"><button className="secondary-button" onClick={() => setPreview(false)}>Edit details</button><button className="primary-button" onClick={submit}>Send receipt <Send size={16}/></button></div></Modal>}</> }
+  return (
+    <>
+      <PageIntro
+        title="Notices"
+        copy="The important details from every college update, in one place."
+      />
 
-function Documents({ documents, setDocuments, notify }: { documents: DocumentItem[]; setDocuments: React.Dispatch<React.SetStateAction<DocumentItem[]>>; notify: (message: string) => void }) { const [category, setCategory] = useState('All files'); const [query, setQuery] = useState(''); const inputRef = useRef<HTMLInputElement>(null); const categories = ['All files','Academic','Finance','Forms','Personal']; const filtered = documents.filter(d => (category === 'All files' || d.category === category) && d.name.toLowerCase().includes(query.toLowerCase())); const upload = (file?: File) => { if (!file) return; setDocuments(prev => [{ id: `d${Date.now()}`, name: file.name, category: 'Personal', date: today, size: `${Math.max(1,Math.round(file.size/1024))} KB`, type: file.type.includes('image') ? 'Image' : 'File' }, ...prev]); notify('File added to this demo library. It is not stored online.') }; return <><div className="page-intro"><div><h1>Documents</h1><p>Find forms, schedules and files without searching your inbox.</p></div><button className="primary-button" onClick={() => inputRef.current?.click()}><Plus size={17}/> Add document</button><input ref={inputRef} type="file" hidden onChange={e => upload(e.target.files?.[0])}/></div><div className="document-categories">{categories.slice(1).map(c => <button key={c} className={category === c ? 'selected' : ''} onClick={() => setCategory(category === c ? 'All files' : c)}><span className="folder-icon"><FolderOpen size={21}/></span><strong>{c}</strong><small>{documents.filter(d => d.category === c).length} files</small></button>)}</div><div className="panel document-panel"><div className="document-toolbar"><SectionHeading title="All documents"/><div className="document-search"><Search size={16}/><input placeholder="Search files" value={query} onChange={e => setQuery(e.target.value)}/></div></div><div className="document-table-head"><span>NAME</span><span>CATEGORY</span><span>ADDED</span><span>SIZE</span><span></span></div>{filtered.length ? filtered.map(doc => <div className="document-row" key={doc.id}><div className="document-name"><span className="document-icon"><FileText size={19}/></span><div><strong>{doc.name}</strong><small>{doc.type}</small></div></div><span>{doc.category}</span><span>{formatDate(doc.date)}</span><span>{doc.size}</span><button aria-label={`View ${doc.name}`} onClick={() => notify('Connect file storage to open this document.')}><MoreHorizontal size={19}/></button></div>) : <EmptyState title="No documents found" copy="Try another search or category."/>}</div></> }
+      <div className="page-toolbar">
 
-function AskAI() { const [messages, setMessages] = useState<{ role: 'user'|'assistant'; text: string }[]>([{ role: 'assistant', text: 'Hi Aashish. Ask me about your notices, upcoming dates, payments, or documents.' }]); const [input, setInput] = useState(''); const [busy, setBusy] = useState(false); const bottom = useRef<HTMLDivElement>(null); useEffect(() => { bottom.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages, busy]); const ask = async (question: string) => { if (!question.trim() || busy) return; setMessages(prev => [...prev,{role:'user',text:question.trim()}]); setInput(''); setBusy(true); const answer = await studentService.askAI(question); setMessages(prev => [...prev,{role:'assistant',text:answer}]); setBusy(false) }; return <><PageIntro title="Ask AI" copy="Get quick answers based on your college updates."/><div className="chat-layout"><section className="chat-panel"><div className="chat-header"><span className="chat-ai-icon"><Sparkles size={20}/></span><div><strong>Herald Assistant</strong><small>Answers from your college workspace</small></div><span className="online-dot"/></div><div className="chat-messages">{messages.map((message,i) => <div className={`chat-message ${message.role}`} key={i}>{message.role === 'assistant' && <span className="chat-bot-avatar"><Sparkles size={16}/></span>}<p>{message.text}</p></div>)}{busy && <div className="chat-message assistant"><span className="chat-bot-avatar"><Sparkles size={16}/></span><p className="typing">Thinking<span>...</span></p></div>}<div ref={bottom}/></div><form className="chat-composer" onSubmit={e => { e.preventDefault(); ask(input) }}><input aria-label="Ask a question" placeholder="Ask anything about college..." value={input} onChange={e => setInput(e.target.value)}/><button type="submit" disabled={!input.trim() || busy} aria-label="Send question"><ArrowRight size={19}/></button></form><p className="chat-disclaimer">Demo answers use sample notices and events. Connect your data sources for live answers.</p></section><aside className="chat-suggestions"><div className="eyebrow">SUGGESTED QUESTIONS</div><h2>What can I help with?</h2>{['When is my fee due?','What should I bring to the practical exam?','What events are coming up?'].map(question => <button key={question} onClick={() => ask(question)}><span>{question}</span><ArrowRight size={16}/></button>)}<div className="ai-tip"><Sparkles size={19}/><p>Every answer should link back to its original notice once your college mailbox is connected.</p></div></aside></div></> }
+        <div className="tab-filters">
+          {categories.map(c => (
+            <button
+              key={c}
+              className={
+                filter === c
+                  ? 'selected'
+                  : ''
+              }
+              onClick={() =>
+                setFilter(c)
+              }
+            >
+              {c}
+            </button>
+          ))}
+        </div>
 
-function Profile({ notify }: { notify: (message: string) => void }) { const [notifications, setNotifications] = useState(true); const [calendarApproval, setCalendarApproval] = useState(true); return <><PageIntro title="Profile & preferences" copy="Your student details and the way your assistant works."/><div className="profile-layout"><section className="panel profile-card"><div className="profile-cover"/><div className="profile-main"><span className="profile-avatar">{initials}</span><h2>Aashish Sharma</h2><p>Herald College student</p><div className="profile-details"><div><span>Student ID</span><strong>HC-2024-0187</strong></div><div><span>Program</span><strong>B.Sc. · 2nd Year</strong></div><div><span>Email</span><strong>aashish.sharma@example.com</strong></div></div></div></section><section className="panel preference-card"><SectionHeading eyebrow="PREFERENCES" title="Assistant settings"/><div className="preference-row"><span className="preference-icon"><Bell size={19}/></span><div><strong>Notice notifications</strong><p>Stay informed when an important notice appears.</p></div><button className={`toggle ${notifications ? 'on' : ''}`} role="switch" aria-checked={notifications} aria-label="Notice notifications" onClick={() => { setNotifications(!notifications); notify('Preference updated for this demo.') }}><i/></button></div><div className="preference-row"><span className="preference-icon"><CalendarDays size={19}/></span><div><strong>Approve calendar events</strong><p>Review detected dates before adding them.</p></div><button className={`toggle ${calendarApproval ? 'on' : ''}`} role="switch" aria-checked={calendarApproval} aria-label="Approve calendar events" onClick={() => { setCalendarApproval(!calendarApproval); notify('Preference updated for this demo.') }}><i/></button></div><div className="connection-card"><div><ShieldCheck size={20}/><strong>Integrations</strong></div><p>College email, calendar and secure file storage can be connected when credentials are available.</p><span>Demo mode</span></div></section></div></> }
+        <span className="result-count">
+          {filtered.length} notices
+        </span>
+      </div>
 
-function PageIntro({ title, copy }: { title: string; copy: string }) { return <div className="page-intro"><div><h1>{title}</h1><p>{copy}</p></div></div> }
-function Modal({ title, children, onClose }: { title: string; children: React.ReactNode; onClose: () => void }) { useEffect(() => { const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }; document.addEventListener('keydown', onKey); return () => document.removeEventListener('keydown', onKey) }, [onClose]); return <div className="modal-backdrop" onMouseDown={onClose}><div className="modal" role="dialog" aria-modal="true" aria-label={title} onMouseDown={e => e.stopPropagation()}><div className="modal-header"><strong>{title}</strong><button className="icon-button" aria-label="Close" onClick={onClose}><X size={19}/></button></div><div className="modal-content">{children}</div></div></div> }
+      <div className="notice-cards">
+
+        {filtered.length ? (
+          filtered.map(notice => (
+            <article
+              className="notice-card"
+              key={notice.id}
+            >
+              <div className="notice-card-top">
+
+                <div className="notice-mark">
+                  <FileText
+                    size={20}
+                  />
+                </div>
+
+                <div>
+                  {badge(
+                    notice.category
+                  )}
+
+                  {' '}
+
+                  {notice.priority ===
+                    'High' &&
+                    badge('High')}
+                </div>
+              </div>
+
+              <h3>
+                {notice.title}
+              </h3>
+
+              <p className="notice-meta">
+                {formatDate(
+                  notice.date,
+                  {
+                    month: 'long',
+                    day: 'numeric',
+                  }
+                )}
+                {' · '}
+                {notice.source}
+              </p>
+
+              <div className="summary-preview">
+                <Sparkles
+                  size={16}
+                />
+
+                <p>
+                  {notice.summary}
+                </p>
+              </div>
+
+              <div className="notice-card-footer">
+
+                {notice.attachment ? (
+                  <span>
+                    <Paperclip
+                      size={15}
+                    />
+                    {
+                      notice.attachment
+                    }
+                  </span>
+                ) : (
+                  <span>
+                    No attachment
+                  </span>
+                )}
+
+                <button
+                  className="text-link"
+                  onClick={() =>
+                    onNotice(
+                      notice
+                    )
+                  }
+                >
+                  View source
+                  <ExternalLink
+                    size={15}
+                  />
+                </button>
+              </div>
+            </article>
+          ))
+        ) : (
+          <EmptyState
+            title="No notices found"
+            copy="When n8n processes a college email, it will appear here."
+          />
+        )}
+      </div>
+    </>
+  )
+}
+
+function Events({
+  events,
+  onEvent,
+  updateCalendar,
+}: {
+  events: EventItem[]
+  onEvent: (event: EventItem) => void
+  updateCalendar: (
+    event: EventItem,
+    state: CalendarState
+  ) => void
+}) {
+  const [filter, setFilter] =
+    useState('All')
+
+  const [
+    stateFilter,
+    setStateFilter,
+  ] = useState('All states')
+
+  const categories = [
+    'All',
+    'Exam',
+    'Deadline',
+    'College event',
+    'Holiday',
+  ]
+
+  const filtered = events
+    .filter(
+      e =>
+        (filter === 'All' ||
+          e.category === filter) &&
+        (stateFilter ===
+          'All states' ||
+          e.calendarState ===
+            stateFilter)
+    )
+    .sort((a, b) =>
+      a.date.localeCompare(b.date)
+    )
+
+  return (
+    <>
+      <PageIntro
+        title="Events & deadlines"
+        copy="Review dates found in your college updates and decide what belongs on your calendar."
+      />
+
+      <div className="page-toolbar">
+
+        <div className="tab-filters">
+
+          {categories.map(c => (
+            <button
+              key={c}
+              className={
+                filter === c
+                  ? 'selected'
+                  : ''
+              }
+              onClick={() =>
+                setFilter(c)
+              }
+            >
+              {c === 'College event'
+                ? 'Events'
+                : c === 'Deadline'
+                  ? 'Deadlines'
+                  : c === 'Exam'
+                    ? 'Exams'
+                    : c ===
+                        'Holiday'
+                      ? 'Holidays'
+                      : c}
+            </button>
+          ))}
+        </div>
+
+        <label className="select-wrap">
+
+          <select
+            value={stateFilter}
+            onChange={e =>
+              setStateFilter(
+                e.target.value
+              )
+            }
+          >
+            <option>
+              All states
+            </option>
+
+            <option>
+              Pending
+            </option>
+
+            <option>
+              Added
+            </option>
+
+            <option>
+              Ignored
+            </option>
+          </select>
+
+          <ChevronDown
+            size={15}
+          />
+        </label>
+      </div>
+
+      <div className="event-list">
+
+        {filtered.length ? (
+          filtered.map(event => (
+            <article
+              className="event-card"
+              key={event.id}
+            >
+              <div className="event-date">
+
+                <strong>
+                  {new Date(
+                    `${event.date}T12:00:00`
+                  ).getDate()}
+                </strong>
+
+                <span>
+                  {formatDate(
+                    event.date,
+                    {
+                      month:
+                        'short',
+                    }
+                  ).toUpperCase()}
+                </span>
+              </div>
+
+              <div className="event-info">
+
+                <div className="event-badges">
+                  {badge(
+                    event.category
+                  )}
+
+                  {badge(
+                    event.calendarState
+                  )}
+                </div>
+
+                <h3>
+                  {event.title}
+                </h3>
+
+                <p>
+                  {formatDate(
+                    event.date,
+                    {
+                      weekday:
+                        'long',
+                      month:
+                        'long',
+                      day: 'numeric',
+                    }
+                  )}
+
+                  {event.time
+                    ? ` · ${event.time}`
+                    : ''}
+
+                  {event.location
+                    ? ` · ${event.location}`
+                    : ''}
+                </p>
+
+                <span>
+                  {
+                    event.description
+                  }
+                </span>
+              </div>
+
+              <div className="event-actions">
+
+                <button
+                  className="text-link"
+                  onClick={() =>
+                    onEvent(event)
+                  }
+                >
+                  View source
+                  <ExternalLink
+                    size={15}
+                  />
+                </button>
+
+                {event.calendarState ===
+                'Pending' ? (
+                  <button
+                    className="primary-button"
+                    onClick={() =>
+                      updateCalendar(
+                        event,
+                        'Added'
+                      )
+                    }
+                  >
+                    <Plus
+                      size={16}
+                    />
+                    Add to calendar
+                  </button>
+                ) : event.calendarState ===
+                  'Added' ? (
+                  <button
+                    className="secondary-button"
+                    onClick={() =>
+                      updateCalendar(
+                        event,
+                        'Pending'
+                      )
+                    }
+                  >
+                    <Check
+                      size={16}
+                    />
+                    Added
+                  </button>
+                ) : (
+                  <button
+                    className="secondary-button"
+                    onClick={() =>
+                      updateCalendar(
+                        event,
+                        'Pending'
+                      )
+                    }
+                  >
+                    Restore event
+                  </button>
+                )}
+              </div>
+            </article>
+          ))
+        ) : (
+          <EmptyState
+            title="No events match"
+            copy="Try a different category or calendar state."
+          />
+        )}
+      </div>
+    </>
+  )
+}
+
+function Calendar({
+  events,
+  onEvent,
+  updateCalendar,
+}: {
+  events: EventItem[]
+  onEvent: (event: EventItem) => void
+  updateCalendar: (
+    event: EventItem,
+    state: CalendarState
+  ) => void
+}) {
+  const now = new Date()
+
+  const [month, setMonth] =
+    useState(
+      new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        1
+      )
+    )
+
+  const [selected, setSelected] =
+    useState(today)
+
+  const start = new Date(
+    month.getFullYear(),
+    month.getMonth(),
+    1
+  ).getDay()
+
+  const days = new Date(
+    month.getFullYear(),
+    month.getMonth() + 1,
+    0
+  ).getDate()
+
+  const dateString = (
+    day: number
+  ) =>
+    `${month.getFullYear()}-${String(
+      month.getMonth() + 1
+    ).padStart(2, '0')}-${String(
+      day
+    ).padStart(2, '0')}`
+
+  const selectedEvents =
+    events.filter(
+      e =>
+        e.date === selected &&
+        e.calendarState !==
+          'Ignored'
+    )
+
+  const shift = (
+    amount: number
+  ) => {
+    const next = new Date(
+      month.getFullYear(),
+      month.getMonth() +
+        amount,
+      1
+    )
+
+    setMonth(next)
+
+    setSelected(
+      `${next.getFullYear()}-${String(
+        next.getMonth() + 1
+      ).padStart(2, '0')}-01`
+    )
+  }
+
+  return (
+    <>
+      <PageIntro
+        title="Calendar"
+        copy="Your schedule, with events you can review before adding."
+      />
+
+      <div className="calendar-layout">
+
+        <section className="panel calendar-panel">
+
+          <div className="calendar-toolbar">
+
+            <h2>
+              {month.toLocaleDateString(
+                'en-US',
+                {
+                  month: 'long',
+                  year: 'numeric',
+                }
+              )}
+            </h2>
+
+            <div>
+              <button
+                className="today-button"
+                onClick={() => {
+                  setMonth(
+                    new Date(
+                      now.getFullYear(),
+                      now.getMonth(),
+                      1
+                    )
+                  )
+
+                  setSelected(
+                    today
+                  )
+                }}
+              >
+                Today
+              </button>
+
+              <button
+                className="icon-button"
+                aria-label="Previous month"
+                onClick={() =>
+                  shift(-1)
+                }
+              >
+                <ChevronLeft
+                  size={19}
+                />
+              </button>
+
+              <button
+                className="icon-button"
+                aria-label="Next month"
+                onClick={() =>
+                  shift(1)
+                }
+              >
+                <ChevronRight
+                  size={19}
+                />
+              </button>
+            </div>
+          </div>
+
+          <div className="calendar-grid">
+
+            {[
+              'Sun',
+              'Mon',
+              'Tue',
+              'Wed',
+              'Thu',
+              'Fri',
+              'Sat',
+            ].map(day => (
+              <div
+                key={day}
+                className="weekday"
+              >
+                {day}
+              </div>
+            ))}
+
+            {Array.from(
+              { length: start },
+              (_, i) => (
+                <div
+                  key={`blank-${i}`}
+                  className="calendar-cell blank"
+                />
+              )
+            )}
+
+            {Array.from(
+              { length: days },
+              (_, i) => {
+                const d =
+                  dateString(i + 1)
+
+                const hits =
+                  events.filter(
+                    e =>
+                      e.date === d &&
+                      e.calendarState !==
+                        'Ignored'
+                  )
+
+                return (
+                  <button
+                    key={d}
+                    className={`calendar-cell ${
+                      selected === d
+                        ? 'selected'
+                        : ''
+                    } ${
+                      today === d
+                        ? 'today'
+                        : ''
+                    }`}
+                    onClick={() =>
+                      setSelected(d)
+                    }
+                  >
+                    <span>
+                      {i + 1}
+                    </span>
+
+                    <div className="calendar-dots">
+
+                      {hits.map(e => (
+                        <i
+                          key={e.id}
+                          className={
+                            e.calendarState ===
+                            'Added'
+                              ? 'added'
+                              : 'pending'
+                          }
+                        />
+                      ))}
+                    </div>
+
+                    {hits[0] && (
+                      <small>
+                        {
+                          hits[0]
+                            .title
+                        }
+                      </small>
+                    )}
+                  </button>
+                )
+              }
+            )}
+          </div>
+
+          <div className="calendar-legend">
+
+            <span>
+              <i className="added" />
+              Added to calendar
+            </span>
+
+            <span>
+              <i className="pending" />
+              Pending review
+            </span>
+          </div>
+        </section>
+
+        <aside className="panel day-panel">
+
+          <div className="eyebrow">
+            SELECTED DAY
+          </div>
+
+          <h2>
+            {formatDate(
+              selected,
+              {
+                weekday: 'long',
+                month: 'long',
+                day: 'numeric',
+              }
+            )}
+          </h2>
+
+          {selectedEvents.length ? (
+            <div className="day-events">
+
+              {selectedEvents.map(
+                event => (
+                  <div
+                    className="day-event"
+                    key={event.id}
+                  >
+                    <div>
+                      {badge(
+                        event.category
+                      )}
+
+                      {badge(
+                        event.calendarState
+                      )}
+                    </div>
+
+                    <h3>
+                      {
+                        event.title
+                      }
+                    </h3>
+
+                    <p>
+                      {event.time ||
+                        'All day'}
+
+                      {event.location &&
+                        ` · ${event.location}`}
+                    </p>
+
+                    <div>
+                      <button
+                        className="text-link"
+                        onClick={() =>
+                          onEvent(
+                            event
+                          )
+                        }
+                      >
+                        Details
+                        <ArrowRight
+                          size={
+                            14
+                          }
+                        />
+                      </button>
+
+                      {event.calendarState ===
+                        'Pending' && (
+                        <button
+                          className="text-link"
+                          onClick={() =>
+                            updateCalendar(
+                              event,
+                              'Added'
+                            )
+                          }
+                        >
+                          Add to calendar
+                          <Plus
+                            size={
+                              14
+                            }
+                          />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )
+              )}
+            </div>
+          ) : (
+            <EmptyState
+              title="Nothing scheduled"
+              copy="Select another day to see its events."
+            />
+          )}
+        </aside>
+      </div>
+    </>
+  )
+}
+
+function Payments({
+  payments,
+  setPayments,
+  notify,
+}: {
+  payments: Payment[]
+  setPayments: React.Dispatch<
+    React.SetStateAction<Payment[]>
+  >
+  notify: (message: string) => void
+}) {
+  const [
+    selectedPayment,
+    setSelectedPayment,
+  ] = useState(
+    payments[0]?.id || ''
+  )
+
+  const [amount, setAmount] =
+    useState(
+      String(
+        payments[0]?.amount || ''
+      )
+    )
+
+  const [paidOn, setPaidOn] =
+    useState(today)
+
+  const [
+    transactionId,
+    setTransactionId,
+  ] = useState('')
+
+  const [
+    paymentType,
+    setPaymentType,
+  ] = useState('Mobile banking')
+
+  const [body, setBody] =
+    useState(
+      `Dear Accounts Office,
+
+I have paid my semester tuition through mobile banking. Please find the receipt attached for your records.
+
+Kindly confirm when the payment has been received.
+
+Thank you,
+Aashish Mahato`
+    )
+
+  const [file, setFile] =
+    useState<File | null>(null)
+
+  const [preview, setPreview] =
+    useState(false)
+
+  const [sending, setSending] =
+    useState(false)
+
+  const [sent, setSent] =
+    useState(false)
+
+  const inputRef =
+    useRef<HTMLInputElement>(null)
+
+  const selected =
+    payments.find(
+      p => p.id === selectedPayment
+    ) || payments[0]
+
+  const changePayment = (
+    id: string
+  ) => {
+    setSelectedPayment(id)
+
+    setAmount(
+      String(
+        payments.find(
+          p => p.id === id
+        )?.amount || ''
+      )
+    )
+
+    setSent(false)
+  }
+
+  const onFile = (
+    picked?: File
+  ) => {
+    if (!picked) return
+
+    if (
+      ![
+        'application/pdf',
+        'image/jpeg',
+        'image/png',
+      ].includes(picked.type)
+    ) {
+      notify(
+        'Please choose a PDF, JPG, or PNG receipt.'
+      )
+      return
+    }
+
+    if (
+      picked.size >
+      10 * 1024 * 1024
+    ) {
+      notify(
+        'Please choose a file smaller than 10 MB.'
+      )
+      return
+    }
+
+    setFile(picked)
+
+    setPayments(prev =>
+      prev.map(p =>
+        p.id ===
+          selectedPayment &&
+        p.status === 'Due'
+          ? {
+              ...p,
+              status:
+                'Receipt Uploaded',
+            }
+          : p
+      )
+    )
+
+    notify(
+      'Receipt attached to your draft.'
+    )
+  }
+
+  const submit = async () => {
+    if (
+      !file ||
+      !amount ||
+      !paidOn ||
+      !transactionId.trim() ||
+      !body.trim()
+    ) {
+      notify(
+        'Complete the details and attach a receipt before sending.'
+      )
+      return
+    }
+
+    setSending(true)
+
+    const payload: ReceiptSubmission =
+      {
+        paymentId:
+          selectedPayment,
+        amount: Number(amount),
+        paidOn,
+        transactionId,
+        paymentType,
+        body,
+        fileName: file.name,
+      }
+
+    await studentService.submitReceipt(
+      payload
+    )
+
+    setPayments(prev =>
+      prev.map(p =>
+        p.id === selectedPayment
+          ? {
+              ...p,
+              status:
+                'Receipt Sent',
+              transactionId,
+            }
+          : p
+      )
+    )
+
+    setSending(false)
+    setSent(true)
+    setPreview(false)
+
+    notify(
+      'Demo submission saved. Email automation will be connected next.'
+    )
+  }
+
+  if (!selected) {
+    return (
+      <EmptyState
+        title="No payments"
+        copy="Payment information will appear here."
+      />
+    )
+  }
+
+  return (
+    <>
+      <PageIntro
+        title="Payments"
+        copy="Keep fee deadlines and proof of payment together."
+      />
+
+      <div className="payment-stats">
+
+        <div>
+          <span>
+            UPCOMING DUE
+          </span>
+
+          <strong>
+            {money(
+              payments
+                .filter(p =>
+                  [
+                    'Due',
+                    'Receipt Uploaded',
+                  ].includes(
+                    p.status
+                  )
+                )
+                .reduce(
+                  (sum, p) =>
+                    sum +
+                    p.amount,
+                  0
+                )
+            )}
+          </strong>
+
+          <small>
+            Payment deadlines
+          </small>
+        </div>
+
+        <div>
+          <span>
+            AWAITING CONFIRMATION
+          </span>
+
+          <strong>
+            {
+              payments.filter(p =>
+                [
+                  'Receipt Sent',
+                  'Awaiting Confirmation',
+                ].includes(
+                  p.status
+                )
+              ).length
+            }
+          </strong>
+
+          <small>
+            Receipt status updates
+          </small>
+        </div>
+
+        <div>
+          <span>
+            CONFIRMED
+          </span>
+
+          <strong>
+            {
+              payments.filter(
+                p =>
+                  p.status ===
+                  'Confirmed'
+              ).length
+            }
+          </strong>
+
+          <small>
+            Completed payments
+          </small>
+        </div>
+      </div>
+
+      <div className="payment-layout">
+
+        <section className="panel payment-form-panel">
+
+          <SectionHeading
+            eyebrow="SEND A PAYMENT RECEIPT"
+            title="Receipt details"
+          />
+
+          <div className="demo-note">
+            <AlertCircle
+              size={17}
+            />
+
+            <span>
+              Receipt email
+              automation is not
+              connected yet.
+            </span>
+          </div>
+
+          <div className="form-grid">
+
+            <label className="field full">
+              <span>
+                Payment for
+              </span>
+
+              <select
+                value={
+                  selectedPayment
+                }
+                onChange={e =>
+                  changePayment(
+                    e.target.value
+                  )
+                }
+              >
+                {payments.map(p => (
+                  <option
+                    key={p.id}
+                    value={p.id}
+                  >
+                    {p.title}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="field">
+              <span>
+                Amount paid (NPR)
+              </span>
+
+              <input
+                type="number"
+                min="0"
+                value={amount}
+                onChange={e =>
+                  setAmount(
+                    e.target.value
+                  )
+                }
+              />
+            </label>
+
+            <label className="field">
+              <span>
+                Payment date
+              </span>
+
+              <input
+                type="date"
+                value={paidOn}
+                onChange={e =>
+                  setPaidOn(
+                    e.target.value
+                  )
+                }
+              />
+            </label>
+
+            <label className="field">
+              <span>
+                Transaction ID
+              </span>
+
+              <input
+                value={
+                  transactionId
+                }
+                onChange={e =>
+                  setTransactionId(
+                    e.target.value
+                  )
+                }
+                placeholder="e.g. MB-842791"
+              />
+            </label>
+
+            <label className="field">
+              <span>
+                Payment type
+              </span>
+
+              <select
+                value={
+                  paymentType
+                }
+                onChange={e =>
+                  setPaymentType(
+                    e.target.value
+                  )
+                }
+              >
+                <option>
+                  Mobile banking
+                </option>
+
+                <option>
+                  Bank transfer
+                </option>
+
+                <option>
+                  eSewa
+                </option>
+
+                <option>
+                  Khalti
+                </option>
+
+                <option>
+                  Other
+                </option>
+              </select>
+            </label>
+
+            <div className="field full">
+              <span>
+                Receipt
+              </span>
+
+              <input
+                ref={inputRef}
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png"
+                hidden
+                onChange={e =>
+                  onFile(
+                    e.target
+                      .files?.[0]
+                  )
+                }
+              />
+
+              <button
+                className={`upload-zone ${
+                  file
+                    ? 'has-file'
+                    : ''
+                }`}
+                onClick={() =>
+                  inputRef.current?.click()
+                }
+                onDragOver={e =>
+                  e.preventDefault()
+                }
+                onDrop={e => {
+                  e.preventDefault()
+
+                  onFile(
+                    e.dataTransfer
+                      .files[0]
+                  )
+                }}
+              >
+                <UploadCloud
+                  size={23}
+                />
+
+                <strong>
+                  {file
+                    ? file.name
+                    : 'Click to upload or drag a file here'}
+                </strong>
+
+                <small>
+                  {file
+                    ? `${(
+                        file.size /
+                        1024
+                      ).toFixed(
+                        0
+                      )} KB · Click to replace`
+                    : 'PDF, JPG or PNG · Up to 10 MB'}
+                </small>
+              </button>
+            </div>
+
+            <label className="field full">
+              <span>
+                Email body
+              </span>
+
+              <textarea
+                rows={8}
+                value={body}
+                onChange={e =>
+                  setBody(
+                    e.target.value
+                  )
+                }
+              />
+            </label>
+          </div>
+
+          <div className="form-actions">
+
+            <button
+              className="secondary-button"
+              onClick={() =>
+                setPreview(true)
+              }
+            >
+              Preview email
+            </button>
+
+            <button
+              className="primary-button"
+              onClick={submit}
+              disabled={sending}
+            >
+              {sending
+                ? 'Submitting...'
+                : sent
+                  ? 'Send again'
+                  : 'Send receipt'}
+
+              <Send size={16} />
+            </button>
+          </div>
+        </section>
+
+        <aside className="panel payment-history">
+
+          <SectionHeading
+            eyebrow="YOUR RECORDS"
+            title="Payment history"
+          />
+
+          <div className="history-list">
+
+            {payments.map(p => (
+              <button
+                className={`history-row ${
+                  selectedPayment ===
+                  p.id
+                    ? 'selected'
+                    : ''
+                }`}
+                key={p.id}
+                onClick={() =>
+                  changePayment(
+                    p.id
+                  )
+                }
+              >
+                <span className="history-icon">
+                  <CreditCard
+                    size={18}
+                  />
+                </span>
+
+                <span>
+                  <strong>
+                    {p.title}
+                  </strong>
+
+                  <small>
+                    Due{' '}
+                    {formatDate(
+                      p.dueDate
+                    )}{' '}
+                    ·{' '}
+                    {money(
+                      p.amount
+                    )}
+                  </small>
+
+                  {p.transactionId && (
+                    <small>
+                      Txn:{' '}
+                      {
+                        p.transactionId
+                      }
+                    </small>
+                  )}
+                </span>
+
+                {badge(p.status)}
+              </button>
+            ))}
+          </div>
+
+          <div className="history-help">
+            <ShieldCheck
+              size={19}
+            />
+
+            <p>
+              Keep your original
+              receipt until the
+              college confirms your
+              payment.
+            </p>
+          </div>
+        </aside>
+      </div>
+
+      {preview && (
+        <Modal
+          title="Email preview"
+          onClose={() =>
+            setPreview(false)
+          }
+        >
+          <div className="email-preview">
+
+            <div>
+              <span>To</span>
+
+              <strong>
+                Accounts Office
+              </strong>
+            </div>
+
+            <div>
+              <span>
+                Subject
+              </span>
+
+              <strong>
+                Payment receipt —
+                {selected.title}
+              </strong>
+            </div>
+
+            <div>
+              <span>
+                Details
+              </span>
+
+              <strong>
+                {money(
+                  Number(amount) ||
+                    0
+                )}
+                {' · '}
+                {paidOn
+                  ? fullDate(
+                      paidOn
+                    )
+                  : 'Date missing'}
+                {' · '}
+                {transactionId ||
+                  'Transaction ID missing'}
+              </strong>
+            </div>
+
+            <div>
+              <span>
+                Attachment
+              </span>
+
+              <strong>
+                {file?.name ||
+                  'No receipt attached'}
+              </strong>
+            </div>
+
+            <pre>
+              {body}
+            </pre>
+          </div>
+
+          <div className="modal-actions">
+
+            <button
+              className="secondary-button"
+              onClick={() =>
+                setPreview(false)
+              }
+            >
+              Edit details
+            </button>
+
+            <button
+              className="primary-button"
+              onClick={submit}
+            >
+              Send receipt
+              <Send size={16} />
+            </button>
+          </div>
+        </Modal>
+      )}
+    </>
+  )
+}
+
+function Documents({
+  documents,
+  setDocuments,
+  notify,
+}: {
+  documents: DocumentItem[]
+  setDocuments: React.Dispatch<
+    React.SetStateAction<
+      DocumentItem[]
+    >
+  >
+  notify: (message: string) => void
+}) {
+  const [category, setCategory] =
+    useState('All files')
+
+  const [query, setQuery] =
+    useState('')
+
+  const inputRef =
+    useRef<HTMLInputElement>(null)
+
+  const categories = [
+    'All files',
+    'Academic',
+    'Finance',
+    'Forms',
+    'Personal',
+  ]
+
+  const filtered =
+    documents.filter(
+      d =>
+        (category ===
+          'All files' ||
+          d.category ===
+            category) &&
+        d.name
+          .toLowerCase()
+          .includes(
+            query.toLowerCase()
+          )
+    )
+
+  const upload = (
+    file?: File
+  ) => {
+    if (!file) return
+
+    setDocuments(prev => [
+      {
+        id: `d${Date.now()}`,
+        name: file.name,
+        category: 'Personal',
+        date: today,
+        size: `${Math.max(
+          1,
+          Math.round(
+            file.size / 1024
+          )
+        )} KB`,
+        type: file.type.includes(
+          'image'
+        )
+          ? 'Image'
+          : 'File',
+      },
+      ...prev,
+    ])
+
+    notify(
+      'File added locally. Storage integration will be connected later.'
+    )
+  }
+
+  return (
+    <>
+      <div className="page-intro">
+
+        <div>
+          <h1>
+            Documents
+          </h1>
+
+          <p>
+            Find forms,
+            schedules and files
+            without searching your
+            inbox.
+          </p>
+        </div>
+
+        <button
+          className="primary-button"
+          onClick={() =>
+            inputRef.current?.click()
+          }
+        >
+          <Plus size={17} />
+          Add document
+        </button>
+
+        <input
+          ref={inputRef}
+          type="file"
+          hidden
+          onChange={e =>
+            upload(
+              e.target.files?.[0]
+            )
+          }
+        />
+      </div>
+
+      <div className="document-categories">
+
+        {categories
+          .slice(1)
+          .map(c => (
+            <button
+              key={c}
+              className={
+                category === c
+                  ? 'selected'
+                  : ''
+              }
+              onClick={() =>
+                setCategory(
+                  category === c
+                    ? 'All files'
+                    : c
+                )
+              }
+            >
+              <span className="folder-icon">
+                <FolderOpen
+                  size={21}
+                />
+              </span>
+
+              <strong>{c}</strong>
+
+              <small>
+                {
+                  documents.filter(
+                    d =>
+                      d.category ===
+                      c
+                  ).length
+                }{' '}
+                files
+              </small>
+            </button>
+          ))}
+      </div>
+
+      <div className="panel document-panel">
+
+        <div className="document-toolbar">
+
+          <SectionHeading
+            title="All documents"
+          />
+
+          <div className="document-search">
+            <Search size={16} />
+
+            <input
+              placeholder="Search files"
+              value={query}
+              onChange={e =>
+                setQuery(
+                  e.target.value
+                )
+              }
+            />
+          </div>
+        </div>
+
+        <div className="document-table-head">
+          <span>NAME</span>
+          <span>CATEGORY</span>
+          <span>ADDED</span>
+          <span>SIZE</span>
+          <span />
+        </div>
+
+        {filtered.length ? (
+          filtered.map(doc => (
+            <div
+              className="document-row"
+              key={doc.id}
+            >
+              <div className="document-name">
+
+                <span className="document-icon">
+                  <FileText
+                    size={19}
+                  />
+                </span>
+
+                <div>
+                  <strong>
+                    {doc.name}
+                  </strong>
+
+                  <small>
+                    {doc.type}
+                  </small>
+                </div>
+              </div>
+
+              <span>
+                {doc.category}
+              </span>
+
+              <span>
+                {formatDate(
+                  doc.date
+                )}
+              </span>
+
+              <span>
+                {doc.size}
+              </span>
+
+              <button
+                aria-label={`View ${doc.name}`}
+                onClick={() =>
+                  notify(
+                    'File storage integration is not connected yet.'
+                  )
+                }
+              >
+                <MoreHorizontal
+                  size={19}
+                />
+              </button>
+            </div>
+          ))
+        ) : (
+          <EmptyState
+            title="No documents found"
+            copy="Try another search or category."
+          />
+        )}
+      </div>
+    </>
+  )
+}
+
+function AskAI() {
+  const [messages, setMessages] =
+    useState<
+      {
+        role:
+          | 'user'
+          | 'assistant'
+        text: string
+      }[]
+    >([
+      {
+        role: 'assistant',
+        text: 'Hi Aashish. Ask me about your notices, upcoming dates, payments, or documents.',
+      },
+    ])
+
+  const [input, setInput] =
+    useState('')
+
+  const [busy, setBusy] =
+    useState(false)
+
+  const bottom =
+    useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    bottom.current?.scrollIntoView({
+      behavior: 'smooth',
+    })
+  }, [messages, busy])
+
+  const ask = async (
+    question: string
+  ) => {
+    if (
+      !question.trim() ||
+      busy
+    )
+      return
+
+    setMessages(prev => [
+      ...prev,
+      {
+        role: 'user',
+        text: question.trim(),
+      },
+    ])
+
+    setInput('')
+    setBusy(true)
+
+    const answer =
+      await studentService.askAI(
+        question
+      )
+
+    setMessages(prev => [
+      ...prev,
+      {
+        role: 'assistant',
+        text: answer,
+      },
+    ])
+
+    setBusy(false)
+  }
+
+  return (
+    <>
+      <PageIntro
+        title="Ask AI"
+        copy="Get quick answers based on your college updates."
+      />
+
+      <div className="chat-layout">
+
+        <section className="chat-panel">
+
+          <div className="chat-header">
+
+            <span className="chat-ai-icon">
+              <Sparkles
+                size={20}
+              />
+            </span>
+
+            <div>
+              <strong>
+                Heritage Assistant
+              </strong>
+
+              <small>
+                Answers from your
+                college workspace
+              </small>
+            </div>
+
+            <span className="online-dot" />
+          </div>
+
+          <div className="chat-messages">
+
+            {messages.map(
+              (message, i) => (
+                <div
+                  className={`chat-message ${message.role}`}
+                  key={i}
+                >
+                  {message.role ===
+                    'assistant' && (
+                    <span className="chat-bot-avatar">
+                      <Sparkles
+                        size={16}
+                      />
+                    </span>
+                  )}
+
+                  <p>
+                    {
+                      message.text
+                    }
+                  </p>
+                </div>
+              )
+            )}
+
+            {busy && (
+              <div className="chat-message assistant">
+
+                <span className="chat-bot-avatar">
+                  <Sparkles
+                    size={16}
+                  />
+                </span>
+
+                <p className="typing">
+                  Thinking
+                  <span>...</span>
+                </p>
+              </div>
+            )}
+
+            <div ref={bottom} />
+          </div>
+
+          <form
+            className="chat-composer"
+            onSubmit={e => {
+              e.preventDefault()
+              ask(input)
+            }}
+          >
+            <input
+              aria-label="Ask a question"
+              placeholder="Ask anything about college..."
+              value={input}
+              onChange={e =>
+                setInput(
+                  e.target.value
+                )
+              }
+            />
+
+            <button
+              type="submit"
+              disabled={
+                !input.trim() ||
+                busy
+              }
+              aria-label="Send question"
+            >
+              <ArrowRight
+                size={19}
+              />
+            </button>
+          </form>
+        </section>
+
+        <aside className="chat-suggestions">
+
+          <div className="eyebrow">
+            SUGGESTED QUESTIONS
+          </div>
+
+          <h2>
+            What can I help with?
+          </h2>
+
+          {[
+            'When is my fee due?',
+            'What exams are coming up?',
+            'What events are coming up?',
+          ].map(question => (
+            <button
+              key={question}
+              onClick={() =>
+                ask(question)
+              }
+            >
+              <span>
+                {question}
+              </span>
+
+              <ArrowRight
+                size={16}
+              />
+            </button>
+          ))}
+
+          <div className="ai-tip">
+            <Sparkles
+              size={19}
+            />
+
+            <p>
+              AI integration can
+              later answer directly
+              from your real
+              Supabase notices and
+              events.
+            </p>
+          </div>
+        </aside>
+      </div>
+    </>
+  )
+}
+
+function Profile({
+  notify,
+}: {
+  notify: (message: string) => void
+}) {
+  const [
+    notifications,
+    setNotifications,
+  ] = useState(true)
+
+  const [
+    calendarApproval,
+    setCalendarApproval,
+  ] = useState(true)
+
+  return (
+    <>
+      <PageIntro
+        title="Profile & preferences"
+        copy="Your student details and the way your assistant works."
+      />
+
+      <div className="profile-layout">
+
+        <section className="panel profile-card">
+
+          <div className="profile-cover" />
+
+          <div className="profile-main">
+
+            <span className="profile-avatar">
+              {initials}
+            </span>
+
+            <h2>
+              Aashish Mahato
+            </h2>
+
+            <p>
+              Heritage College
+              student
+            </p>
+
+            <div className="profile-details">
+
+              <div>
+                <span>
+                  Student ID
+                </span>
+
+                <strong>
+                  Add your ID
+                </strong>
+              </div>
+
+              <div>
+                <span>
+                  Program
+                </span>
+
+                <strong>
+                  Add your program
+                </strong>
+              </div>
+
+              <div>
+                <span>
+                  Email
+                </span>
+
+                <strong>
+                  Connect account
+                </strong>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="panel preference-card">
+
+          <SectionHeading
+            eyebrow="PREFERENCES"
+            title="Assistant settings"
+          />
+
+          <div className="preference-row">
+
+            <span className="preference-icon">
+              <Bell size={19} />
+            </span>
+
+            <div>
+              <strong>
+                Notice notifications
+              </strong>
+
+              <p>
+                Stay informed when
+                an important notice
+                appears.
+              </p>
+            </div>
+
+            <button
+              className={`toggle ${
+                notifications
+                  ? 'on'
+                  : ''
+              }`}
+              role="switch"
+              aria-checked={
+                notifications
+              }
+              onClick={() => {
+                setNotifications(
+                  !notifications
+                )
+
+                notify(
+                  'Preference updated.'
+                )
+              }}
+            >
+              <i />
+            </button>
+          </div>
+
+          <div className="preference-row">
+
+            <span className="preference-icon">
+              <CalendarDays
+                size={19}
+              />
+            </span>
+
+            <div>
+              <strong>
+                Approve calendar
+                events
+              </strong>
+
+              <p>
+                Review detected dates
+                before adding them.
+              </p>
+            </div>
+
+            <button
+              className={`toggle ${
+                calendarApproval
+                  ? 'on'
+                  : ''
+              }`}
+              role="switch"
+              aria-checked={
+                calendarApproval
+              }
+              onClick={() => {
+                setCalendarApproval(
+                  !calendarApproval
+                )
+
+                notify(
+                  'Preference updated.'
+                )
+              }}
+            >
+              <i />
+            </button>
+          </div>
+
+          <div className="connection-card">
+
+            <div>
+              <ShieldCheck
+                size={20}
+              />
+
+              <strong>
+                Integrations
+              </strong>
+            </div>
+
+            <p>
+              Gmail → n8n →
+              Supabase is being
+              connected to your
+              student workspace.
+            </p>
+
+            <span>
+              Development mode
+            </span>
+          </div>
+        </section>
+      </div>
+    </>
+  )
+}
+
+function PageIntro({
+  title,
+  copy,
+}: {
+  title: string
+  copy: string
+}) {
+  return (
+    <div className="page-intro">
+      <div>
+        <h1>{title}</h1>
+        <p>{copy}</p>
+      </div>
+    </div>
+  )
+}
+
+function Modal({
+  title,
+  children,
+  onClose,
+}: {
+  title: string
+  children: React.ReactNode
+  onClose: () => void
+}) {
+  useEffect(() => {
+    const onKey = (
+      e: KeyboardEvent
+    ) => {
+      if (e.key === 'Escape') {
+        onClose()
+      }
+    }
+
+    document.addEventListener(
+      'keydown',
+      onKey
+    )
+
+    return () =>
+      document.removeEventListener(
+        'keydown',
+        onKey
+      )
+  }, [onClose])
+
+  return (
+    <div
+      className="modal-backdrop"
+      onMouseDown={onClose}
+    >
+      <div
+        className="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        onMouseDown={e =>
+          e.stopPropagation()
+        }
+      >
+        <div className="modal-header">
+
+          <strong>
+            {title}
+          </strong>
+
+          <button
+            className="icon-button"
+            aria-label="Close"
+            onClick={onClose}
+          >
+            <X size={19} />
+          </button>
+        </div>
+
+        <div className="modal-content">
+          {children}
+        </div>
+      </div>
+    </div>
+  )
+}

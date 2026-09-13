@@ -7,3 +7,4 @@ dist/
 .openai
 .example.env
 .env.example
+.env.local
