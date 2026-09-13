@@ -30,12 +30,12 @@ The owner-only access migration is in [002_single_owner_access.sql](./002_single
 
 ## Google Calendar approval sync
 
-[Import the approval-sync workflow](./approved-events-to-google-calendar.json) as a **new, inactive** workflow in n8n. It checks Supabase every five minutes for events that the app marked `Added` but have no `google_calendar_event_id`. It creates a Google Calendar event on the connected account's primary calendar, then stores the Google event ID in Supabase.
+The [approval-sync workflow](http://192.168.0.58:30109/workflow/2mpPWZbKEfz6DMiD) is imported into n8n as an **inactive draft**. Its importable source is [here](./approved-events-to-google-calendar.json). It checks Supabase every five minutes for events that the app marked `Added` but have no `google_calendar_event_id`. It creates a Google Calendar event on the connected account's primary calendar, then stores the Google event ID in Supabase.
 
-1. In **List Approved Events** and **Save Google Event ID**, select the same Supabase HTTP Header Auth credential used in the Gmail workflow.
-2. In **Create Google Calendar Event**, connect a Google Calendar OAuth2 credential for the account whose primary calendar should receive events. The workflow JSON contains no credentials.
-3. Test with one approved event. Verify its date and time in Google Calendar, and verify that Supabase now has its `google_calendar_event_id`. Then activate the workflow.
-4. If an event is already on the calendar but the database update failed, the workflow retries with the same deterministic Google ID. A duplicate response is treated as success.
+The existing Supabase Header Auth credential is selected in both database nodes, and the existing Google Calendar OAuth2 credential is selected in the create node. The workflow JSON contains no credentials.
+
+1. Test with one known approved event. Verify its date and time in Google Calendar, and verify that Supabase now has its `google_calendar_event_id`. Then activate the workflow.
+2. If an event is already on the calendar but the database update failed, the workflow retries with the same deterministic Google ID. A duplicate response is treated as success.
 
 Untimed events are all-day events in Asia/Kathmandu. Timed events use the extracted start and end; if no valid end exists, they last one hour. This workflow does not delete or edit a Google event after sync. The app therefore does not offer an undo action once an event is approved.
 
