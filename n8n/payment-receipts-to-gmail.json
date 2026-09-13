@@ -6,10 +6,7 @@
       "name": "Check Receipt Queue",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
-      "position": [
-        0,
-        0
-      ],
+      "position": [0, 0],
       "parameters": {
         "rule": {
           "interval": [
@@ -26,10 +23,7 @@
       "name": "Claim Receipt",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        220,
-        0
-      ],
+      "position": [220, 0],
       "parameters": {
         "method": "POST",
         "url": "https://qozetqmklegcnjgxtgpd.supabase.co/rest/v1/rpc/claim_next_payment_receipt",
@@ -57,13 +51,10 @@
       "name": "Prepare Receipt Email",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        440,
-        0
-      ],
+      "position": [440, 0],
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "// Validate the claimed receipt before downloading any file or sending email.\n// Replace this only with the college's verified payment-receipt address.\nconst recipient = 'aashishmahato8000@gmail.com';\nconst job = $input.item.json;\nconst allowedPayments = new Set(['admission', 'semester-1', 'semester-2', 'semester-3', 'semester-4', 'semester-5', 'semester-6']);\nif (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(recipient)) {\n  throw new Error('Configure the verified college receipt address before activating this workflow.');\n}\nif (!allowedPayments.has(job.payment_id) || job.status !== 'processing') {\n  throw new Error('Receipt job is not a claimed scheduled payment.');\n}\nif (!Number.isFinite(Number(job.amount)) || Number(job.amount) <= 0 ||\n    !/^\\d{4}-\\d{2}-\\d{2}$/.test(String(job.paid_on)) ||\n    !String(job.transaction_id || '').trim() ||\n    !String(job.email_body || '').trim()) {\n  throw new Error('Receipt job has missing payment details.');\n}\nconst origin = 'https://qozetqmklegcnjgxtgpd.supabase.co';\nconst url = new URL(String(job.signed_receipt_url || ''));\nconst expectedPath = '/storage/v1/object/sign/payment-receipts/' +\n  String(job.receipt_path || '').split('/').map(encodeURIComponent).join('/');\nif (url.origin !== origin || decodeURI(url.pathname) !== decodeURI(expectedPath) ||\n    !url.searchParams.has('token')) {\n  throw new Error('Receipt URL does not match the private Supabase file path.');\n}\nif (!['application/pdf', 'image/jpeg', 'image/png'].includes(job.receipt_mime)) {\n  throw new Error('Receipt file type is not allowed.');\n}\nconst subject = 'Herald College payment receipt — ' + String(job.payment_title).slice(0, 120);\nconst details = [\n  '',\n  'Payment details',\n  'Fee: ' + job.payment_title,\n  'Amount: NPR ' + Number(job.amount).toLocaleString('en-US'),\n  'Paid on: ' + job.paid_on,\n  'Method: ' + job.payment_type,\n  'Transaction ID: ' + job.transaction_id,\n];\nreturn { json: {\n  jobId: job.id,\n  recipient,\n  subject,\n  message: String(job.email_body).trim() + '\\ n' + details.join('\\ n'),\n  receiptUrl: url.toString(),\n  receiptName: String(job.receipt_name || 'receipt').slice(0, 180),\n} };\n\r\n"
+        "jsCode": "// Validate the claimed receipt before downloading any file or sending email.\\n// Replace this only with the college's verified payment-receipt address.\\nconst recipient = 'aashishmahato8000@gmail.com';\\n\\nconst job = $input.item.json;\\n\\nconst allowedPayments = new Set([\\n  'admission',\\n  'semester-1',\\n  'semester-2',\\n  'semester-3',\\n  'semester-4',\\n  'semester-5',\\n  'semester-6'\\n]);\\n\\nif (!/^[^\\\\s@]+@[^\\\\s@]+\\\\.[^\\\\s@]+$/.test(recipient)) {\\n  throw new Error('Configure the verified college receipt address before activating this workflow.');\\n}\\n\\nif (!allowedPayments.has(job.payment_id) || job.status !== 'processing') {\\n  throw new Error('Receipt job is not a claimed scheduled payment.');\\n}\\n\\nif (\\n  !Number.isFinite(Number(job.amount)) ||\\n  Number(job.amount) <= 0 ||\\n  !/^\\\\d{4}-\\\\d{2}-\\\\d{2}$/.test(String(job.paid_on)) ||\\n  !String(job.transaction_id || '').trim() ||\\n  !String(job.email_body || '').trim()\\n) {\\n  throw new Error('Receipt job has missing payment details.');\\n}\\n\\nconst receiptUrl = String(job.signed_receipt_url || '');\\n\\nconst expectedPrefix =\\n  'https://qozetqmklegcnjgxtgpd.supabase.co/storage/v1/object/sign/payment-receipts/';\\n\\nif (!receiptUrl.startsWith(expectedPrefix)) {\\n  throw new Error('Receipt URL is not from the expected Supabase bucket.');\\n}\\n\\nif (!receiptUrl.includes('?token=')) {\\n  throw new Error('Receipt URL is missing its signed token.');\\n}\\n\\nconst expectedPath = String(job.receipt_path || '')\\n  .split('/')\\n  .map(encodeURIComponent)\\n  .join('/');\\n\\nif (!receiptUrl.includes(expectedPath)) {\\n  throw new Error('Receipt URL does not match the private Supabase file path.');\\n}\\n\\nif (!['application/pdf', 'image/jpeg', 'image/png'].includes(job.receipt_mime)) {\\n  throw new Error('Receipt file type is not allowed.');\\n}\\n\\nconst subject =\\n  'Heritage College payment receipt — ' +\\n  String(job.payment_title).slice(0, 120);\\n\\nconst details = [\\n  '',\\n  'Payment details',\\n  'Fee: ' + job.payment_title,\\n  'Amount: NPR ' + Number(job.amount).toLocaleString('en-US'),\\n  'Paid on: ' + job.paid_on,\\n  'Method: ' + job.payment_type,\\n  'Transaction ID: ' + job.transaction_id\\n];\\n\\nreturn {\\n  json: {\\n    jobId: job.id,\\n    recipient,\\n    subject,\\n    message:\\n      String(job.email_body).trim() +\\n      '\\\\n' +\\n      details.join('\\\\n'),\\n    receiptUrl,\\n    receiptName: String(job.receipt_name || 'receipt').slice(0, 180)\\n  }\\n};"
       },
       "onError": "continueErrorOutput"
     },
@@ -72,10 +63,7 @@
       "name": "Download Private Receipt",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        660,
-        0
-      ],
+      "position": [660, 0],
       "parameters": {
         "method": "GET",
         "url": "={{ $json.receiptUrl }}",
@@ -96,13 +84,10 @@
       "name": "Name Receipt Attachment",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        880,
-        0
-      ],
+      "position": [880, 0],
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "const source = $('Prepare Receipt Email').first().json;\nconst item = $input.item;\nif (!item.binary?.data) throw new Error('Receipt attachment download returned no file.');\nitem.binary.data.fileName = source.receiptName;\nreturn { json: source, binary: item.binary };\n\r\n"
+        "jsCode": "const source = $('Prepare Receipt Email').first().json;\\nconst item = $input.item;\\n\\nif (!item.binary?.data) {\\n  throw new Error('Receipt attachment download returned no file.');\\n}\\n\\nitem.binary.data.fileName = source.receiptName;\\n\\nreturn {\\n  json: source,\\n  binary: item.binary\\n};"
       },
       "onError": "continueErrorOutput"
     },
@@ -111,10 +96,7 @@
       "name": "Send Receipt via Gmail",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
-      "position": [
-        1100,
-        0
-      ],
+      "position": [1100, 0],
       "parameters": {
         "resource": "message",
         "operation": "send",
@@ -140,13 +122,10 @@
       "name": "Check Gmail Result",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1320,
-        0
-      ],
+      "position": [1320, 0],
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "const id = String($input.item.json.id || '');\nif (!id) throw new Error('Gmail did not return a message ID. Check Sent mail before retrying.');\nreturn { json: { gmailMessageId: id } };\n"
+        "jsCode": "const id = String($input.item.json.id || '');\\n\\nif (!id) {\\n  throw new Error('Gmail did not return a message ID. Check Sent mail before retrying.');\\n}\\n\\nreturn {\\n  json: {\\n    gmailMessageId: id\\n  }\\n};"
       },
       "onError": "continueErrorOutput"
     },
@@ -155,10 +134,7 @@
       "name": "Mark Receipt Sent",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        1540,
-        -120
-      ],
+      "position": [1540, -120],
       "parameters": {
         "method": "PATCH",
         "url": "={{ \"https://qozetqmklegcnjgxtgpd.supabase.co/rest/v1/payment_receipt_jobs?id=eq.\" + encodeURIComponent($('Claim Receipt').first().json.id) + \"&status=eq.processing\" }}",
@@ -190,10 +166,7 @@
       "name": "Mark Delivery Unconfirmed",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        1540,
-        240
-      ],
+      "position": [1540, 240],
       "parameters": {
         "method": "PATCH",
         "url": "={{ \"https://qozetqmklegcnjgxtgpd.supabase.co/rest/v1/payment_receipt_jobs?id=eq.\" + encodeURIComponent($('Claim Receipt').first().json.id) + \"&status=eq.processing\" }}",
