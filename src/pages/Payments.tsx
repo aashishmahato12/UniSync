@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { AlertCircle, CreditCard, Send, ShieldCheck, UploadCloud } from 'lucide-react'
+import { AlertCircle, CheckCircle2, Clock3, CreditCard, ExternalLink, Mail, RefreshCw, Send, ShieldCheck, UploadCloud, X, XCircle } from 'lucide-react'
 import { badge, EmptyState, Modal, PageIntro, SectionHeading } from '../components/UI'
 import { formatDate, money, paymentScheduleTotals, today, type Payment } from '../data'
 import {
@@ -26,6 +26,26 @@ Kindly confirm when the payment has been received.
 Thank you,
 Aashish Mahato`
 
+const deliveryLabel = (job: ReceiptJob) => job.status === 'queued' ? 'Queued'
+  : job.status === 'processing' ? 'Sending'
+    : job.status === 'sent' && job.gmail_message_id ? 'Sent'
+      : job.status === 'sent' ? 'Check delivery' : 'Failed'
+
+const deliveryTitle = (job: ReceiptJob) => job.status === 'queued' ? 'Receipt queued'
+  : job.status === 'processing' ? 'Sending your email…'
+    : job.status === 'sent' && job.gmail_message_id ? 'Email sent'
+      : job.status === 'sent' ? 'Delivery needs checking' : 'Email not sent'
+
+const deliveryCopy = (job: ReceiptJob) => job.status === 'queued'
+  ? 'Your receipt is saved and waiting for the n8n email workflow. It has not been sent yet.'
+  : job.status === 'processing'
+    ? 'n8n is handling your receipt. Wait for Gmail to confirm delivery before treating it as sent.'
+    : job.status === 'sent' && job.gmail_message_id
+      ? 'Gmail accepted the email. Keep the receipt until the college confirms your payment.'
+      : job.status === 'sent'
+        ? 'This job is marked sent, but no Gmail message ID was saved. Check Gmail Sent and the n8n run.'
+        : job.error_message || 'Delivery failed. Check the n8n run and Gmail Sent before trying again.'
+
 export default function Payments({
   payments,
   setPayments,
@@ -46,8 +66,10 @@ export default function Payments({
   const [preview, setPreview] = useState(false)
   const [receiptSettings, setReceiptSettings] = useState<ReceiptSendingSettings | null>(null)
   const [receiptJobs, setReceiptJobs] = useState<ReceiptJob[]>([])
+  const [trackedJobId, setTrackedJobId] = useState<string | null>(null)
   const [receiptSetupError, setReceiptSetupError] = useState(false)
   const [sending, setSending] = useState(false)
+  const [refreshingJobs, setRefreshingJobs] = useState(false)
 
   useEffect(() => {
     let active = true
@@ -66,14 +88,35 @@ export default function Payments({
       }
     }
     void refresh()
-    const timer = window.setInterval(() => { void refresh() }, 15000)
+    const timer = window.setInterval(() => { void refresh() }, trackedJobId ? 5000 : 15000)
     return () => { active = false; window.clearInterval(timer) }
-  }, [])
+  }, [trackedJobId])
+
+  useEffect(() => {
+    if (!trackedJobId) return
+    const onEscape = (event: KeyboardEvent) => { if (event.key === 'Escape') setTrackedJobId(null) }
+    window.addEventListener('keydown', onEscape)
+    return () => window.removeEventListener('keydown', onEscape)
+  }, [trackedJobId])
+
+  const refreshDelivery = async () => {
+    if (refreshingJobs) return
+    setRefreshingJobs(true)
+    try {
+      setReceiptJobs(await getReceiptJobs())
+      setReceiptSetupError(false)
+    } catch {
+      notify('Could not refresh email status. Please try again.')
+    } finally {
+      setRefreshingJobs(false)
+    }
+  }
 
   const inputRef = useRef<HTMLInputElement>(null)
   const selected = payments.find(p => p.id === selectedPayment) || firstPayment
   const testRecipient = receiptSettings?.recipient_label?.toLowerCase() === 'aashishmahato8000@gmail.com'
   const sendLabel = testRecipient ? 'Send test receipt' : 'Send receipt'
+  const trackedJob = receiptJobs.find(job => job.id === trackedJobId)
 
   const choosePayment = (id: string) => {
     const payment = payments.find(p => p.id === id)
@@ -131,6 +174,7 @@ export default function Payments({
       })
       setReceiptJobs(current => [job, ...current])
       setPreview(false)
+      setTrackedJobId(job.id)
       notify(testRecipient
         ? 'Test receipt queued for your inbox. This is not a college submission.'
         : 'Receipt queued for n8n. Check its status here before assuming it was sent.')
@@ -252,17 +296,37 @@ export default function Payments({
         <aside className="panel payment-history">
           <SectionHeading eyebrow="PAYMENT RECORD" title="Current status" />
           <div className="history-list">
-            {payments.map(p => (
-              <button className={`history-row ${selectedPayment === p.id ? 'selected' : ''}`} key={p.id} onClick={() => choosePayment(p.id)}>
+            {payments.map(p => {
+              const latestEmail = receiptJobs.find(job => job.payment_id === p.id)
+              return <button className={`history-row ${selectedPayment === p.id ? 'selected' : ''}`} key={p.id} onClick={() => choosePayment(p.id)}>
                 <span className="history-icon"><CreditCard size={18} /></span>
-                <span><strong>{p.title}</strong><small>{dateText(p)} · {money(p.amount)}</small>{p.transactionId && <small>Txn: {p.transactionId}</small>}{receiptJobs.find(job => job.payment_id === p.id) && <small>Latest receipt: {receiptJobs.find(job => job.payment_id === p.id)?.status}</small>}</span>
+                <span><strong>{p.title}</strong><small>{dateText(p)} · {money(p.amount)}</small>{p.transactionId && <small>Txn: {p.transactionId}</small>}{latestEmail && <small>Receipt email: {deliveryLabel(latestEmail)}</small>}</span>
                 {badge(p.status)}
               </button>
-            ))}
+            })}
           </div>
           <div className="history-help"><ShieldCheck size={19} /><p>You control Due and Paid statuses above. “Paid by me” is your own record, not a college confirmation. Keep your original receipts until the college confirms each payment.</p></div>
         </aside>
       </div>
+
+      <section className="panel receipt-delivery-panel">
+        <div className="receipt-delivery-heading">
+          <SectionHeading eyebrow="EMAIL DELIVERY" title="Receipt email status" />
+          <button className="secondary-button" onClick={() => void refreshDelivery()} disabled={refreshingJobs}><RefreshCw size={15} /> {refreshingJobs ? 'Checking…' : 'Check status'}</button>
+        </div>
+        <p className="receipt-delivery-intro">This tracks the email sent through n8n and Gmail. Payment confirmation from the college is separate.</p>
+        {receiptJobs.length ? <div className="receipt-delivery-list">{receiptJobs.map(job => {
+          const payment = payments.find(item => item.id === job.payment_id)
+          return <div className="receipt-delivery-row" key={job.id}>
+            <span className={`receipt-delivery-icon ${job.status === 'sent' && job.gmail_message_id ? 'sent' : job.status === 'failed' ? 'failed' : 'pending'}`}>
+              {job.status === 'sent' && job.gmail_message_id ? <CheckCircle2 size={20} /> : job.status === 'failed' ? <XCircle size={20} /> : <Clock3 size={20} />}
+            </span>
+            <span className="receipt-delivery-details"><strong>{payment?.title || job.payment_id}</strong><small>Transaction {job.transaction_id} · {new Date(job.created_at).toLocaleString()}</small><small>{deliveryCopy(job)}</small></span>
+            <span className={`receipt-delivery-badge ${job.status === 'sent' && job.gmail_message_id ? 'sent' : job.status === 'failed' ? 'failed' : 'pending'}`}>{deliveryLabel(job)}</span>
+            <button className="receipt-delivery-view" onClick={() => setTrackedJobId(job.id)}>Details</button>
+          </div>
+        })}</div> : <div className="receipt-delivery-empty"><Mail size={18} /> No receipt emails queued yet.</div>}
+      </section>
 
       {preview && (
         <Modal title="Email preview" onClose={() => setPreview(false)}>
@@ -284,6 +348,26 @@ export default function Payments({
           </div>
         </Modal>
       )}
+
+      {trackedJob && <div className="receipt-status-backdrop" onMouseDown={event => { if (event.target === event.currentTarget) setTrackedJobId(null) }}>
+        <section className="receipt-status-sheet" role="dialog" aria-modal="true" aria-labelledby="receipt-status-title" aria-live="polite">
+          <div className="receipt-status-handle" />
+          <button className="receipt-status-close" aria-label="Close email status" onClick={() => setTrackedJobId(null)}><X size={18} /></button>
+          <span className={`receipt-status-symbol ${trackedJob.status === 'sent' && trackedJob.gmail_message_id ? 'sent' : trackedJob.status === 'failed' ? 'failed' : 'pending'}`}>
+            {trackedJob.status === 'sent' && trackedJob.gmail_message_id ? <CheckCircle2 size={36} /> : trackedJob.status === 'failed' ? <XCircle size={36} /> : trackedJob.status === 'processing' ? <Send size={34} /> : <Clock3 size={34} />}
+          </span>
+          <span className="receipt-status-eyebrow">PAYMENT RECEIPT EMAIL</span>
+          <h2 id="receipt-status-title">{deliveryTitle(trackedJob)}</h2>
+          <p>{deliveryCopy(trackedJob)}</p>
+          <div className="receipt-status-progress" aria-label={`Email status: ${deliveryLabel(trackedJob)}`}>
+            <span className="done" /><span className={trackedJob.status !== 'queued' ? 'done' : ''} /><span className={trackedJob.status === 'sent' && trackedJob.gmail_message_id ? 'done' : ''} />
+          </div>
+          <div className="receipt-status-steps"><span>Queued</span><span>Processing</span><span>Sent</span></div>
+          <div className="receipt-status-reference"><span>Transaction ID</span><strong>{trackedJob.transaction_id}</strong>{trackedJob.sent_at && <small>Sent {new Date(trackedJob.sent_at).toLocaleString()}</small>}</div>
+          {trackedJob.gmail_message_id && <a className="receipt-status-gmail" href={`https://mail.google.com/mail/u/0/#all/${encodeURIComponent(trackedJob.gmail_message_id)}`} target="_blank" rel="noopener noreferrer">Open in Gmail <ExternalLink size={15} /></a>}
+          <button className="receipt-status-done" onClick={() => setTrackedJobId(null)}>{trackedJob.status === 'queued' || trackedJob.status === 'processing' ? 'Continue while it sends' : 'Done'}</button>
+        </section>
+      </div>}
     </>
   )
 }
