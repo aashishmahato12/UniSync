@@ -4,6 +4,10 @@ import { ExternalLink, FileText, Mail, Search, X } from 'lucide-react'
 import { formatDate, type DocumentItem } from '../data'
 import { EmptyState, SectionHeading } from '../components/UI'
 
+const topicFor = (file: DocumentItem) => file.emailSubject === '(No subject)'
+  ? `${file.category} update from Herald College`
+  : file.emailSubject
+
 export default function Documents({
   documents,
   loadError,
@@ -68,10 +72,13 @@ export default function Documents({
               <span className="document-card-category">{file.category}</span>
             </div>
             <div className="document-card-content">
-              <h3 title={file.name}>{file.name}</h3>
-              <p className="document-card-meta">{file.type} · {file.size} · {formatDate(file.date)}</p>
-              <div className="document-card-origin"><span>FROM EMAIL</span><strong title={file.emailSubject}>{file.emailSubject}</strong><small>{file.sender}</small></div>
+              <p className="document-card-from">From {file.sender} · {formatDate(file.date)}</p>
+              <h3 title={topicFor(file)}>{topicFor(file)}</h3>
               <p className="document-card-preview">{file.noticeSummary || (file.extractedText ? file.extractedText.slice(0, 200) : 'Open this file to read its college notice.')}</p>
+              <div className="document-card-file">
+                <FileText size={16} />
+                <div><span>ATTACHED FILE</span><strong title={file.name}>{file.name}</strong><small>{file.type} · {file.size}</small></div>
+              </div>
             </div>
             <div className="document-card-bottom">
               <span className={`document-read-state ${file.extractedText ? 'ready' : ''}`}>{file.extractedText ? 'File text ready' : file.extractionStatus === 'No text' ? 'Could not read text' : 'File text pending'}</span>
@@ -95,7 +102,7 @@ export default function Documents({
       {selected && <div className="document-detail-backdrop" onMouseDown={event => { if (event.target === event.currentTarget) setSelected(null) }}>
         <section className="document-detail" role="dialog" aria-modal="true" aria-labelledby="document-detail-title">
           <div className="document-detail-header">
-            <div><small>{selected.type} · {formatDate(selected.date)}</small><h2 id="document-detail-title">{selected.name}</h2><p>Attached to “{selected.emailSubject}” · From {selected.sender}</p></div>
+            <div><small>From {selected.sender} · {formatDate(selected.date)}</small><h2 id="document-detail-title">{topicFor(selected)}</h2><p>Attachment: {selected.name} · {selected.type} · {selected.size}</p></div>
             <button className="document-detail-close" aria-label="Close document details" onClick={() => setSelected(null)}><X size={19} /></button>
           </div>
           <div className="document-detail-body">

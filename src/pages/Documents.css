@@ -209,13 +209,20 @@
 .document-card .document-icon { width: 42px; height: 42px; border-radius: 10px; background: #edf5ec; color: #4d8b5d; }
 .document-card-category { padding: 5px 8px; border-radius: 999px; background: #f3f7f1; color: #628169; font-size: 10px; font-weight: 700; }
 .document-card-content { flex: 1; min-width: 0; }
-.document-card h3 { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; min-height: 36px; margin: 17px 0 6px; color: #223d2d; font-size: 14px; line-height: 1.35; overflow-wrap: anywhere; }
+.document-card h3 { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; min-height: 36px; margin: 8px 0 6px; color: #223d2d; font-size: 14px; line-height: 1.35; overflow-wrap: anywhere; }
+.document-card-from { overflow: hidden; margin: 18px 0 0; color: #7b9380; font-size: 10px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
 .document-card-meta { margin: 0; color: #98a99b; font-size: 10px; }
 .document-card-origin { display: grid; gap: 4px; margin-top: 17px; }
 .document-card-origin span { color: #9cab9d; font-size: 9px; font-weight: 800; letter-spacing: .08em; }
 .document-card-origin strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #48604e; font-size: 11px; }
 .document-card-origin small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #98a99b; font-size: 10px; }
 .document-card-preview { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; margin: 13px 0 15px; color: #6e8172; font-size: 11px; line-height: 1.55; }
+.document-card-file { display: flex; align-items: flex-start; gap: 9px; min-width: 0; margin: 4px 0 15px; padding: 10px; border: 1px solid #e8eee7; border-radius: 8px; background: #f8fbf7; color: #5c8e68; }
+.document-card-file > svg { flex: none; margin-top: 2px; }
+.document-card-file > div { display: grid; gap: 3px; min-width: 0; }
+.document-card-file span { color: #91a494; font-size: 9px; font-weight: 800; letter-spacing: .07em; }
+.document-card-file strong { overflow: hidden; color: #38513d; font-size: 11px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.document-card-file small { color: #9aac9a; font-size: 10px; }
 .document-card-bottom { padding-top: 12px; border-top: 1px solid #eef2ec; }
 .document-read-state { display: block; margin-bottom: 10px; color: #9aab9b; font-size: 10px; }
 .document-read-state.ready { color: #4c9560; font-weight: 800; }
