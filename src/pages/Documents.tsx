@@ -1,6 +1,6 @@
 import './Documents.css'
 import { useEffect, useState } from 'react'
-import { ExternalLink, FileText, FolderOpen, Mail, Search, X } from 'lucide-react'
+import { ExternalLink, FileText, Mail, Search, X } from 'lucide-react'
 import { formatDate, type DocumentItem } from '../data'
 import { EmptyState, SectionHeading } from '../components/UI'
 
@@ -33,59 +33,56 @@ export default function Documents({
       <div className="page-intro">
         <div>
           <h1>Documents</h1>
-          <p>See which college email each attachment came from, then open the file or its source email.</p>
+          <p>Your college files, their email context, and the text that has been read from them.</p>
         </div>
       </div>
       <div className="document-categories">
-        {categories.map(item => (
+        {['All files', ...categories].map(item => (
           <button
             key={item}
             className={category === item ? 'selected' : ''}
-            onClick={() => setCategory(category === item ? 'All files' : item)}
+            aria-pressed={category === item}
+            onClick={() => setCategory(item)}
           >
-            <span className="folder-icon"><FolderOpen size={21} /></span>
-            <strong>{item}</strong>
-            <small>{documents.filter(file => file.category === item).length} files</small>
+            {item}<span>{item === 'All files' ? documents.length : documents.filter(file => file.category === item).length}</span>
           </button>
         ))}
       </div>
-      <div className="panel document-panel">
+      <div className="document-panel">
         <div className="document-toolbar">
-          <SectionHeading title="College attachments" />
+          <SectionHeading eyebrow="COLLEGE LIBRARY" title={`${filtered.length} ${filtered.length === 1 ? 'document' : 'documents'}`} />
           <div className="document-search">
             <Search size={16} />
             <input
               aria-label="Search documents"
-              placeholder="Search files"
+              placeholder="Search file names or text"
               value={query}
               onChange={event => setQuery(event.target.value)}
             />
           </div>
         </div>
-        <div className="document-table-head">
-          <span>FILE</span><span>FROM EMAIL</span><span>CATEGORY</span><span>RECEIVED</span><span />
-        </div>
-        {filtered.length ? filtered.map(file => (
-          <div className="document-row" key={file.id}>
-            <div className="document-name">
-              <span className="document-icon"><FileText size={19} /></span>
-              <div><strong>{file.name}</strong><small>{file.type} · {file.size}</small></div>
+        {filtered.length ? <div className="document-grid">{filtered.map(file => (
+          <article className="document-card" key={file.id}>
+            <div className="document-card-top">
+              <span className="document-icon"><FileText size={21} /></span>
+              <span className="document-card-category">{file.category}</span>
             </div>
-            <div className="document-source">
-              <strong>{file.emailSubject}</strong>
-              <small>From {file.sender}</small>
-              {file.noticeSummary && <small className="document-summary">Email summary: {file.noticeSummary}</small>}
-              {file.extractedText && <small className="document-summary">File text ready · {file.extractedText.slice(0, 110)}{file.extractedText.length > 110 ? '…' : ''}</small>}
+            <div className="document-card-content">
+              <h3 title={file.name}>{file.name}</h3>
+              <p className="document-card-meta">{file.type} · {file.size} · {formatDate(file.date)}</p>
+              <div className="document-card-origin"><span>FROM EMAIL</span><strong title={file.emailSubject}>{file.emailSubject}</strong><small>{file.sender}</small></div>
+              <p className="document-card-preview">{file.noticeSummary || (file.extractedText ? file.extractedText.slice(0, 200) : 'Open this file to read its college notice.')}</p>
             </div>
-            <span>{file.category}</span>
-            <span>{formatDate(file.date)}</span>
-            <div className="document-actions">
-              <button aria-label={`Read details for ${file.name}`} onClick={() => setSelected(file)}><FileText size={15} /> Read</button>
-              <button aria-label={`Open file ${file.name}`} onClick={() => onOpen(file)}><ExternalLink size={15} /> File</button>
-              <a href={file.sourceUrl} target="_blank" rel="noopener noreferrer" aria-label={`Open source email for ${file.name}`}><Mail size={15} /> Email</a>
+            <div className="document-card-bottom">
+              <span className={`document-read-state ${file.extractedText ? 'ready' : ''}`}>{file.extractedText ? 'File text ready' : file.extractionStatus === 'No text' ? 'Could not read text' : 'File text pending'}</span>
+              <div className="document-card-actions">
+                <button className="document-card-read" onClick={() => setSelected(file)}>Read details</button>
+                <button aria-label={`Open file ${file.name}`} title="Open original file" onClick={() => onOpen(file)}><ExternalLink size={15} /></button>
+                <a href={file.sourceUrl} target="_blank" rel="noopener noreferrer" aria-label={`Open source email for ${file.name}`} title="Open source email"><Mail size={15} /></a>
+              </div>
             </div>
-          </div>
-        )) : (
+          </article>
+        ))}</div> : (
           <EmptyState
             title={loadError ? 'Documents need setup' : documents.length ? 'No matching files' : 'No documents yet'}
             copy={loadError
