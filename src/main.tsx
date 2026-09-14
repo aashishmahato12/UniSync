@@ -6,6 +6,7 @@ import './styles/globals.css'
 import './styles/layout.css'
 import './styles/components.css'
 import './styles/redesign.css'
+import './styles/blue-accent.css'
 
 ReactDOM.createRoot(
   document.getElementById('root')!

@@ -1,0 +1,161 @@
+/* One blue accent across the workspace. Status colors still communicate success or urgency. */
+:root {
+  --blue: #2e6fe0;
+  --accent: #2e6fe0;
+  --accent-strong: #174a9c;
+  --accent-soft: #edf4ff;
+  --accent-line: #c6daf9;
+}
+
+body .brand-mark,
+body .auth-brand > span { background: #2457ad; }
+body .nav-item.active { border-color: var(--accent-line); background: var(--accent-soft); color: var(--accent-strong); }
+body .nav-item.active::before { background: var(--accent); }
+body .nav-item:hover { background: #f3f7ff; color: var(--accent-strong); }
+body .nav-item.active .nav-index { color: #628fdb; }
+body .help-card { border-color: #d8e6fc; background: #f3f7ff; }
+body .help-card-icon { background: #dceaff; color: var(--accent); }
+body .help-card button,
+body .text-link { color: var(--accent-strong); }
+body .avatar { background: #e5eeff; color: var(--accent-strong); }
+body .primary-button,
+body .tab-filters button.selected { border-color: var(--accent); background: var(--accent); color: #fff; }
+body .primary-button:hover { border-color: var(--accent-strong); background: var(--accent-strong); }
+body .outline-button:hover,
+body .secondary-button:hover,
+body .today-button:hover { border-color: var(--accent-line); background: #f3f7ff; }
+
+/* Dashboard */
+body .desk-dashboard { color: #263447; }
+body .desk-date,
+body .desk-brief-top { color: #4671b5; }
+body .desk-heading h1,
+body .desk-section-head h2 { color: #20324c; }
+body .desk-calendar-button { border-color: #d6e3f6; color: var(--accent-strong); }
+body .desk-calendar-button:hover { border-color: var(--accent-line); background: #f3f7ff; }
+body .desk-brief { border-color: #cddff9; background: #eaf2ff; }
+body .desk-brief::after { border-color: #d1e2fc; }
+body .desk-brief-icon { border-color: #c6daf9; color: var(--accent); }
+body .desk-brief h2 { color: #193f7d; }
+body .desk-brief p { color: #465f82; }
+body .desk-brief button,
+body .desk-section-head button,
+body .desk-more,
+body .desk-important > button { color: var(--accent-strong); }
+body .desk-next { border-color: #1d447e; background: #224b88; box-shadow: 0 15px 30px #214a881c; }
+body .desk-next:hover { background: #183d75; }
+body .desk-next-top,
+body .desk-next-title { color: #dce9ff; }
+body .desk-signal-row button,
+body .desk-panel { border-color: #e0e8f5; }
+body .desk-signal-row button:hover { border-color: var(--accent-line); }
+body .desk-signal-icon.blue,
+body .desk-signal-icon.coral,
+body .desk-signal-icon.violet,
+body .desk-action-icon.blue,
+body .desk-action-icon.coral { background: #e8f1ff; color: var(--accent); }
+body .desk-signal-row strong,
+body .desk-action strong { color: #20365a; }
+body .desk-section-head > b { background: #e7f0ff; color: var(--accent-strong); }
+body .desk-action { border-color: #e5edfa; background: #f9fbff; }
+body .desk-action-controls button { border-color: #d7e4f7; color: var(--accent-strong); }
+body .desk-action-controls button:hover { border-color: #9fc1f5; background: #f0f6ff; }
+body .desk-action-controls button.primary { border-color: var(--accent); background: var(--accent); color: #fff; }
+body .desk-action-controls button.primary:hover { background: var(--accent-strong); }
+body .desk-date-tile { background: #e8f1ff; color: var(--accent-strong); }
+body .desk-upcoming-row:hover,
+body .desk-notice-row:hover { background: #f7faff; }
+body .desk-clear { color: var(--accent); }
+body .desk-upcoming-row em.added { background: #e8f7ec; color: #38855c; }
+
+/* Notices, events, and calendar */
+body .notice-mark,
+body .summary-preview,
+body .event-date { border-color: #d7e6fc; background: #eaf2ff; color: var(--accent); }
+body .notice-mail-item.selected { background: #edf4ff; box-shadow: inset 3px 0 var(--accent); }
+body .event-card:hover,
+body .notice-card:hover { border-color: var(--accent-line); }
+body .calendar-cell:hover { background: #f6f9ff; }
+body .calendar-cell.selected { background: #edf4ff; box-shadow: inset 0 0 0 1px #8eb4ef; }
+body .calendar-cell.today > span { background: var(--accent); }
+
+/* Payments and receipt preparation */
+body .field input:focus,
+body .field select:focus,
+body .field textarea:focus { border-color: #74a4ed; box-shadow: 0 0 0 3px #e5f0ff; }
+body .upload-zone { border-color: #abc9f5; background: #f7faff; color: var(--accent); }
+body .upload-zone > svg { background: #e3efff; }
+body .upload-zone strong { color: #315d9e; }
+body .upload-zone:hover,
+body .upload-zone.has-file { border-color: #75a5ef; background: #edf5ff; }
+body .schedule-row.selected { background: #f3f7ff; box-shadow: inset 3px 0 var(--accent); }
+body .history-row.selected { background: #f2f7ff; }
+body .history-icon { background: #e8f1ff; color: var(--accent); }
+body .history-help,
+body .schedule-note,
+body .demo-note { border-color: #dce8fb; background: #f3f7ff; color: #5e78a4; }
+body .receipt-status-done { background: var(--accent); }
+body .receipt-status-done:hover { background: var(--accent-strong); }
+
+/* Documents */
+body .document-categories button:hover,
+body .document-categories button.selected { border-color: var(--accent-line); background: #eaf2ff; color: var(--accent-strong); }
+body .document-categories button.selected span { background: #d7e7ff; color: var(--accent-strong); }
+body .document-card:hover { border-color: var(--accent-line); box-shadow: 0 10px 30px #2e6fe015; }
+body .document-card .document-icon,
+body .document-card-category { background: #eaf2ff; color: var(--accent-strong); }
+body .document-email-source,
+body .document-card-file,
+body .document-card-file button,
+body .document-card-actions button,
+body .document-card-actions a,
+body .document-detail-header small,
+body .document-detail-footer button,
+body .document-detail-footer a { color: var(--accent-strong); }
+body .document-card-file { border-color: #dce8fa; background: #f7faff; }
+body .document-card-file button:hover,
+body .document-card-actions button:hover,
+body .document-card-actions a:hover,
+body .document-detail-footer button:hover,
+body .document-detail-footer a:hover { border-color: var(--accent-line); background: #edf4ff; }
+body .document-card-actions .document-card-read { border-color: var(--accent); background: var(--accent); color: #fff; }
+body .document-card-actions .document-card-read:hover { background: var(--accent-strong); color: #fff; }
+
+/* Ask AI */
+body .chat-ai-icon,
+body .chat-bot-avatar,
+body .chat-mode { background: #e7f0ff; color: var(--accent-strong); }
+body .online-dot { background: var(--accent); }
+body .chat-message.user p,
+body .chat-actions button,
+body .chat-composer button { background: var(--accent); color: #fff; }
+body .chat-actions button:hover,
+body .chat-composer button:hover { background: var(--accent-strong); }
+body .chat-suggestions { border-color: #dce8fb; background: #f4f8ff; }
+body .chat-suggestions > button:hover { border-color: var(--accent-line); background: #edf4ff; }
+body .chat-readable li::marker,
+body .chat-source-kind,
+body .chat-source-links a,
+body .chat-source-links button,
+body .chat-copy:hover { color: var(--accent-strong); }
+
+/* Profile and sign-in */
+body .profile-cover { background: radial-gradient(circle at 78% -20%, #8cb8ff 0, transparent 34%), linear-gradient(120deg, #3c7ce4, #1e4e9e); }
+body .profile-avatar,
+body .preference-icon { background: #e7f0ff; color: var(--accent-strong); }
+body .toggle.on { background: var(--accent); }
+body .connection-card { background: #f4f8ff; }
+body .connection-card > div,
+body .connection-card > span,
+body .profile-signout { color: var(--accent-strong); }
+body .connection-card > span { background: #e5efff; }
+body .profile-signout { border-color: var(--accent-line); }
+body .profile-signout:hover { background: #f3f7ff; }
+body .auth-page { background: radial-gradient(circle at 15% 10%, #e8f1ff, transparent 33%), radial-gradient(circle at 88% 80%, #edf4ff, transparent 35%), #f8faff; }
+body .auth-story { background: #eef5ff; }
+body .auth-icon { background: #e7f0ff; color: var(--accent); }
+body .auth-input:focus-within { border-color: #7aa9ef; box-shadow: 0 0 0 3px #e4efff; }
+body .auth-submit { background: var(--accent); color: #fff; }
+body .auth-submit:hover { background: var(--accent-strong); }
+body .auth-secondary { border-color: var(--accent-line); color: var(--accent-strong); }
+body .auth-secondary:hover { background: #f3f7ff; }
