@@ -135,6 +135,8 @@
 .notice-reader-files > div { display: flex; align-items: center; gap: 9px; margin-top: 8px; padding: 12px; border: 1px solid #e6eaf2; border-radius: 9px; color: #5b7aa8; font-size: 11px; overflow-wrap: anywhere; }
 .notice-reader-files > div span { color: #435064; }
 .notice-reader-actions { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 32px; }
+.notice-toolbar-actions { display: flex; align-items: center; justify-content: flex-end; gap: 12px; flex-wrap: wrap; }
+.notice-toolbar-actions .secondary-button { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; text-decoration: none; }
 @media (max-width: 850px) {
   .notice-mail-layout { grid-template-columns: 1fr; }
   .notice-mail-list { display: flex; gap: 8px; padding: 12px; max-height: none; overflow-x: auto; border-right: 0; border-bottom: 1px solid #e9edf4; }

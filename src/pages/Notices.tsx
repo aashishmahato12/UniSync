@@ -18,6 +18,7 @@ import {
   PageIntro,
   badge,
 } from '../components/UI'
+import { gmailUrlForNotice } from '../services/gmailLinks'
 
 export default function Notices({
   notices,
@@ -48,7 +49,7 @@ export default function Notices({
     <>
       <PageIntro
         title="Notices"
-        copy="The important details from every college update."
+        copy="College updates here, with the original email one tap away."
       />
 
       <div className="page-toolbar">
@@ -66,9 +67,10 @@ export default function Notices({
           ))}
         </div>
 
-        <span className="result-count">
-          {filtered.length} notices
-        </span>
+        <div className="notice-toolbar-actions">
+          <span className="result-count">{filtered.length} notices</span>
+          <a className="secondary-button" href="https://mail.google.com/mail/u/0/#inbox" target="_blank" rel="noopener noreferrer">Open Gmail inbox <ExternalLink size={14} /></a>
+        </div>
       </div>
 
       {selected ? <div className="notice-mail-layout">
@@ -96,7 +98,7 @@ export default function Notices({
             {selected.attachment && <section className="notice-reader-files"><h3>Attached files</h3>{(selected.attachmentNames?.length ? selected.attachmentNames : [selected.attachment]).map(name => <div key={name}><Paperclip size={15} /><span>{name}</span></div>)}</section>}
             <div className="notice-reader-actions">
               <button className="primary-button" onClick={() => onNotice(selected)}>View notice & files <ArrowUpRight size={15} /></button>
-              {selected.sourceUrl && <a className="secondary-button" href={selected.sourceUrl} target="_blank" rel="noopener noreferrer">Original email <ExternalLink size={15} /></a>}
+              {gmailUrlForNotice(selected) && <a className="secondary-button" href={gmailUrlForNotice(selected)} target="_blank" rel="noopener noreferrer">Open this email in Gmail <ExternalLink size={15} /></a>}
             </div>
           </div>
         </article>

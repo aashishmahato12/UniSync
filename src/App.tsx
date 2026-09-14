@@ -49,6 +49,7 @@ import Events from './pages/Events'
 import Calendar from './pages/Calendar'
 import Payments from './pages/Payments'
 import { loadPaymentStatuses, savePaymentStatuses } from './services/paymentStatusStore'
+import { gmailUrlForNotice } from './services/gmailLinks'
 import Documents from './pages/Documents'
 import AskAI from './pages/AskAI'
 import Profile from './pages/Profile'
@@ -668,9 +669,9 @@ function Workspace({ email }: { email: string }) {
           {selectedNotice.attachmentNames?.filter(name =>
             !documents.some(file => file.gmailMessageId === selectedNotice.gmailMessageId && file.name === name)
           ).map(name => <p key={name}>Attachment in Gmail: {name}</p>)}
-          {selectedNotice.sourceUrl && (
-            <a className="secondary-button" href={selectedNotice.sourceUrl} target="_blank" rel="noopener noreferrer">
-              <ExternalLink size={15} /> Original email
+          {gmailUrlForNotice(selectedNotice) && (
+            <a className="secondary-button" href={gmailUrlForNotice(selectedNotice)} target="_blank" rel="noopener noreferrer">
+              <ExternalLink size={15} /> Open this email in Gmail
             </a>
           )}
         </Modal>
