@@ -1,36 +1,18 @@
 import './Dashboard.css'
 import {
-  AlertCircle,
   ArrowRight,
+  ArrowUpRight,
+  Bell,
   CalendarDays,
+  CheckCircle2,
   ChevronRight,
+  Clock3,
   CreditCard,
-  FileText,
   Sparkles,
 } from 'lucide-react'
+import { formatDate, money, today, type EventItem, type Notice, type Payment } from '../data'
 
-import {
-  formatDate,
-  today,
-  type EventItem,
-  type Notice,
-  type Payment,
-} from '../data'
-
-import {
-  EmptyState,
-  SectionHeading,
-} from '../components/UI'
-
-type Page =
-  | 'Dashboard'
-  | 'Notices'
-  | 'Events'
-  | 'Calendar'
-  | 'Payments'
-  | 'Documents'
-  | 'Ask AI'
-  | 'Profile'
+type Page = 'Dashboard' | 'Notices' | 'Events' | 'Calendar' | 'Payments' | 'Documents' | 'Ask AI' | 'Profile'
 
 export default function Dashboard({
   events,
@@ -45,258 +27,110 @@ export default function Dashboard({
   navigate: (page: Page) => void
   onNotice: (notice: Notice) => void
 }) {
-  const upcoming = [...events]
-    .filter(
-      event =>
-        event.date >= today &&
-        event.calendarState !== 'Ignored'
-    )
+  const upcoming = events
+    .filter(event => event.date >= today && event.calendarState !== 'Ignored')
     .sort((a, b) => a.date.localeCompare(b.date))
-    .slice(0, 3)
+  const pending = upcoming.filter(event => event.calendarState === 'Pending')
+  const duePayments = payments
+    .filter(payment => payment.status === 'Due' && payment.dueDate)
+    .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
+  const actionPayment = duePayments.find(payment => payment.dueDate <= new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10))
+  const importantNotice = notices.find(notice => notice.priority === 'High' && (!actionPayment || notice.category !== 'Payments'))
+    || notices.find(notice => notice.priority === 'High')
+  const briefNotice = notices.find(notice => notice.id !== importantNotice?.id && (!actionPayment || notice.category !== 'Payments') && notice.summary && !/notice is in an attachment/i.test(notice.summary))
+    || notices.find(notice => notice.id !== importantNotice?.id && notice.summary && !/notice is in an attachment/i.test(notice.summary))
+    || importantNotice
+  const actionCount = pending.length + (actionPayment ? 1 : 0)
+  const nextDates = [
+    ...upcoming.map(event => ({ date: event.date, title: event.title, page: 'Events' as Page })),
+    ...duePayments.filter(payment => payment.dueDate >= today).map(payment => ({ date: payment.dueDate, title: `${payment.title} · tentative fee date`, page: 'Payments' as Page })),
+  ].sort((a, b) => a.date.localeCompare(b.date))
+  const nextDate = nextDates[0]
 
-  const due = [...payments]
-    .filter(payment => payment.status === 'Due' && payment.dueDate && payment.dueDate >= today)
-    .sort((a, b) => (a.dueDate || '').localeCompare(b.dueDate || ''))[0]
-
-  const pending = events.filter(event => event.calendarState === 'Pending').length
-  const greeting = new Date().getHours() < 12 ? 'Good morning' : new Date().getHours() < 17 ? 'Good afternoon' : 'Good evening'
-
-  return (
-    <>
-      <div className="dashboard-hero">
-        <div className="dashboard-hero-main">
-          <div className="dashboard-hero-kicker">
-            <span className="dashboard-hero-dot" />
-            {new Date()
-              .toLocaleDateString('en-US', {
-                weekday: 'long',
-                month: 'long',
-                day: 'numeric',
-                year: 'numeric',
-              })
-              .toUpperCase()}
-          </div>
-          <h1>
-            {greeting},<br /><em>Aashish.</em>
-          </h1>
-          <p>Your Herald College updates, minus the inbox noise.</p>
-          <button className="dashboard-hero-link" onClick={() => navigate('Calendar')}>
-            Open your calendar <ArrowRight size={18} />
-          </button>
-        </div>
-        <div className="dashboard-hero-side" aria-label="Workspace overview">
-          <div className="dashboard-hero-stamp">H<span>✳</span></div>
-          <div className="dashboard-hero-stats">
-            <div><strong>{pending.toString().padStart(2, '0')}</strong><span>TO REVIEW</span></div>
-            <div><strong>{notices.length.toString().padStart(2, '0')}</strong><span>NOTICES</span></div>
-          </div>
-        </div>
+  return <div className="desk-dashboard">
+    <header className="desk-heading">
+      <div>
+        <span className="desk-date">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }).toUpperCase()}</span>
+        <h1>Good to see you, Aashish.</h1>
+        <p>Here’s what needs attention across your Herald College space.</p>
       </div>
+      <button className="desk-calendar-button" onClick={() => navigate('Calendar')}><CalendarDays size={17} /> Open calendar <ArrowUpRight size={15} /></button>
+    </header>
 
-      <div className="hero-alert">
-        <div className="alert-symbol">
-          <AlertCircle size={23} />
-        </div>
+    <div className="desk-stats" aria-label="Workspace snapshot">
+      <button className="desk-stat" onClick={() => navigate('Events')}>
+        <span className="desk-stat-icon blue"><CalendarDays size={18} /></span>
+        <span className="desk-stat-label">CALENDAR APPROVALS</span>
+        <strong>{pending.length}</strong>
+        <small>{pending.length === 1 ? 'event waiting for you' : 'events waiting for you'} <ArrowRight size={13} /></small>
+      </button>
+      <button className="desk-stat" onClick={() => navigate(nextDate?.page || 'Calendar')}>
+        <span className="desk-stat-icon violet"><Clock3 size={18} /></span>
+        <span className="desk-stat-label">NEXT DATE</span>
+        <strong className="desk-stat-date">{nextDate ? formatDate(nextDate.date) : 'All clear'}</strong>
+        <small title={nextDate?.title}>{nextDate?.title || 'No upcoming dates'} <ArrowRight size={13} /></small>
+      </button>
+      <button className="desk-stat" onClick={() => navigate('Payments')}>
+        <span className="desk-stat-icon coral"><CreditCard size={18} /></span>
+        <span className="desk-stat-label">PAYMENTS MARKED DUE</span>
+        <strong>{duePayments.length}</strong>
+        <small>{duePayments.length ? `Next: ${duePayments[0].title}` : 'Your fee list is up to date'} <ArrowRight size={13} /></small>
+      </button>
+    </div>
 
-        <div className="hero-alert-copy">
-          <span>NEEDS YOUR ATTENTION</span>
+    <div className="desk-focus-grid">
+      <section className="desk-panel desk-actions">
+        <div className="desk-section-head"><div><span>ACTION REQUIRED</span><h2>Your next moves</h2></div><b>{actionCount}</b></div>
+        {actionCount ? <div className="desk-action-list">
+          {actionPayment && <button className="desk-action" onClick={() => navigate('Payments')}>
+            <span className="desk-action-icon coral"><CreditCard size={18} /></span>
+            <span><strong>Check {actionPayment.title} fee</strong><small>{actionPayment.dueDate < today ? 'Tentative date passed — check the latest notice' : `Tentative date ${formatDate(actionPayment.dueDate)} · ${money(actionPayment.amount)}`}</small></span>
+            <ArrowUpRight size={17} />
+          </button>}
+          {pending.slice(0, 2).map(event => <button className="desk-action" key={event.id} onClick={() => navigate('Events')}>
+            <span className="desk-action-icon blue"><CalendarDays size={18} /></span>
+            <span><strong>Decide on {event.title}</strong><small>{formatDate(event.date)} · Add to calendar or ignore</small></span>
+            <ArrowUpRight size={17} />
+          </button>)}
+          {pending.length > 2 && <button className="desk-more" onClick={() => navigate('Events')}>Review {pending.length - 2} more calendar {pending.length - 2 === 1 ? 'approval' : 'approvals'} <ArrowRight size={14} /></button>}
+        </div> : <div className="desk-clear"><CheckCircle2 size={22} /><strong>Nothing to approve right now</strong><span>New payment and calendar decisions will appear here.</span></div>}
+      </section>
 
-          <h3>Upcoming tentative fee payment</h3>
+      <section className="desk-panel desk-important">
+        <div className="desk-section-head"><div><span>IMPORTANT</span><h2>From the college</h2></div><Bell size={18} /></div>
+        {importantNotice ? <>
+          <span className="desk-important-tag">HIGH PRIORITY · {formatDate(importantNotice.date)}</span>
+          <h3>{importantNotice.title}</h3>
+          <p>{importantNotice.summary}</p>
+          <button onClick={() => onNotice(importantNotice)}>Read notice <ArrowUpRight size={15} /></button>
+        </> : <div className="desk-clear compact"><CheckCircle2 size={22} /><strong>No high-priority notices</strong><span>Check Notices for all college updates.</span></div>}
+      </section>
+    </div>
 
-          <p>
-            {due?.dueDate
-              ? `${due.title}: ${formatDate(due.dueDate, {
-                  month: 'long',
-                  day: 'numeric',
-                  year: 'numeric',
-                })}. Please confirm the final date with the college.`
-              : 'Review your fee schedule and confirm dates with the college.'}
-          </p>
-        </div>
+    <div className="desk-content-grid">
+      <section className="desk-panel desk-upcoming">
+        <div className="desk-section-head"><div><span>YOUR SCHEDULE</span><h2>Coming up</h2></div><button onClick={() => navigate('Events')}>All events <ArrowRight size={14} /></button></div>
+        {upcoming.length ? <div className="desk-upcoming-list">{upcoming.slice(0, 4).map(event => <button className="desk-upcoming-row" key={event.id} onClick={() => navigate('Events')}>
+          <span className="desk-date-tile"><strong>{new Date(`${event.date}T12:00:00`).getDate()}</strong><small>{formatDate(event.date, { month: 'short' }).toUpperCase()}</small></span>
+          <span><strong>{event.title}</strong><small>{event.time ? `${event.time} · ` : ''}{event.category}</small></span>
+          <em className={event.calendarState.toLowerCase()}>{event.calendarState}</em><ChevronRight size={16} />
+        </button>)}</div> : <div className="desk-empty">No upcoming events yet.</div>}
+      </section>
 
-        <button onClick={() => navigate('Payments')}>
-          Review payment
-          <ArrowRight size={17} />
-        </button>
-      </div>
+      <section className="desk-panel desk-notices">
+        <div className="desk-section-head"><div><span>RECENT NOTICES</span><h2>Latest from your inbox</h2></div><button onClick={() => navigate('Notices')}>All notices <ArrowRight size={14} /></button></div>
+        {notices.length ? <div className="desk-notice-list">{notices.slice(0, 3).map(notice => <button className="desk-notice-row" key={notice.id} onClick={() => onNotice(notice)}>
+          <span className="desk-notice-meta">{notice.category} · {formatDate(notice.date)} {notice.priority === 'High' && <b>IMPORTANT</b>}</span>
+          <strong>{notice.title}</strong>
+          <small>{notice.summary}</small>
+        </button>)}</div> : <div className="desk-empty">College emails will appear here after sync.</div>}
+      </section>
+    </div>
 
-      <div className="dashboard-grid">
-        <section className="panel upcoming-panel">
-          <SectionHeading
-            eyebrow="YOUR SCHEDULE"
-            title="Upcoming"
-            action={
-              <button
-                className="text-link"
-                onClick={() => navigate('Events')}
-              >
-                View all
-                <ArrowRight size={15} />
-              </button>
-            }
-          />
-
-          <div className="upcoming-list">
-            {upcoming.length ? (
-              upcoming.map(event => (
-                <button
-                  className="upcoming-row"
-                  key={event.id}
-                  onClick={() => navigate('Events')}
-                >
-                  <div className="date-tile">
-                    <strong>
-                      {new Date(
-                        `${event.date}T12:00:00`
-                      ).getDate()}
-                    </strong>
-
-                    <span>
-                      {formatDate(event.date, {
-                        month: 'short',
-                      }).toUpperCase()}
-                    </span>
-                  </div>
-
-                  <div>
-                    <strong>{event.title}</strong>
-
-                    <span>
-                      {event.time ? `${event.time} · ` : ''}
-                      {event.category}
-                    </span>
-                  </div>
-
-                  <ChevronRight size={17} />
-                </button>
-              ))
-            ) : (
-              <EmptyState
-                title="No upcoming events"
-                copy="Detected events will appear here."
-              />
-            )}
-          </div>
-        </section>
-
-        <section className="panel notice-panel">
-          <SectionHeading
-            eyebrow="LATEST UPDATES"
-            title="Recent notices"
-            action={
-              <button
-                className="text-link"
-                onClick={() => navigate('Notices')}
-              >
-                View all
-                <ArrowRight size={15} />
-              </button>
-            }
-          />
-
-          <div className="notice-mini-list">
-            {notices.length ? (
-              notices.slice(0, 3).map(notice => (
-                <button
-                  className="notice-mini"
-                  key={notice.id}
-                  onClick={() => onNotice(notice)}
-                >
-                  <span
-                    className={`notice-mini-icon ${
-                      notice.priority === 'High'
-                        ? 'urgent'
-                        : ''
-                    }`}
-                  >
-                    <FileText size={17} />
-                  </span>
-
-                  <span>
-                    <strong>{notice.title}</strong>
-
-                    <small>
-                      {notice.category} · {formatDate(notice.date)}
-                    </small>
-                  </span>
-
-                  <ChevronRight size={17} />
-                </button>
-              ))
-            ) : (
-              <EmptyState
-                title="No notices"
-                copy="Processed emails will appear here."
-              />
-            )}
-          </div>
-        </section>
-
-        <section className="panel ai-brief-panel">
-          <div className="brief-heading">
-            <div className="brief-icon">
-              <Sparkles size={19} />
-            </div>
-
-            <div>
-              <span className="eyebrow">MADE FOR YOU</span>
-              <h2>AI brief</h2>
-            </div>
-          </div>
-
-          <p>
-            You currently have <strong>{events.length}</strong> detected
-            events and <strong>{notices.length}</strong> notices.
-          </p>
-
-          <button
-            className="text-link"
-            onClick={() => navigate('Ask AI')}
-          >
-            Ask a follow-up
-            <ArrowRight size={15} />
-          </button>
-        </section>
-
-        <section className="panel action-panel">
-          <SectionHeading
-            eyebrow="NEXT STEPS"
-            title="Action required"
-          />
-
-          <div className="action-item">
-            <span className="action-check">
-              <CreditCard size={17} />
-            </span>
-
-            <div>
-              <strong>Review your fee schedule</strong>
-              <span>Dates and amounts are shown in Payments.</span>
-            </div>
-
-            <button onClick={() => navigate('Payments')}>
-              Continue
-              <ArrowRight size={14} />
-            </button>
-          </div>
-
-          <div className="action-item">
-            <span className="action-check">
-              <CalendarDays size={17} />
-            </span>
-
-            <div>
-              <strong>Review pending events</strong>
-              <span>Choose what goes on your calendar.</span>
-            </div>
-
-            <button onClick={() => navigate('Events')}>
-              Review
-              <ArrowRight size={14} />
-            </button>
-          </div>
-        </section>
-      </div>
-    </>
-  )
+    <section className="desk-brief">
+      <span className="desk-brief-icon"><Sparkles size={20} /></span>
+      <div><span>AI BRIEF · FROM A SAVED NOTICE</span><p>{briefNotice ? briefNotice.summary : 'When a college notice arrives, its summary will appear here.'}</p></div>
+      <button onClick={() => navigate('Ask AI')}>Ask AI <ArrowRight size={15} /></button>
+    </section>
+  </div>
 }
