@@ -18,7 +18,7 @@ export type Payment = {
   details: string
   transactionId?: string
 }
-export type DocumentItem = { id: string; name: string; category: string; date: string; size: string; type: string; mimeType: string; storagePath: string; gmailMessageId: string; noticeTitle: string }
+export type DocumentItem = { id: string; name: string; category: string; date: string; size: string; type: string; mimeType: string; storagePath: string; gmailMessageId: string; emailSubject: string; sender: string; noticeSummary?: string; sourceUrl: string }
 
 const year = new Date().getFullYear()
 const month = new Date().getMonth()

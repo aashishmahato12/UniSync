@@ -1,6 +1,6 @@
 import './Documents.css'
 import { useState } from 'react'
-import { ExternalLink, FileText, FolderOpen, Search } from 'lucide-react'
+import { ExternalLink, FileText, FolderOpen, Mail, Search } from 'lucide-react'
 import { formatDate, type DocumentItem } from '../data'
 import { EmptyState, SectionHeading } from '../components/UI'
 
@@ -18,7 +18,7 @@ export default function Documents({
   const categories = ['Academic', 'Finance', 'Campus', 'General']
   const filtered = documents.filter(file =>
     (category === 'All files' || file.category === category) &&
-    `${file.name} ${file.noticeTitle}`.toLowerCase().includes(query.toLowerCase())
+    `${file.name} ${file.emailSubject} ${file.sender} ${file.noticeSummary ?? ''}`.toLowerCase().includes(query.toLowerCase())
   )
 
   return (
@@ -26,7 +26,7 @@ export default function Documents({
       <div className="page-intro">
         <div>
           <h1>Documents</h1>
-          <p>Attachments saved from Herald College emails. Open a file to read the original notice.</p>
+          <p>See which college email each attachment came from, then open the file or its source email.</p>
         </div>
       </div>
       <div className="document-categories">
@@ -56,20 +56,25 @@ export default function Documents({
           </div>
         </div>
         <div className="document-table-head">
-          <span>NAME</span><span>CATEGORY</span><span>ADDED</span><span>SIZE</span><span />
+          <span>FILE</span><span>FROM EMAIL</span><span>CATEGORY</span><span>RECEIVED</span><span />
         </div>
         {filtered.length ? filtered.map(file => (
           <div className="document-row" key={file.id}>
             <div className="document-name">
               <span className="document-icon"><FileText size={19} /></span>
-              <div><strong>{file.name}</strong><small>{file.noticeTitle}</small></div>
+              <div><strong>{file.name}</strong><small>{file.type} · {file.size}</small></div>
+            </div>
+            <div className="document-source">
+              <strong>{file.emailSubject}</strong>
+              <small>From {file.sender}</small>
+              {file.noticeSummary && <small className="document-summary">Email summary: {file.noticeSummary}</small>}
             </div>
             <span>{file.category}</span>
             <span>{formatDate(file.date)}</span>
-            <span>{file.size}</span>
-            <button aria-label={`Open ${file.name}`} onClick={() => onOpen(file)}>
-              <ExternalLink size={19} />
-            </button>
+            <div className="document-actions">
+              <button aria-label={`Open file ${file.name}`} onClick={() => onOpen(file)}><ExternalLink size={15} /> File</button>
+              <a href={file.sourceUrl} target="_blank" rel="noopener noreferrer" aria-label={`Open source email for ${file.name}`}><Mail size={15} /> Email</a>
+            </div>
           </div>
         )) : (
           <EmptyState

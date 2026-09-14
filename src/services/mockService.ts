@@ -21,6 +21,14 @@ export type ReceiptSubmission = {
 const delay = (ms = 250) =>
   new Promise(resolve => setTimeout(resolve, ms))
 
+const documentCategory = (subject: string, fileName: string) => {
+  const context = `${subject} ${fileName}`.toLowerCase()
+  if (/fee|payment|invoice|receipt|tuition|scholarship|bank/.test(context)) return 'Finance'
+  if (/exam|routine|class|course|assignment|semester|timetable|result|admission|registration|academic|transcript|syllabus|cybersecurity|computer science|business management/.test(context)) return 'Academic'
+  if (/event|club|festival|volunteer|campus|workshop|seminar|orientation|holiday/.test(context)) return 'Campus'
+  return 'General'
+}
+
 export const studentService = {
 
   async getNotices(): Promise<Notice[]> {
@@ -116,7 +124,7 @@ export const studentService = {
   async getDocuments(notices: Notice[] = []): Promise<DocumentItem[]> {
     const { data, error } = await supabase
       .from('college_attachments')
-      .select('id,gmail_message_id,file_name,mime_type,size_bytes,storage_path,received_at,created_at')
+      .select('id,gmail_message_id,file_name,mime_type,size_bytes,storage_path,received_at,created_at,subject,sender')
       .order('received_at', { ascending: false })
     if (error) throw error
     const byMessageId = new Map(notices.map(notice => [notice.gmailMessageId, notice]))
@@ -124,7 +132,8 @@ export const studentService = {
       const notice = byMessageId.get(row.gmail_message_id)
       const category = notice?.category === 'Payments' ? 'Finance'
         : notice?.category === 'Exams' || notice?.category === 'Academics' ? 'Academic'
-        : notice?.category === 'Campus life' ? 'Campus' : 'General'
+        : notice?.category === 'Campus life' ? 'Campus'
+        : documentCategory(row.subject ?? '', row.file_name)
       return {
         id: row.id,
         name: row.file_name,
@@ -137,7 +146,10 @@ export const studentService = {
         mimeType: row.mime_type,
         storagePath: row.storage_path,
         gmailMessageId: row.gmail_message_id,
-        noticeTitle: notice?.title ?? row.file_name,
+        emailSubject: row.subject || '(No subject)',
+        sender: row.sender || 'Herald College',
+        noticeSummary: notice?.summary,
+        sourceUrl: `https://mail.google.com/mail/u/0/#all/${encodeURIComponent(row.gmail_message_id)}`,
       }
     })
   },
