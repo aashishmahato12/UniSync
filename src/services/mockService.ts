@@ -134,9 +134,7 @@ export const studentService = {
     const { data: extracted } = await supabase
       .from('college_attachments')
       .select('id,extracted_text,extraction_status')
-      .eq('extraction_status', 'Ready')
-      .limit(200)
-    const extractedById = new Map((extracted ?? []).map(row => [row.id, row.extracted_text as string]))
+    const extractedById = new Map((extracted ?? []).map(row => [row.id, row]))
     const byMessageId = new Map(notices.map(notice => [notice.gmailMessageId, notice]))
     return (data ?? []).map(row => {
       const notice = byMessageId.get(row.gmail_message_id)
@@ -159,7 +157,8 @@ export const studentService = {
         emailSubject: row.subject || '(No subject)',
         sender: row.sender || 'Herald College',
         noticeSummary: notice?.summary,
-        extractedText: extractedById.get(row.id),
+        extractedText: extractedById.get(row.id)?.extracted_text ?? undefined,
+        extractionStatus: extractedById.get(row.id)?.extraction_status as DocumentItem['extractionStatus'],
         sourceUrl: `https://mail.google.com/mail/u/0/#all/${encodeURIComponent(row.gmail_message_id)}`,
       }
     })

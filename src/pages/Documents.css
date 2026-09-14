@@ -191,6 +191,52 @@
   border-color: #b8d2bd;
 }
 
+.document-detail-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(17, 35, 25, .48);
+}
+
+.document-detail {
+  width: min(760px, 100%);
+  max-height: min(85vh, 900px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #dce8dd;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 28px 80px rgba(14, 32, 20, .2);
+}
+
+.document-detail-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 23px 25px 18px;
+  border-bottom: 1px solid #edf2ed;
+}
+
+.document-detail-header small { color: #6d9478; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
+.document-detail-header h2 { margin: 7px 0 5px; color: #213a2a; font-size: 19px; overflow-wrap: anywhere; }
+.document-detail-header p { margin: 0; color: #7e9183; font-size: 11px; line-height: 1.5; }
+.document-detail-close { display: grid; place-items: center; flex: none; width: 32px; height: 32px; border: 1px solid #e3eae3; border-radius: 8px; background: #fff; color: #5d7563; cursor: pointer; }
+
+.document-detail-body { overflow: auto; padding: 21px 25px; }
+.document-detail-body section + section { margin-top: 22px; }
+.document-detail-body h3 { margin: 0 0 9px; color: #264b32; font-size: 12px; }
+.document-detail-body p { margin: 0; color: #4e6353; font-size: 12px; line-height: 1.7; }
+.document-detail-body pre { margin: 0; padding: 16px; border: 1px solid #e5ede4; border-radius: 9px; background: #f7faf6; color: #374b3c; font-family: inherit; font-size: 12px; line-height: 1.7; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+.document-detail-footer { display: flex; flex-wrap: wrap; gap: 9px; padding: 16px 25px; border-top: 1px solid #edf2ed; }
+.document-detail-footer button, .document-detail-footer a { display: inline-flex; align-items: center; gap: 6px; padding: 9px 11px; border: 1px solid #dce9dd; border-radius: 8px; background: #f7fbf7; color: #256a42; font: inherit; font-size: 11px; font-weight: 700; text-decoration: none; cursor: pointer; }
+.document-detail-footer button:hover, .document-detail-footer a:hover { background: #eaf4e9; }
+
 @media (max-width: 760px) {
   .document-categories {
     grid-template-columns: repeat(2, 1fr);
@@ -236,4 +282,7 @@
     font-size: 0;
     padding: 7px;
   }
+
+  .document-detail-backdrop { padding: 10px; }
+  .document-detail-header, .document-detail-body, .document-detail-footer { padding-left: 16px; padding-right: 16px; }
 }

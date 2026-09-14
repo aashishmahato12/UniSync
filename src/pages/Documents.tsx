@@ -1,6 +1,6 @@
 import './Documents.css'
-import { useState } from 'react'
-import { ExternalLink, FileText, FolderOpen, Mail, Search } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { ExternalLink, FileText, FolderOpen, Mail, Search, X } from 'lucide-react'
 import { formatDate, type DocumentItem } from '../data'
 import { EmptyState, SectionHeading } from '../components/UI'
 
@@ -15,6 +15,13 @@ export default function Documents({
 }) {
   const [category, setCategory] = useState('All files')
   const [query, setQuery] = useState('')
+  const [selected, setSelected] = useState<DocumentItem | null>(null)
+  useEffect(() => {
+    if (!selected) return
+    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === 'Escape') setSelected(null) }
+    window.addEventListener('keydown', closeOnEscape)
+    return () => window.removeEventListener('keydown', closeOnEscape)
+  }, [selected])
   const categories = ['Academic', 'Finance', 'Campus', 'General']
   const filtered = documents.filter(file =>
     (category === 'All files' || file.category === category) &&
@@ -68,11 +75,12 @@ export default function Documents({
               <strong>{file.emailSubject}</strong>
               <small>From {file.sender}</small>
               {file.noticeSummary && <small className="document-summary">Email summary: {file.noticeSummary}</small>}
-              {file.extractedText && <small className="document-summary">File text: {file.extractedText.slice(0, 220)}{file.extractedText.length > 220 ? '…' : ''}</small>}
+              {file.extractedText && <small className="document-summary">File text ready · {file.extractedText.slice(0, 110)}{file.extractedText.length > 110 ? '…' : ''}</small>}
             </div>
             <span>{file.category}</span>
             <span>{formatDate(file.date)}</span>
             <div className="document-actions">
+              <button aria-label={`Read details for ${file.name}`} onClick={() => setSelected(file)}><FileText size={15} /> Read</button>
               <button aria-label={`Open file ${file.name}`} onClick={() => onOpen(file)}><ExternalLink size={15} /> File</button>
               <a href={file.sourceUrl} target="_blank" rel="noopener noreferrer" aria-label={`Open source email for ${file.name}`}><Mail size={15} /> Email</a>
             </div>
@@ -87,6 +95,27 @@ export default function Documents({
           />
         )}
       </div>
+      {selected && <div className="document-detail-backdrop" onMouseDown={event => { if (event.target === event.currentTarget) setSelected(null) }}>
+        <section className="document-detail" role="dialog" aria-modal="true" aria-labelledby="document-detail-title">
+          <div className="document-detail-header">
+            <div><small>{selected.type} · {formatDate(selected.date)}</small><h2 id="document-detail-title">{selected.name}</h2><p>Attached to “{selected.emailSubject}” · From {selected.sender}</p></div>
+            <button className="document-detail-close" aria-label="Close document details" onClick={() => setSelected(null)}><X size={19} /></button>
+          </div>
+          <div className="document-detail-body">
+            {selected.noticeSummary && <section><h3>Email summary</h3><p>{selected.noticeSummary}</p></section>}
+            <section><h3>Text read from file</h3>
+              {selected.extractedText ? <pre>{selected.extractedText}</pre>
+                : <p>{selected.extractionStatus === 'Pending' ? 'This file is waiting for the attachment reader.'
+                  : selected.extractionStatus === 'No text' ? 'The reader could not extract useful text from this file.'
+                    : 'No extracted text is available yet. Open the original file to read it.'}</p>}
+            </section>
+          </div>
+          <div className="document-detail-footer">
+            <button onClick={() => onOpen(selected)}><ExternalLink size={15} /> Open original file</button>
+            <a href={selected.sourceUrl} target="_blank" rel="noopener noreferrer"><Mail size={15} /> Open source email</a>
+          </div>
+        </section>
+      </div>}
     </>
   )
 }
