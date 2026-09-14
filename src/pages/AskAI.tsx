@@ -3,21 +3,27 @@ import { ArrowRight, ExternalLink, Sparkles } from 'lucide-react'
 
 import { studentService } from '../services/mockService'
 import type { AssistantSource } from '../services/localAssistant'
-import type { Payment } from '../data'
+import type { EventItem, Payment } from '../data'
 import { PageIntro } from '../components/UI'
 import './AskAI.css'
 
-export default function AskAI({ payments }: { payments: Payment[] }) {
+export default function AskAI({ payments, events, updateCalendar }: {
+  payments: Payment[]
+  events: EventItem[]
+  updateCalendar: (event: EventItem, state: EventItem['calendarState']) => Promise<void>
+}) {
   const [messages, setMessages] = useState<
     {
       role: 'user' | 'assistant'
       text: string
       sources?: AssistantSource[]
+      actions?: { type: 'add_to_calendar'; eventId: string }[]
+      mode?: 'ai' | 'search'
     }[]
   >([
     {
       role: 'assistant',
-      text: 'Hi Aashish. Search your saved Herald College notices, events, and document details.',
+      text: 'Hi Aashish. Ask about your Herald College notices and events. I can suggest calendar actions for you to approve.',
     },
   ])
 
@@ -52,11 +58,13 @@ export default function AskAI({ payments }: { payments: Payment[] }) {
         role: 'assistant',
         text: result.answer,
         sources: result.sources,
+        actions: result.actions,
+        mode: result.mode,
       }])
-    } catch {
+    } catch (error) {
       setMessages(previous => [...previous, {
         role: 'assistant',
-        text: 'I could not load your college records. Please try again.',
+        text: error instanceof Error ? error.message : 'I could not load your college records. Please try again.',
       }])
     } finally {
       setBusy(false)
@@ -67,7 +75,7 @@ export default function AskAI({ payments }: { payments: Payment[] }) {
     <>
       <PageIntro
         title="Ask AI"
-        copy="Find answers in your saved college records, with links to the original emails."
+        copy="Ask about saved notices and events, and approve suggested calendar actions."
       />
 
       <div className="chat-layout">
@@ -79,10 +87,10 @@ export default function AskAI({ payments }: { payments: Payment[] }) {
 
             <div>
               <strong>Herald Assistant</strong>
-              <small>Searches your private college records</small>
+              <small>Answers from your saved college records</small>
             </div>
 
-            <span className="chat-mode">Saved records</span>
+            <span className="chat-mode">Gemini + saved search</span>
           </div>
 
           <div className="chat-messages">
@@ -99,6 +107,7 @@ export default function AskAI({ payments }: { payments: Payment[] }) {
 
                 <div className="chat-answer">
                   <p>{message.text}</p>
+                  {message.mode === 'search' && <small className="chat-answer-mode">Saved-record search</small>}
                   {!!message.sources?.length && (
                     <div className="chat-sources">
                       {message.sources.map(source => source.url ? (
@@ -108,6 +117,16 @@ export default function AskAI({ payments }: { payments: Payment[] }) {
                       ) : <span key={source.id}>{source.kind}: {source.title}</span>)}
                     </div>
                   )}
+                  {!!message.actions?.length && <div className="chat-actions">
+                    {message.actions.map(action => {
+                      const event = events.find(item => item.id === action.eventId)
+                      if (!event) return null
+                      return <button key={action.eventId} disabled={event.calendarState !== 'Pending'}
+                        onClick={() => void updateCalendar(event, 'Added')}>
+                        {event.calendarState === 'Pending' ? `Add ${event.title} to Calendar` : 'Calendar approved'}
+                      </button>
+                    })}
+                  </div>}
                 </div>
               </div>
             ))}
@@ -133,7 +152,7 @@ export default function AskAI({ payments }: { payments: Payment[] }) {
             }}
           >
             <input
-              placeholder="Ask about deadlines, notices, or files..."
+              placeholder="Ask about deadlines, notices, or events..."
               aria-label="Question about saved college records"
               maxLength={600}
               value={input}
@@ -143,12 +162,12 @@ export default function AskAI({ payments }: { payments: Payment[] }) {
             <button
               type="submit"
               disabled={!input.trim() || busy}
-              aria-label="Search college records"
+              aria-label="Ask Herald Assistant"
             >
               <ArrowRight size={19} />
             </button>
           </form>
-          <p className="chat-disclaimer">Uses saved email summaries and file details. PDF and image contents are not read yet.</p>
+          <p className="chat-disclaimer">Notice and event details are sent to Gemini through your n8n workflow. Fees and file searches stay local. PDFs and images are not read yet.</p>
         </section>
         <aside className="chat-suggestions">
           <h2>Try asking</h2>

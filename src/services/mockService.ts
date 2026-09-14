@@ -197,9 +197,31 @@ export const studentService = {
 
 
   async askAI(question: string, currentPayments: Payment[]) {
+    // Financial marks and document metadata stay in the browser; only notice/event
+    // questions use the configured server-side Gemini workflow.
+    if (!/\b(fee|payment|paid|receipt|tuition|admission|document|attachment|file|pdf|image|scan)\b/i.test(question)) {
+      const { data: session } = await supabase.auth.getSession()
+      if (session.session?.access_token) {
+        const response = await fetch('/api/ask', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.session.access_token}` },
+          body: JSON.stringify({ question }),
+        })
+        if (response.ok) return await response.json() as {
+          answer: string
+          sources: import('./localAssistant').AssistantSource[]
+          actions: { type: 'add_to_calendar'; eventId: string }[]
+          mode: 'ai'
+        }
+        if (response.status !== 404) {
+          const body = await response.json().catch(() => ({}))
+          throw new Error(body.error || 'AI chat is unavailable.')
+        }
+      }
+    }
     const [savedNotices, savedEvents, savedDocuments] = await Promise.all([
       this.getNotices(), this.getEvents(), this.getDocuments(),
     ])
-    return answerFromSavedRecords(question, savedNotices, savedEvents, savedDocuments, currentPayments)
+    return { ...answerFromSavedRecords(question, savedNotices, savedEvents, savedDocuments, currentPayments), actions: [], mode: 'search' as const }
   },
 }

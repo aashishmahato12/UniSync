@@ -25,4 +25,14 @@ Notices and events load from Supabase; calendar approval states are saved there.
 
 The payment form uploads a PDF/JPG/PNG receipt to private Supabase Storage and queues an email job only when `payment_receipt_settings.enabled` is true. The separate n8n workflow polls the queue, sends through Gmail, and updates the job status. The website shows that status; clicking Send first means **queued**, not delivered. The configured recipient is currently the owner's **test inbox**, so a test send is not a college submission. Follow the [receipt setup and test steps](./n8n/README.md) before using a real college address.
 
-Documents now reads private college PDF/image attachments from Supabase after the [attachment migration and n8n workflow](./n8n/README.md) are applied. The notice modal links to its saved files and original Gmail message. Ask AI searches the signed-in student's saved notice summaries, events, document metadata, and locally marked fee statuses, then links answers to source emails when available. Fee statuses are the student's own marks, not college confirmations. It does not read PDF/image contents or send records to an external chat model yet.
+Documents reads private college PDF/image attachments from Supabase after the [attachment migration and n8n workflow](./n8n/README.md) are applied. The notice modal links to its saved files and original Gmail message.
+
+## AI chat setup
+
+Ask AI sends a limited set of relevant saved **notice summaries and event details** from the signed-in owner's account to Gemini through your n8n webhook. It returns source links and can propose an **Add to Calendar** button. Only clicking that button approves the event; your existing calendar workflow performs the later Google Calendar sync. Fee statuses and document metadata use local saved-record search and are not sent to Gemini. PDF/image contents are not read.
+
+1. Import [`n8n/herald-private-ai-chat.json`](./n8n/herald-private-ai-chat.json) into n8n. Assign your existing Gemini credential to **Google Gemini Chat Model**.
+2. On **Private Chat Webhook**, create a **Header Auth** credential: header name `X-UniSync-AI-Secret`, value a long random secret you choose. Publish/activate the workflow and copy its **production** webhook URL.
+3. In Vercel project settings, add server environment variables `UNISYNC_N8N_AI_URL` (that HTTPS production URL) and `UNISYNC_N8N_AI_SECRET` (the same secret). Keep existing `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`. Redeploy.
+
+Never put `UNISYNC_N8N_AI_SECRET` in a `VITE_` variable. Local `npm run dev` uses saved-record search because Vite does not run Vercel API functions. On the live site, an unconfigured workflow shows an explicit error rather than pretending a search result is AI.
