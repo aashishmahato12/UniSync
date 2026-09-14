@@ -1,4 +1,4 @@
-import './Dashboard.css'
+import './DashboardLayout.css'
 import { useState } from 'react'
 import {
   ArrowRight,
@@ -60,16 +60,16 @@ export default function Dashboard({
   const weekStartDate = `${weekStart.getFullYear()}-${String(weekStart.getMonth() + 1).padStart(2, '0')}-${String(weekStart.getDate()).padStart(2, '0')}`
   const todayEvents = upcoming.filter(event => event.date === today)
   const nearPayment = duePayments.find(payment => payment.dueDate <= weekEndDate)
-  const recentImportant = notices.find(notice => notice.priority === 'High' && notice.date >= weekStartDate && notice.summary && !/notice is in an attachment/i.test(notice.summary))
-  const briefParts = [
-    todayEvents.length
-      ? `${todayEvents.length === 1 ? todayEvents[0].title : `${todayEvents.length} events`} ${todayEvents.length === 1 ? 'is' : 'are'} on your schedule today${todayEvents.length === 1 && todayEvents[0].time ? ` at ${todayEvents[0].time}` : ''}.`
-      : upcoming[0] ? `Next up: ${upcoming[0].title} on ${formatDate(upcoming[0].date)}.` : '',
-    nearPayment ? `${nearPayment.title} is marked due${nearPayment.dueDate < today ? ' (tentative date passed)' : ` on the tentative date ${formatDate(nearPayment.dueDate)}`}; check the latest college notice.` : '',
-    recentImportant ? `Important notice: ${recentImportant.title}. ${recentImportant.summary.slice(0, 150)}${recentImportant.summary.length > 150 ? '…' : ''}` : '',
-    pending.length ? `${pending.length} calendar ${pending.length === 1 ? 'decision needs' : 'decisions need'} your approval.` : '',
-  ].filter(Boolean)
-  const briefText = briefParts.slice(0, 3).join(' ') || 'No new deadlines or important updates are saved for today.'
+  const recentImportant = notices.find(notice => notice.priority === 'High' && notice.date >= weekStartDate && notice.summary && (!nearPayment || notice.category !== 'Payments') && !/notice is in an attachment/i.test(notice.summary))
+  const briefLead = todayEvents.length
+    ? `${todayEvents.length === 1 ? todayEvents[0].title : `${todayEvents.length} events`} ${todayEvents.length === 1 ? 'is' : 'are'} on your schedule today${todayEvents.length === 1 && todayEvents[0].time ? ` at ${todayEvents[0].time}` : ''}.`
+    : nearPayment
+      ? `${nearPayment.title} payment (${money(nearPayment.amount)}) is marked due${nearPayment.dueDate < today ? ' after its tentative date' : ` on the tentative ${formatDate(nearPayment.dueDate)} date`}.`
+      : upcoming[0] ? `Next up: ${upcoming[0].title} on ${formatDate(upcoming[0].date)}.` : ''
+  const briefFollow = recentImportant
+    ? `${recentImportant.title}: ${recentImportant.summary.split(/(?<=[.!?])\s+/)[0]}`
+    : pending.length ? `${pending.length} calendar ${pending.length === 1 ? 'decision needs' : 'decisions need'} your review.` : ''
+  const briefText = [briefLead, briefFollow].filter(Boolean).join(' ') || 'No new deadlines or important updates are saved for today.'
   const nextDates = [
     ...upcoming.map(event => ({ date: event.date, title: event.title, page: 'Events' as Page })),
     ...duePayments.filter(payment => payment.dueDate >= today).map(payment => ({ date: payment.dueDate, title: `${payment.title} · tentative fee date`, page: 'Payments' as Page })),
@@ -86,36 +86,30 @@ export default function Dashboard({
       <button className="desk-calendar-button" onClick={() => navigate('Calendar')}><CalendarDays size={17} /> Open calendar <ArrowUpRight size={15} /></button>
     </header>
 
-    <section className="desk-brief desk-today">
-      <span className="desk-brief-icon"><Sparkles size={20} /></span>
-      <div><span>TODAY’S BRIEF · FROM SAVED RECORDS</span><p>{briefText}</p></div>
-      <button onClick={() => navigate('Ask AI')}>Ask AI <ArrowRight size={15} /></button>
-    </section>
-
-    <div className="desk-stats" aria-label="Workspace snapshot">
-      <button className="desk-stat" onClick={() => navigate('Events')}>
-        <span className="desk-stat-icon blue"><CalendarDays size={18} /></span>
-        <span className="desk-stat-label">CALENDAR APPROVALS</span>
-        <strong>{pending.length}</strong>
-        <small>{pending.length === 1 ? 'event waiting for you' : 'events waiting for you'} <ArrowRight size={13} /></small>
-      </button>
-      <button className="desk-stat" onClick={() => navigate(nextDate?.page || 'Calendar')}>
-        <span className="desk-stat-icon violet"><Clock3 size={18} /></span>
-        <span className="desk-stat-label">NEXT DATE</span>
-        <strong className="desk-stat-date">{nextDate ? formatDate(nextDate.date) : 'All clear'}</strong>
-        <small title={nextDate?.title}>{nextDate?.title || 'No upcoming dates'} <ArrowRight size={13} /></small>
-      </button>
-      <button className="desk-stat" onClick={() => navigate('Payments')}>
-        <span className="desk-stat-icon coral"><CreditCard size={18} /></span>
-        <span className="desk-stat-label">PAYMENTS MARKED DUE</span>
-        <strong>{duePayments.length}</strong>
-        <small>{duePayments.length ? `Next: ${duePayments[0].title}` : 'Your fee list is up to date'} <ArrowRight size={13} /></small>
+    <div className="desk-lead-grid">
+      <section className="desk-brief" aria-labelledby="desk-brief-title">
+        <div className="desk-brief-top"><span className="desk-brief-icon"><Sparkles size={18} /></span><span>YOUR DAILY BRIEF · SAVED RECORDS</span></div>
+        <h2 id="desk-brief-title">Here’s your day.</h2>
+        <p>{briefText}</p>
+        <button onClick={() => navigate('Ask AI')}>Explore with Ask AI <ArrowUpRight size={16} /></button>
+      </section>
+      <button className="desk-next" onClick={() => navigate(nextDate?.page || 'Calendar')}>
+        <span className="desk-next-top"><span><Clock3 size={16} /> UP NEXT</span><ArrowUpRight size={17} /></span>
+        <strong>{nextDate ? formatDate(nextDate.date, { weekday: 'short', month: 'short', day: 'numeric' }) : 'All clear'}</strong>
+        <span className="desk-next-title">{nextDate?.title || 'No upcoming dates saved'}</span>
+        <span className="desk-next-footer">View your schedule <ArrowRight size={15} /></span>
       </button>
     </div>
 
-    <div className="desk-focus-grid">
+    <div className="desk-signal-row" aria-label="Workspace snapshot">
+      <button onClick={() => navigate('Events')}><span className="desk-signal-icon blue"><CalendarDays size={17} /></span><strong>{pending.length}</strong><span>Calendar {pending.length === 1 ? 'decision' : 'decisions'}</span><ArrowUpRight size={15} /></button>
+      <button onClick={() => navigate('Payments')}><span className="desk-signal-icon coral"><CreditCard size={17} /></span><strong>{duePayments.length}</strong><span>Fees marked due</span><ArrowUpRight size={15} /></button>
+      <button onClick={() => navigate('Notices')}><span className="desk-signal-icon violet"><Bell size={17} /></span><strong>{notices.length}</strong><span>Saved notices</span><ArrowUpRight size={15} /></button>
+    </div>
+
+    <div className="desk-main-grid">
       <section className="desk-panel desk-actions">
-        <div className="desk-section-head"><div><span>ACTION REQUIRED</span><h2>Your next moves</h2></div><b>{actionCount}</b></div>
+        <div className="desk-section-head"><div><span>TAKE ACTION</span><h2>Decisions waiting for you</h2></div><b>{actionCount}</b></div>
         {actionCount ? <div className="desk-action-list">
           {actionPayment && <div className="desk-action">
             <span className="desk-action-icon coral"><CreditCard size={18} /></span>
@@ -143,9 +137,6 @@ export default function Dashboard({
           <button onClick={() => onNotice(importantNotice)}>Read notice <ArrowUpRight size={15} /></button>
         </> : <div className="desk-clear compact"><CheckCircle2 size={22} /><strong>No high-priority notices</strong><span>Check Notices for all college updates.</span></div>}
       </section>
-    </div>
-
-    <div className="desk-content-grid">
       <section className="desk-panel desk-upcoming">
         <div className="desk-section-head"><div><span>YOUR SCHEDULE</span><h2>Coming up</h2></div><button onClick={() => navigate('Events')}>All events <ArrowRight size={14} /></button></div>
         {upcoming.length ? <div className="desk-upcoming-list">{upcoming.slice(0, 4).map(event => <button className="desk-upcoming-row" key={event.id} onClick={() => navigate('Events')}>
