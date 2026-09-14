@@ -53,8 +53,8 @@ export function answerFromSavedRecords(
     })),
     ...documents.map(file => ({
       source: { id: file.id, kind: 'Document' as const, title: file.name, url: file.sourceUrl },
-      search: `${file.name} ${file.emailSubject} ${file.sender} ${file.category}`.toLowerCase(),
-      line: `${file.name} — attached to “${file.emailSubject}” from ${file.sender} (${dateLabel(file.date)}).`,
+      search: `${file.name} ${file.emailSubject} ${file.sender} ${file.category} ${file.extractedText ?? ''}`.toLowerCase(),
+      line: `${file.name} — attached to “${file.emailSubject}” from ${file.sender} (${dateLabel(file.date)}).${file.extractedText ? ` Readable text: ${file.extractedText.slice(0, 450)}` : ''}`,
       date: file.date,
       boost: wantsDocuments ? 4 : 0,
     })),
@@ -83,8 +83,9 @@ export function answerFromSavedRecords(
   }
 
   const lines = matches.map(item => `• ${item.line}`)
-  const prefix = asksFileContents && matches.some(item => item.source.kind === 'Document')
-    ? 'I found these files and their source emails. I cannot read the contents of PDFs or images yet.\n\n'
+  const prefix = asksFileContents && matches.some(item => item.source.kind === 'Document') &&
+    !matches.some(item => item.source.kind === 'Document' && documents.find(file => file.id === item.source.id)?.extractedText)
+    ? 'I found these files, but their contents have not been read yet. Open the original file for now.\n\n'
     : ''
   return {
     answer: `${prefix}${lines.join('\n')}`,

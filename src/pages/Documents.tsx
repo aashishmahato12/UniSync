@@ -18,7 +18,7 @@ export default function Documents({
   const categories = ['Academic', 'Finance', 'Campus', 'General']
   const filtered = documents.filter(file =>
     (category === 'All files' || file.category === category) &&
-    `${file.name} ${file.emailSubject} ${file.sender} ${file.noticeSummary ?? ''}`.toLowerCase().includes(query.toLowerCase())
+    `${file.name} ${file.emailSubject} ${file.sender} ${file.noticeSummary ?? ''} ${file.extractedText ?? ''}`.toLowerCase().includes(query.toLowerCase())
   )
 
   return (
@@ -68,6 +68,7 @@ export default function Documents({
               <strong>{file.emailSubject}</strong>
               <small>From {file.sender}</small>
               {file.noticeSummary && <small className="document-summary">Email summary: {file.noticeSummary}</small>}
+              {file.extractedText && <small className="document-summary">File text: {file.extractedText.slice(0, 220)}{file.extractedText.length > 220 ? '…' : ''}</small>}
             </div>
             <span>{file.category}</span>
             <span>{formatDate(file.date)}</span>

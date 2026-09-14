@@ -29,10 +29,19 @@ Documents reads private college PDF/image attachments from Supabase after the [a
 
 ## AI chat setup
 
-Ask AI sends a limited set of relevant saved **notice summaries and event details** from the signed-in owner's account to Gemini through your n8n webhook. It returns source links and can propose an **Add to Calendar** button. Only clicking that button approves the event; your existing calendar workflow performs the later Google Calendar sync. Fee statuses and document metadata use local saved-record search and are not sent to Gemini. PDF/image contents are not read.
+Ask AI sends a limited set of relevant saved **notice summaries, event details, and extracted attachment text** from the signed-in owner's account to Gemini through your n8n webhook. It returns source links and can propose an **Add to Calendar** button. Only clicking that button approves the event; your existing calendar workflow performs the later Google Calendar sync. Student-marked fee statuses stay local.
 
 1. Import [`n8n/herald-private-ai-chat.json`](./n8n/herald-private-ai-chat.json) into n8n. Assign your existing Gemini credential to **Google Gemini Chat Model**.
 2. On **Private Chat Webhook**, create a **Header Auth** credential: header name `X-UniSync-AI-Secret`, value a long random secret you choose. Publish/activate the workflow and copy its **production** webhook URL.
 3. In Vercel project settings, add server environment variables `UNISYNC_N8N_AI_URL` (that HTTPS production URL) and `UNISYNC_N8N_AI_SECRET` (the same secret). Keep existing `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`. Redeploy.
 
 Never put `UNISYNC_N8N_AI_SECRET` in a `VITE_` variable. Local `npm run dev` uses saved-record search because Vite does not run Vercel API functions. On the live site, an unconfigured workflow shows an explicit error rather than pretending a search result is AI.
+
+### Let AI read college attachments
+
+1. Apply [`n8n/005_attachment_text.sql`](./n8n/005_attachment_text.sql) in Supabase SQL Editor. It adds private extracted-text fields to the existing owner-only attachment table.
+2. Import [`n8n/herald-read-attachments.json`](./n8n/herald-read-attachments.json) into n8n as a **new inactive workflow**. Assign the existing Supabase `apikey` Header Auth credential to both **Get Pending** nodes, both **Download** nodes, and **Update Attachment Text**. Assign the existing Gemini credential to **Read PDF with Gemini** and **Read Image with Gemini**.
+3. Run **Manual Test** on one non-sensitive college file first. Check its `extraction_status` becomes `Ready` and `extracted_text` contains actual file text in Supabase. If unreadable it becomes `No text`. Once verified, activate the reader; it processes up to five pending PDFs and five pending images every ten minutes.
+4. Update your existing private AI chat workflow from the new [`n8n/herald-private-ai-chat.json`](./n8n/herald-private-ai-chat.json), keeping its Header Auth and Gemini credentials. The updated prompt allows answers from extracted file text. Push this code and let Vercel deploy.
+
+This extraction sends college attachment contents to Gemini. Files remain in the private Supabase bucket; the app sends only capped text excerpts to chat. Ask AI and Documents will show extracted text only after the reader completes. Verify any important dates against the original file because OCR can misread scans.

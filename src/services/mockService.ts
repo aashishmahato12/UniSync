@@ -131,6 +131,12 @@ export const studentService = {
       .select('id,gmail_message_id,file_name,mime_type,size_bytes,storage_path,received_at,created_at,subject,sender')
       .order('received_at', { ascending: false })
     if (error) throw error
+    const { data: extracted } = await supabase
+      .from('college_attachments')
+      .select('id,extracted_text,extraction_status')
+      .eq('extraction_status', 'Ready')
+      .limit(200)
+    const extractedById = new Map((extracted ?? []).map(row => [row.id, row.extracted_text as string]))
     const byMessageId = new Map(notices.map(notice => [notice.gmailMessageId, notice]))
     return (data ?? []).map(row => {
       const notice = byMessageId.get(row.gmail_message_id)
@@ -153,6 +159,7 @@ export const studentService = {
         emailSubject: row.subject || '(No subject)',
         sender: row.sender || 'Herald College',
         noticeSummary: notice?.summary,
+        extractedText: extractedById.get(row.id),
         sourceUrl: `https://mail.google.com/mail/u/0/#all/${encodeURIComponent(row.gmail_message_id)}`,
       }
     })
@@ -197,9 +204,9 @@ export const studentService = {
 
 
   async askAI(question: string, currentPayments: Payment[]) {
-    // Financial marks and document metadata stay in the browser; only notice/event
-    // questions use the configured server-side Gemini workflow.
-    if (!/\b(fee|payment|paid|receipt|tuition|admission|document|attachment|file|pdf|image|scan)\b/i.test(question)) {
+    // Student-marked payment statuses stay in the browser. Extracted college
+    // attachment text may be used by the private Gemini workflow.
+    if (!/\b(fee|payment|paid|receipt|tuition|admission)\b/i.test(question)) {
       const { data: session } = await supabase.auth.getSession()
       if (session.session?.access_token) {
         const response = await fetch('/api/ask', {

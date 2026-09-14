@@ -33,9 +33,10 @@ export default { async fetch(request) {
   const { data: userData, error: authError } = await client.auth.getUser(auth[1])
   if (authError || userData.user?.email?.toLowerCase() !== ownerEmail) return json({ error: 'Access denied.' }, 403)
 
-  const [noticesResult, eventsResult] = await Promise.all([
+  const [noticesResult, eventsResult, documentsResult] = await Promise.all([
     client.from('college_notices').select('id,subject,summary,category,priority,received_at,source_url').order('received_at', { ascending: false }).limit(120),
     client.from('college_events').select('id,title,description,category,event_date,start_time,location,calendar_state,gmail_message_id').order('event_date', { ascending: true }).limit(120),
+    client.from('college_attachments').select('id,file_name,subject,sender,extracted_text,received_at,gmail_message_id').eq('extraction_status', 'Ready').order('received_at', { ascending: false }).limit(120),
   ])
   if (noticesResult.error || eventsResult.error) return json({ error: 'Could not read college records.' }, 502)
   const terms = tokens(question)
@@ -52,12 +53,21 @@ export default { async fetch(request) {
     url: /^[a-zA-Z0-9_-]{8,100}$/.test(row.gmail_message_id || '')
       ? `https://mail.google.com/mail/u/0/#all/${encodeURIComponent(row.gmail_message_id)}` : undefined,
   }))
+  // The optional migration can be applied after this code is deployed.
+  const documents = (documentsResult.error ? [] : documentsResult.data || []).map(row => ({
+    id: row.id, kind: 'Document', title: row.file_name, date: row.received_at?.slice(0, 10) || '',
+    detail: `${row.subject || ''}\n${String(row.extracted_text || '').slice(0, 2400)}`,
+    category: 'Attachment', sender: row.sender,
+    url: /^[a-zA-Z0-9_-]{8,100}$/.test(row.gmail_message_id || '')
+      ? `https://mail.google.com/mail/u/0/#all/${encodeURIComponent(row.gmail_message_id)}` : undefined,
+  }))
   const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kathmandu', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date())
-  const ranked = [...notices, ...events].map(item => ({ item,
+  const ranked = [...notices, ...events, ...documents].map(item => ({ item,
     rank: score(`${item.title} ${item.detail} ${item.category}`, terms) +
       (item.kind === 'Event' && /event|exam|deadline|calendar|schedule|when|upcoming/i.test(question) ? 2 : 0) +
       (item.kind === 'Event' && item.date >= today ? 1 : 0) +
-      (item.kind === 'Notice' && /notice|email|announcement|update/i.test(question) ? 2 : 0),
+      (item.kind === 'Notice' && /notice|email|announcement|update/i.test(question) ? 2 : 0) +
+      (item.kind === 'Document' && /document|attachment|file|pdf|image|scan|read|inside/i.test(question) ? 2 : 0),
   })).sort((a, b) => b.rank - a.rank || (a.item.kind === 'Event' && b.item.kind === 'Event' && a.item.date >= today && b.item.date >= today
     ? a.item.date.localeCompare(b.item.date) : b.item.date.localeCompare(a.item.date)))
   const context = ranked.filter(entry => entry.rank > 0).slice(0, 12).map(entry => entry.item)

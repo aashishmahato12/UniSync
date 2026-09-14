@@ -40,7 +40,9 @@ Some college notices are PDF or image attachments with little or no email body. 
 
 Use **Manual Backfill** to test up to 20 existing Herald emails with attachments. Check that a PDF or image reaches the private bucket, a matching row appears in `college_attachments`, and the file opens from Documents and its notice in UniSync. Then publish the new workflow to collect future attachments. It accepts PDFs, JPEGs and PNGs up to 10 MB, validates the sender domain again, and uses stable file paths so retries do not create duplicates.
 
-The main Gmail notice workflow also needs its updated **Get Full Email** option (`Download Attachments` on), **Prepare Email** code, and **Validate Extraction** code from this repository. Test an attachment-only email before publishing that update. Such a notice is saved with an explicit “open the file” summary and no inferred events or deadlines; AI reading of PDF/image contents is a later step. The app never claims it read a file it has only stored.
+The main Gmail notice workflow also needs its updated **Get Full Email** option (`Download Attachments` on), **Prepare Email** code, and **Validate Extraction** code from this repository. Test an attachment-only email before publishing that update. Such a notice is saved with an explicit “open the file” summary and no inferred events or deadlines; the separate reader below must run before the app can use its contents. The app never claims it read a file it has only stored.
+
+For that later reading step, apply [005_attachment_text.sql](./005_attachment_text.sql) and import [herald-read-attachments.json](./herald-read-attachments.json). The new workflow sends each saved PDF/image to Gemini, stores capped extracted text privately, and leaves the original file available in Documents. Assign the existing Supabase and Gemini credentials, run **Manual Test**, inspect the resulting text, then activate it. Update the private AI chat workflow from [herald-private-ai-chat.json](./herald-private-ai-chat.json) so Ask AI can use the extracted text.
 
 Run `node n8n/build-attachment-workflow.mjs` and `node n8n/test-attachment-workflow.mjs` after editing the attachment workflow.
 

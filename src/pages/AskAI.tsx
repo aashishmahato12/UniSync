@@ -214,7 +214,7 @@ export default function AskAI({ payments, events, updateCalendar }: {
               <ArrowRight size={19} />
             </button>
           </form>
-          <p className="chat-disclaimer">Notice and event details are sent to Gemini through your n8n workflow. Fees and file searches stay local. PDFs and images are not read yet.</p>
+          <p className="chat-disclaimer">Relevant notice, event, and extracted file text goes to Gemini through your n8n workflow. Your own fee-status marks stay local. Unread files still need to be opened manually.</p>
         </section>
         <aside className="chat-suggestions">
           <h2>Try asking</h2>
