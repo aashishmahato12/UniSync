@@ -591,7 +591,7 @@ function Workspace({ email }: { email: string }) {
 
               {page ===
                 'Ask AI' && (
-                <AskAI />
+                <AskAI payments={payments} />
               )}
 
               {page ===

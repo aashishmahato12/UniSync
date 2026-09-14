@@ -24,6 +24,12 @@ This intake workflow does not create calendar events or send receipt emails. Tho
 
 The importable file is [heritage-gmail-to-supabase.json](./heritage-gmail-to-supabase.json). The source snippets live alongside it; rerun `node n8n/build-workflow.mjs` from the app directory after changing them.
 
+## Backfill older Herald notices
+
+The published Gmail trigger handles new mail. To import older messages into **Notices** and **Events**, import [herald-all-notices-backfill.json](./herald-all-notices-backfill.json) as a separate, manual workflow. Select the existing Gmail credential on **Get All Herald Emails** and **Get Full Email**, the existing Gemini credential on **Google Gemini Chat Model**, and the existing Supabase Header Auth credential on **Save Notice** and **Save Pending Events**. Run **Manual Backfill** once; do not publish this one-time workflow. It searches all `@heraldcollege.edu.np` senders, and Gmail **Return All** is enabled. It does not download attachment binaries because the separate attachment workflow stores those files.
+
+If Gemini limits a large run, add Gmail date filters to the **Get All Herald Emails** search (for example `after:2026/08/01 before:2026/09/01`), then run each month. The notice upsert and event duplicate check make repeated windows safe. Review any failed execution before continuing. Rebuild this import file with `node n8n/build-notice-backfill.mjs` after changing the intake workflow.
+
 ## Data and access
 
 The owner-only access migration is in [002_single_owner_access.sql](./002_single_owner_access.sql) and has been applied according to the user. The secret key is for n8n only; the website uses a publishable key and the approved email's session. Gmail mail bodies are sent to the configured Gemini API for extraction; the database stores only the derived fields and Gmail source reference.

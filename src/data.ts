@@ -1,6 +1,6 @@
 export type CalendarState = 'Pending' | 'Added' | 'Ignored'
 export type EventCategory = 'Exam' | 'Deadline' | 'College event' | 'Holiday'
-export type EventItem = { id: string; title: string; date: string; time?: string; location?: string; category: EventCategory; description: string; source: string; calendarState: CalendarState; googleCalendarEventId?: string }
+export type EventItem = { id: string; title: string; date: string; time?: string; location?: string; category: EventCategory; description: string; source: string; sourceUrl?: string; calendarState: CalendarState; googleCalendarEventId?: string }
 export type Notice = { id: string; title: string; date: string; category: string; priority: 'High' | 'Normal'; summary: string; attachment?: string; attachmentNames?: string[]; gmailMessageId?: string; sourceUrl?: string; source: string }
 export type PaymentStatus = 'Due' | 'Paid' | 'Receipt Uploaded' | 'Receipt Sent' | 'Awaiting Confirmation' | 'Confirmed'
 export type Payment = {

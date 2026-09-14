@@ -1,20 +1,23 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowRight, Sparkles } from 'lucide-react'
+import { ArrowRight, ExternalLink, Sparkles } from 'lucide-react'
 
 import { studentService } from '../services/mockService'
+import type { AssistantSource } from '../services/localAssistant'
+import type { Payment } from '../data'
 import { PageIntro } from '../components/UI'
 import './AskAI.css'
 
-export default function AskAI() {
+export default function AskAI({ payments }: { payments: Payment[] }) {
   const [messages, setMessages] = useState<
     {
       role: 'user' | 'assistant'
       text: string
+      sources?: AssistantSource[]
     }[]
   >([
     {
       role: 'assistant',
-      text: 'Hi Aashish. Ask me about your college updates.',
+      text: 'Hi Aashish. Search your saved Herald College notices, events, and document details.',
     },
   ])
 
@@ -43,24 +46,28 @@ export default function AskAI() {
     setInput('')
     setBusy(true)
 
-    const answer = await studentService.askAI(question)
-
-    setMessages(previous => [
-      ...previous,
-      {
+    try {
+      const result = await studentService.askAI(question.trim(), payments)
+      setMessages(previous => [...previous, {
         role: 'assistant',
-        text: answer,
-      },
-    ])
-
-    setBusy(false)
+        text: result.answer,
+        sources: result.sources,
+      }])
+    } catch {
+      setMessages(previous => [...previous, {
+        role: 'assistant',
+        text: 'I could not load your college records. Please try again.',
+      }])
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (
     <>
       <PageIntro
         title="Ask AI"
-        copy="Ask questions about your college information."
+        copy="Find answers in your saved college records, with links to the original emails."
       />
 
       <div className="chat-layout">
@@ -72,10 +79,10 @@ export default function AskAI() {
 
             <div>
               <strong>Herald Assistant</strong>
-              <small>Your student workspace assistant</small>
+              <small>Searches your private college records</small>
             </div>
 
-            <span className="online-dot" />
+            <span className="chat-mode">Saved records</span>
           </div>
 
           <div className="chat-messages">
@@ -90,7 +97,18 @@ export default function AskAI() {
                   </span>
                 )}
 
-                <p>{message.text}</p>
+                <div className="chat-answer">
+                  <p>{message.text}</p>
+                  {!!message.sources?.length && (
+                    <div className="chat-sources">
+                      {message.sources.map(source => source.url ? (
+                        <a key={source.id} href={source.url} target="_blank" rel="noopener noreferrer">
+                          {source.kind}: {source.title} <ExternalLink size={12} />
+                        </a>
+                      ) : <span key={source.id}>{source.kind}: {source.title}</span>)}
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
 
@@ -111,11 +129,13 @@ export default function AskAI() {
             className="chat-composer"
             onSubmit={e => {
               e.preventDefault()
-              ask(input)
+              void ask(input)
             }}
           >
             <input
-              placeholder="Ask anything about college..."
+              placeholder="Ask about deadlines, notices, or files..."
+              aria-label="Question about saved college records"
+              maxLength={600}
               value={input}
               onChange={e => setInput(e.target.value)}
             />
@@ -123,11 +143,21 @@ export default function AskAI() {
             <button
               type="submit"
               disabled={!input.trim() || busy}
+              aria-label="Search college records"
             >
               <ArrowRight size={19} />
             </button>
           </form>
+          <p className="chat-disclaimer">Uses saved email summaries and file details. PDF and image contents are not read yet.</p>
         </section>
+        <aside className="chat-suggestions">
+          <h2>Try asking</h2>
+          {['What deadlines are coming up?', 'Show recent notices', 'Which fees have I marked paid?', 'Find my exam documents'].map(prompt => (
+            <button key={prompt} onClick={() => void ask(prompt)} disabled={busy}>
+              {prompt} <ArrowRight size={15} />
+            </button>
+          ))}
+        </aside>
       </div>
     </>
   )

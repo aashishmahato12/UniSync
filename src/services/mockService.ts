@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { answerFromSavedRecords } from './localAssistant'
 
 import {
   payments,
@@ -107,6 +108,9 @@ export const studentService = {
       description: row.description ?? '',
 
       source: 'College Email',
+      sourceUrl: /^[a-zA-Z0-9_-]{8,100}$/.test(row.gmail_message_id ?? '')
+        ? `https://mail.google.com/mail/u/0/#all/${encodeURIComponent(row.gmail_message_id)}`
+        : undefined,
 
       // Supabase snake_case -> React camelCase
       calendarState: row.calendar_state,
@@ -192,9 +196,10 @@ export const studentService = {
   },
 
 
-  async askAI(question: string) {
-    await delay(500)
-
-    return `AI integration is not connected yet. You asked: "${question}"`
+  async askAI(question: string, currentPayments: Payment[]) {
+    const [savedNotices, savedEvents, savedDocuments] = await Promise.all([
+      this.getNotices(), this.getEvents(), this.getDocuments(),
+    ])
+    return answerFromSavedRecords(question, savedNotices, savedEvents, savedDocuments, currentPayments)
   },
 }
