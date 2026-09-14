@@ -1,4 +1,5 @@
 import './Dashboard.css'
+import { useState } from 'react'
 import {
   ArrowRight,
   ArrowUpRight,
@@ -10,7 +11,7 @@ import {
   CreditCard,
   Sparkles,
 } from 'lucide-react'
-import { formatDate, money, today, type EventItem, type Notice, type Payment } from '../data'
+import { formatDate, money, today, type CalendarState, type EventItem, type Notice, type Payment } from '../data'
 
 type Page = 'Dashboard' | 'Notices' | 'Events' | 'Calendar' | 'Payments' | 'Documents' | 'Ask AI' | 'Profile'
 
@@ -20,13 +21,26 @@ export default function Dashboard({
   payments,
   navigate,
   onNotice,
+  updateCalendar,
+  onPaymentStatus,
 }: {
   events: EventItem[]
   notices: Notice[]
   payments: Payment[]
   navigate: (page: Page) => void
   onNotice: (notice: Notice) => void
+  updateCalendar: (event: EventItem, state: CalendarState) => Promise<void>
+  onPaymentStatus: (id: string, status: 'Due' | 'Paid') => void
 }) {
+  const [busyEventId, setBusyEventId] = useState<string | null>(null)
+  const decideCalendar = async (event: EventItem, state: CalendarState) => {
+    setBusyEventId(event.id)
+    try {
+      await updateCalendar(event, state)
+    } finally {
+      setBusyEventId(null)
+    }
+  }
   const upcoming = events
     .filter(event => event.date >= today && event.calendarState !== 'Ignored')
     .sort((a, b) => a.date.localeCompare(b.date))
@@ -82,16 +96,19 @@ export default function Dashboard({
       <section className="desk-panel desk-actions">
         <div className="desk-section-head"><div><span>ACTION REQUIRED</span><h2>Your next moves</h2></div><b>{actionCount}</b></div>
         {actionCount ? <div className="desk-action-list">
-          {actionPayment && <button className="desk-action" onClick={() => navigate('Payments')}>
+          {actionPayment && <div className="desk-action">
             <span className="desk-action-icon coral"><CreditCard size={18} /></span>
-            <span><strong>Check {actionPayment.title} fee</strong><small>{actionPayment.dueDate < today ? 'Tentative date passed — check the latest notice' : `Tentative date ${formatDate(actionPayment.dueDate)} · ${money(actionPayment.amount)}`}</small></span>
-            <ArrowUpRight size={17} />
-          </button>}
-          {pending.slice(0, 2).map(event => <button className="desk-action" key={event.id} onClick={() => navigate('Events')}>
+            <div className="desk-action-body"><strong>{actionPayment.title}</strong><small>{actionPayment.dueDate < today ? 'Tentative date passed — check the latest notice' : `Tentative date ${formatDate(actionPayment.dueDate)} · ${money(actionPayment.amount)}`}</small>
+              <div className="desk-action-controls"><button className="primary" onClick={() => onPaymentStatus(actionPayment.id, 'Paid')}>Mark paid by me</button><button onClick={() => navigate('Payments')}>Fee details <ArrowUpRight size={13} /></button></div>
+              <small>Personal tracking; the college has not confirmed this payment.</small>
+            </div>
+          </div>}
+          {pending.slice(0, 2).map(event => <div className="desk-action" key={event.id}>
             <span className="desk-action-icon blue"><CalendarDays size={18} /></span>
-            <span><strong>Decide on {event.title}</strong><small>{formatDate(event.date)} · Add to calendar or ignore</small></span>
-            <ArrowUpRight size={17} />
-          </button>)}
+            <div className="desk-action-body"><strong>{event.title}</strong><small>{formatDate(event.date)} · {event.category}</small>
+              <div className="desk-action-controls"><button className="primary" disabled={busyEventId === event.id} onClick={() => decideCalendar(event, 'Added')}>Approve for calendar</button><button disabled={busyEventId === event.id} onClick={() => decideCalendar(event, 'Ignored')}>Ignore</button><button onClick={() => navigate('Events')}>Details <ArrowUpRight size={13} /></button></div>
+            </div>
+          </div>)}
           {pending.length > 2 && <button className="desk-more" onClick={() => navigate('Events')}>Review {pending.length - 2} more calendar {pending.length - 2 === 1 ? 'approval' : 'approvals'} <ArrowRight size={14} /></button>}
         </div> : <div className="desk-clear"><CheckCircle2 size={22} /><strong>Nothing to approve right now</strong><span>New payment and calendar decisions will appear here.</span></div>}
       </section>

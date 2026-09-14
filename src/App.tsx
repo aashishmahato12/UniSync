@@ -281,6 +281,13 @@ function Workspace({ email }: { email: string }) {
       }
     }
 
+  const updatePaymentStatus = (id: string, status: 'Due' | 'Paid') => {
+    setPayments(current => current.map(payment =>
+      payment.id === id ? { ...payment, status } : payment
+    ))
+    notify(status === 'Paid' ? 'Marked Paid by you. This is not a college confirmation.' : 'Marked Due by you.')
+  }
+
   const searchResults =
     useMemo(() => {
       const q =
@@ -492,6 +499,8 @@ function Workspace({ email }: { email: string }) {
                   onNotice={
                     setSelectedNotice
                   }
+                  updateCalendar={updateCalendar}
+                  onPaymentStatus={updatePaymentStatus}
                 />
               )}
 
