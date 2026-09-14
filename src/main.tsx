@@ -5,6 +5,7 @@ import './styles.css'
 import './styles/globals.css'
 import './styles/layout.css'
 import './styles/components.css'
+import './styles/redesign.css'
 
 ReactDOM.createRoot(
   document.getElementById('root')!

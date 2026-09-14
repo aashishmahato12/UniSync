@@ -58,11 +58,15 @@ export default function Dashboard({
     .filter(payment => payment.status === 'Due' && payment.dueDate && payment.dueDate >= today)
     .sort((a, b) => (a.dueDate || '').localeCompare(b.dueDate || ''))[0]
 
+  const pending = events.filter(event => event.calendarState === 'Pending').length
+  const greeting = new Date().getHours() < 12 ? 'Good morning' : new Date().getHours() < 17 ? 'Good afternoon' : 'Good evening'
+
   return (
     <>
-      <div className="page-intro">
-        <div>
-          <div className="eyebrow">
+      <div className="dashboard-hero">
+        <div className="dashboard-hero-main">
+          <div className="dashboard-hero-kicker">
+            <span className="dashboard-hero-dot" />
             {new Date()
               .toLocaleDateString('en-US', {
                 weekday: 'long',
@@ -72,21 +76,21 @@ export default function Dashboard({
               })
               .toUpperCase()}
           </div>
-
           <h1>
-            Good afternoon, Aashish <span className="wave">✳</span>
+            {greeting},<br /><em>Aashish.</em>
           </h1>
-
-          <p>Here’s what’s happening at Herald College.</p>
+          <p>Your Herald College updates, minus the inbox noise.</p>
+          <button className="dashboard-hero-link" onClick={() => navigate('Calendar')}>
+            Open your calendar <ArrowRight size={18} />
+          </button>
         </div>
-
-        <button
-          className="outline-button"
-          onClick={() => navigate('Calendar')}
-        >
-          <CalendarDays size={17} />
-          View calendar
-        </button>
+        <div className="dashboard-hero-side" aria-label="Workspace overview">
+          <div className="dashboard-hero-stamp">H<span>✳</span></div>
+          <div className="dashboard-hero-stats">
+            <div><strong>{pending.toString().padStart(2, '0')}</strong><span>TO REVIEW</span></div>
+            <div><strong>{notices.length.toString().padStart(2, '0')}</strong><span>NOTICES</span></div>
+          </div>
+        </div>
       </div>
 
       <div className="hero-alert">

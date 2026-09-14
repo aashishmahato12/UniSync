@@ -8,10 +8,8 @@ import {
 import {
   ArrowRight,
   Bell,
-  BookOpen,
   CalendarDays,
   Check,
-  ChevronRight,
   Clock3,
   CreditCard,
   ExternalLink,
@@ -349,16 +347,14 @@ function Workspace({ email }: { email: string }) {
           </div>
         </div>
 
-        <div className="sidebar-label">
-          WORKSPACE
-        </div>
+        <div className="sidebar-label">YOUR SPACE <span>01 / 08</span></div>
 
         <nav className="side-nav">
           {nav.map(
             ({
               name,
               icon: Icon,
-            }) => (
+            }, index) => (
               <button
                 key={name}
                 className={`nav-item ${
@@ -375,6 +371,8 @@ function Workspace({ email }: { email: string }) {
                 <span>
                   {name}
                 </span>
+
+                <small className="nav-index">{String(index + 1).padStart(2, '0')}</small>
 
                 {name ===
                   'Notices' &&
@@ -393,29 +391,10 @@ function Workspace({ email }: { email: string }) {
 
         <div className="sidebar-bottom">
           <div className="help-card">
-            <BookOpen
-              size={17}
-            />
-
-            <strong>
-              Need help?
-            </strong>
-
-            <p>
-              Ask about notices
-              and deadlines.
-            </p>
-
-            <button
-              onClick={() =>
-                navigate('Ask AI')
-              }
-            >
-              Ask AI
-              <ArrowRight
-                size={15}
-              />
-            </button>
+            <div className="help-card-icon"><Sparkles size={17} /></div>
+            <strong>Need the short version?</strong>
+            <p>Ask about your notices, files and deadlines.</p>
+            <button onClick={() => navigate('Ask AI')}>Open Ask AI <ArrowRight size={15} /></button>
           </div>
 
           <button
@@ -457,17 +436,10 @@ function Workspace({ email }: { email: string }) {
               <Menu size={21} />
             </button>
 
-            <span className="breadcrumb">
-              Workspace
-            </span>
-
-            <ChevronRight
-              size={15}
-            />
-
-            <strong>
-              {page}
-            </strong>
+            <div className="topbar-context">
+              <span>UNISYNC <b>/</b> HERALD COLLEGE</span>
+              <strong>{page}</strong>
+            </div>
           </div>
 
           <div className="topbar-actions">
@@ -481,9 +453,7 @@ function Workspace({ email }: { email: string }) {
                 size={17}
               />
 
-              <span>
-                Search anything...
-              </span>
+              <span>Search your space</span>
             </button>
 
             <button

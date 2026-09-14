@@ -93,7 +93,16 @@ export default function AuthGate({ children }: {
 
   return (
     <main className="auth-page">
-      <div className="auth-brand"><span>H<span className="auth-dot">.</span></span> Herald College <small>STUDENT SPACE</small></div>
+      <div className="auth-story">
+        <div className="auth-brand"><span>H<span className="auth-dot">.</span></span> Herald College <small>STUDENT SPACE</small></div>
+        <div className="auth-story-copy">
+          <span>UNISYNC / PERSONAL CAMPUS DESK</span>
+          <h2>Less inbox.<br /><em>More clarity.</em></h2>
+          <p>Notices, dates and documents from Herald College, all in one space built around you.</p>
+          <div className="auth-story-tags"><span>01 / NOTICES</span><span>02 / SCHEDULE</span><span>03 / FILES</span></div>
+        </div>
+        <div className="auth-story-footer">HERALD COLLEGE <span>✳</span> YOUR SPACE, YOUR PACE</div>
+      </div>
       <section className="auth-card">
         <div className="auth-icon"><LockKeyhole size={22} /></div>
         {access.status === 'checking' ? (
@@ -126,7 +135,7 @@ export default function AuthGate({ children }: {
           </>
         )}
       </section>
-      <p className="auth-footer">UniSync · Your personal student assistant</p>
+      <p className="auth-footer">PRIVATE ACCESS · POWERED BY UNISYNC</p>
     </main>
   )
 }
