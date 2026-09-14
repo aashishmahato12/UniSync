@@ -66,10 +66,11 @@
 .desk-notice-row small { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; color: #78879a; font-size: 11px; line-height: 1.5; }
 .desk-empty { padding: 25px 0; color: #9aa7b7; font-size: 11px; }
 .desk-brief { display: flex; align-items: center; gap: 15px; padding: 18px 21px; border: 1px solid #dfe9fb; border-radius: 13px; background: #eaf2ff; }
+.desk-today { align-items: flex-start; padding: 22px 24px; background: linear-gradient(110deg, #eaf2ff, #f5f8ff 72%, #fff); }
 .desk-brief-icon { display: grid; place-items: center; flex: none; width: 36px; height: 36px; border-radius: 10px; background: #d5e6ff; color: #3978d7; }
 .desk-brief > div { flex: 1; min-width: 0; }
 .desk-brief > div > span { color: #6e8ebd; font-size: 9px; font-weight: 800; letter-spacing: .1em; }
-.desk-brief p { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; margin: 5px 0 0; color: #506682; font-size: 12px; line-height: 1.5; }
+.desk-brief p { margin: 7px 0 0; color: #394e6c; font-size: 14px; line-height: 1.55; }
 .desk-brief button { display: inline-flex; align-items: center; gap: 6px; flex: none; border: 0; background: none; color: #2b69c9; font-size: 10px; font-weight: 800; }
 @media (max-width: 1120px) { .desk-focus-grid, .desk-content-grid { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 900px) { .desk-focus-grid, .desk-content-grid { grid-template-columns: 1fr; } }

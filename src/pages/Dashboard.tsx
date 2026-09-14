@@ -51,10 +51,25 @@ export default function Dashboard({
   const actionPayment = duePayments.find(payment => payment.dueDate <= new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10))
   const importantNotice = notices.find(notice => notice.priority === 'High' && (!actionPayment || notice.category !== 'Payments'))
     || notices.find(notice => notice.priority === 'High')
-  const briefNotice = notices.find(notice => notice.id !== importantNotice?.id && (!actionPayment || notice.category !== 'Payments') && notice.summary && !/notice is in an attachment/i.test(notice.summary))
-    || notices.find(notice => notice.id !== importantNotice?.id && notice.summary && !/notice is in an attachment/i.test(notice.summary))
-    || importantNotice
   const actionCount = pending.length + (actionPayment ? 1 : 0)
+  const weekEnd = new Date(`${today}T12:00:00`)
+  weekEnd.setDate(weekEnd.getDate() + 7)
+  const weekEndDate = `${weekEnd.getFullYear()}-${String(weekEnd.getMonth() + 1).padStart(2, '0')}-${String(weekEnd.getDate()).padStart(2, '0')}`
+  const weekStart = new Date(`${today}T12:00:00`)
+  weekStart.setDate(weekStart.getDate() - 7)
+  const weekStartDate = `${weekStart.getFullYear()}-${String(weekStart.getMonth() + 1).padStart(2, '0')}-${String(weekStart.getDate()).padStart(2, '0')}`
+  const todayEvents = upcoming.filter(event => event.date === today)
+  const nearPayment = duePayments.find(payment => payment.dueDate <= weekEndDate)
+  const recentImportant = notices.find(notice => notice.priority === 'High' && notice.date >= weekStartDate && notice.summary && !/notice is in an attachment/i.test(notice.summary))
+  const briefParts = [
+    todayEvents.length
+      ? `${todayEvents.length === 1 ? todayEvents[0].title : `${todayEvents.length} events`} ${todayEvents.length === 1 ? 'is' : 'are'} on your schedule today${todayEvents.length === 1 && todayEvents[0].time ? ` at ${todayEvents[0].time}` : ''}.`
+      : upcoming[0] ? `Next up: ${upcoming[0].title} on ${formatDate(upcoming[0].date)}.` : '',
+    nearPayment ? `${nearPayment.title} is marked due${nearPayment.dueDate < today ? ' (tentative date passed)' : ` on the tentative date ${formatDate(nearPayment.dueDate)}`}; check the latest college notice.` : '',
+    recentImportant ? `Important notice: ${recentImportant.title}. ${recentImportant.summary.slice(0, 150)}${recentImportant.summary.length > 150 ? '…' : ''}` : '',
+    pending.length ? `${pending.length} calendar ${pending.length === 1 ? 'decision needs' : 'decisions need'} your approval.` : '',
+  ].filter(Boolean)
+  const briefText = briefParts.slice(0, 3).join(' ') || 'No new deadlines or important updates are saved for today.'
   const nextDates = [
     ...upcoming.map(event => ({ date: event.date, title: event.title, page: 'Events' as Page })),
     ...duePayments.filter(payment => payment.dueDate >= today).map(payment => ({ date: payment.dueDate, title: `${payment.title} · tentative fee date`, page: 'Payments' as Page })),
@@ -70,6 +85,12 @@ export default function Dashboard({
       </div>
       <button className="desk-calendar-button" onClick={() => navigate('Calendar')}><CalendarDays size={17} /> Open calendar <ArrowUpRight size={15} /></button>
     </header>
+
+    <section className="desk-brief desk-today">
+      <span className="desk-brief-icon"><Sparkles size={20} /></span>
+      <div><span>TODAY’S BRIEF · FROM SAVED RECORDS</span><p>{briefText}</p></div>
+      <button onClick={() => navigate('Ask AI')}>Ask AI <ArrowRight size={15} /></button>
+    </section>
 
     <div className="desk-stats" aria-label="Workspace snapshot">
       <button className="desk-stat" onClick={() => navigate('Events')}>
@@ -144,10 +165,5 @@ export default function Dashboard({
       </section>
     </div>
 
-    <section className="desk-brief">
-      <span className="desk-brief-icon"><Sparkles size={20} /></span>
-      <div><span>AI BRIEF · FROM A SAVED NOTICE</span><p>{briefNotice ? briefNotice.summary : 'When a college notice arrives, its summary will appear here.'}</p></div>
-      <button onClick={() => navigate('Ask AI')}>Ask AI <ArrowRight size={15} /></button>
-    </section>
   </div>
 }
