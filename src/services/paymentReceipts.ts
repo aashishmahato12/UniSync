@@ -63,7 +63,7 @@ export async function queueReceipt(request: ReceiptRequest): Promise<ReceiptJob>
   const { error: uploadError } = await supabase.storage
     .from(bucket)
     .upload(receiptPath, request.file, {
-      cacheControl: 'private, max-age=0',
+      cacheControl: '0',
       contentType: request.file.type,
       upsert: false,
     })

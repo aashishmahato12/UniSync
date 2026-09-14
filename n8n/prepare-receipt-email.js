@@ -15,12 +15,11 @@ if (!Number.isFinite(Number(job.amount)) || Number(job.amount) <= 0 ||
     !String(job.email_body || '').trim()) {
   throw new Error('Receipt job has missing payment details.');
 }
-const origin = 'https://qozetqmklegcnjgxtgpd.supabase.co';
-const url = new URL(String(job.signed_receipt_url || ''));
-const expectedPath = '/storage/v1/object/sign/payment-receipts/' +
-  String(job.receipt_path || '').split('/').map(encodeURIComponent).join('/');
-if (url.origin !== origin || decodeURI(url.pathname) !== decodeURI(expectedPath) ||
-    !url.searchParams.has('token')) {
+const receiptUrl = String(job.signed_receipt_url || '');
+const expectedPrefix = 'https://qozetqmklegcnjgxtgpd.supabase.co/storage/v1/object/sign/payment-receipts/';
+const expectedPath = String(job.receipt_path || '').split('/').map(encodeURIComponent).join('/');
+if (!receiptUrl.startsWith(expectedPrefix + expectedPath + '?') ||
+    !receiptUrl.includes('?token=')) {
   throw new Error('Receipt URL does not match the private Supabase file path.');
 }
 if (!['application/pdf', 'image/jpeg', 'image/png'].includes(job.receipt_mime)) {
@@ -41,7 +40,6 @@ return { json: {
   recipient,
   subject,
   message: String(job.email_body).trim() + '\n' + details.join('\n'),
-  receiptUrl: url.toString(),
+  receiptUrl,
   receiptName: String(job.receipt_name || 'receipt').slice(0, 180),
 } };
-

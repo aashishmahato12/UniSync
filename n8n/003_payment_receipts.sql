@@ -5,7 +5,10 @@ begin;
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values ('payment-receipts', 'payment-receipts', false, 10485760,
   array['application/pdf', 'image/jpeg', 'image/png'])
-on conflict (id) do nothing;
+on conflict (id) do update set
+  public = false,
+  file_size_limit = excluded.file_size_limit,
+  allowed_mime_types = excluded.allowed_mime_types;
 
 create table if not exists public.payment_receipt_jobs (
   id uuid primary key default gen_random_uuid(),

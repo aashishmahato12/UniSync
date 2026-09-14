@@ -11,7 +11,7 @@ The Gmail workflow is [**Herald College — Gmail notices to Supabase**](http://
 5. Upsert the notice into Supabase by Gmail message ID.
 6. Insert event candidates with `Pending` calendar status. Reprocessing does not overwrite an event that was already `Added` or `Ignored`.
 
-No Google Calendar event is created and no receipt email is sent by this workflow. Those will be separate, user-initiated workflows after the data flow is tested.
+This intake workflow does not create calendar events or send receipt emails. Those functions use separate workflows.
 
 ## Finish setup
 
@@ -40,6 +40,19 @@ The existing Supabase Header Auth credential is selected in both database nodes,
 Untimed events are all-day events in Asia/Kathmandu. Timed events use the extracted start and end; if no valid end exists, they last one hour. This workflow does not delete or edit a Google event after sync. The app therefore does not offer an undo action once an event is approved.
 
 Run `node n8n/build-calendar-workflow.mjs` after changing the two calendar Code snippets, then run `node n8n/test-calendar-workflow.mjs`.
+
+## Payment receipt email
+
+The separate [payment receipt workflow](https://catty-amino-bulldozer.ngrok-free.dev/workflow/7eFeBe0xlgu1jyEi) is published in n8n. Its project source is [payment-receipts-to-gmail.json](./payment-receipts-to-gmail.json). The website uploads receipts into a private Supabase bucket and queues jobs; n8n claims a job, downloads the file, sends it with Gmail, then records the Gmail message ID. A successful five-minute queue check alone does **not** prove an email was sent.
+
+The workflow currently targets `aashishmahato8000@gmail.com`, confirmed as the owner's **test inbox**, not the college's receipt address. The app labels that destination as test mode when `recipient_label` matches it. Keep real payment proofs out of the test flow until the college's exact address is verified.
+
+1. Run [003_payment_receipts.sql](./003_payment_receipts.sql) in the UniSync Supabase SQL Editor. It creates the private receipt bucket, owner-only queue, and claim function. The settings row starts disabled.
+2. Confirm the live workflow's Supabase Header Auth and Gmail credentials are selected. The n8n URL is for managing the workflow; Vercel talks to Supabase and does not need to call the ngrok URL.
+3. For a controlled test, set `payment_receipt_settings.recipient_label` to the test inbox and `enabled` to true in Supabase. Use a **non-sensitive sample receipt** in the app. Check the n8n execution past the Gmail node, the Gmail Sent folder, the test inbox, and the app's job status. Set `enabled` back to false if any step fails.
+4. When the college gives its verified receipt address, change the recipient in the live **Prepare Receipt Email** node and in [prepare-receipt-email.js](./prepare-receipt-email.js), rebuild with `node n8n/build-receipt-workflow.mjs`, and update `recipient_label` to the same address. Publish the changed live workflow. Confirm with the college before sending a real receipt.
+
+The importable JSON is intentionally inactive and contains no credentials; importing it over the live workflow would lose the existing credential selections. Run `node n8n/test-receipt-workflow.mjs` to validate the source and exported Code nodes. Avoid storing the Supabase secret key in this repository.
 
 ## References
 

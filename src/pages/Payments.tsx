@@ -72,6 +72,8 @@ export default function Payments({
 
   const inputRef = useRef<HTMLInputElement>(null)
   const selected = payments.find(p => p.id === selectedPayment) || firstPayment
+  const testRecipient = receiptSettings?.recipient_label?.toLowerCase() === 'aashishmahato8000@gmail.com'
+  const sendLabel = testRecipient ? 'Send test receipt' : 'Send receipt'
 
   const choosePayment = (id: string) => {
     const payment = payments.find(p => p.id === id)
@@ -129,7 +131,9 @@ export default function Payments({
       })
       setReceiptJobs(current => [job, ...current])
       setPreview(false)
-      notify('Receipt queued for n8n. Check its status here before assuming it was sent.')
+      notify(testRecipient
+        ? 'Test receipt queued for your inbox. This is not a college submission.'
+        : 'Receipt queued for n8n. Check its status here before assuming it was sent.')
     } catch (error) {
       const duplicate = typeof error === 'object' && error !== null &&
         'code' in error && error.code === '23505'
@@ -214,7 +218,9 @@ export default function Payments({
         <section className="panel payment-form-panel">
           <SectionHeading eyebrow="PAYMENT PROOF" title="Prepare a receipt email" />
           <div className="demo-note"><AlertCircle size={17} /><span>{receiptSettings?.enabled && receiptSettings.recipient_label
-            ? `Ready to queue through n8n for ${receiptSettings.recipient_label}. A receipt is only marked Sent after Gmail accepts it.`
+            ? testRecipient
+              ? `Test mode: receipts go to your inbox (${receiptSettings.recipient_label}), not the college. Check the status below after sending.`
+              : `Ready to queue through n8n for ${receiptSettings.recipient_label}. A receipt is only marked Sent after Gmail accepts it.`
             : receiptSetupError
               ? 'Receipt sending needs the Supabase setup. Your draft has not been sent.'
               : 'Receipt sending is waiting for the college email address and n8n setup. You can still prepare a draft.'}</span></div>
@@ -238,7 +244,7 @@ export default function Payments({
           <div className="form-actions">
             <button className="secondary-button" onClick={() => setPreview(true)}>Preview email</button>
             <button className="primary-button" onClick={submit} disabled={!receiptSettings?.enabled || !receiptSettings.recipient_label || sending}>
-              {sending ? 'Queuing…' : 'Send receipt'} <Send size={16} />
+              {sending ? 'Queuing…' : sendLabel} <Send size={16} />
             </button>
           </div>
         </section>
@@ -262,16 +268,18 @@ export default function Payments({
         <Modal title="Email preview" onClose={() => setPreview(false)}>
           <div className="email-preview">
             <div><span>To</span><strong>{receiptSettings?.recipient_label || 'Accounts Office · address not configured'}</strong></div>
-            <div><span>Subject</span><strong>Payment receipt — {selected.title}</strong></div>
+            <div><span>Subject</span><strong>Herald College payment receipt — {selected.title}</strong></div>
             <div><span>Details</span><strong>{money(Number(amount) || 0)} · {paidOn ? formatDate(paidOn, { day: 'numeric', month: 'long', year: 'numeric' }) : 'Date missing'} · {transactionId || 'Transaction ID missing'} · {paymentType}</strong></div>
             <div><span>Attachment</span><strong>{file?.name || 'No receipt attached'}</strong></div>
             <pre>{body}</pre>
           </div>
-          <div className="demo-note"><AlertCircle size={17} /><span>This is a preview. Sending queues the receipt in Supabase; n8n will deliver it through Gmail.</span></div>
+          <div className="demo-note"><AlertCircle size={17} /><span>{testRecipient
+            ? 'Test mode: this email is addressed to your inbox, not the college. Sending queues it in Supabase for n8n.'
+            : 'This is a preview. Sending queues the receipt in Supabase; n8n will deliver it through Gmail.'}</span></div>
           <div className="modal-actions">
             <button className="secondary-button" onClick={() => setPreview(false)}>Edit details</button>
             <button className="primary-button" onClick={submit} disabled={!receiptSettings?.enabled || !receiptSettings.recipient_label || sending}>
-              {sending ? 'Queuing…' : 'Send receipt'} <Send size={16} />
+              {sending ? 'Queuing…' : sendLabel} <Send size={16} />
             </button>
           </div>
         </Modal>
