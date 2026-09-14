@@ -1,11 +1,44 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowRight, ExternalLink, Sparkles } from 'lucide-react'
+import { ArrowRight, Check, Copy, ExternalLink, Sparkles } from 'lucide-react'
 
 import { studentService } from '../services/mockService'
 import type { AssistantSource } from '../services/localAssistant'
 import type { EventItem, Payment } from '../data'
 import { PageIntro } from '../components/UI'
 import './AskAI.css'
+
+function InlineText({ text }: { text: string }) {
+  return <>{text.split(/(\*\*[^*]+\*\*)/g).map((part, index) =>
+    part.startsWith('**') && part.endsWith('**')
+      ? <strong key={index}>{part.slice(2, -2)}</strong>
+      : part
+  )}</>
+}
+
+function ReadableAnswer({ text }: { text: string }) {
+  const lines = text.split(/\r?\n/)
+  const blocks: { type: 'heading' | 'paragraph' | 'list'; lines: string[] }[] = []
+  for (const line of lines) {
+    const value = line.trim()
+    if (!value) continue
+    const isHeading = /^#{1,3}\s+/.test(value)
+    const isList = /^(?:[-*•]\s*|\d+[.)]\s+)/.test(value)
+    const type = isHeading ? 'heading' : isList ? 'list' : 'paragraph'
+    const cleaned = isHeading ? value.replace(/^#{1,3}\s+/, '')
+      : isList ? value.replace(/^(?:[-*•]\s*|\d+[.)]\s+)/, '') : value
+    const last = blocks[blocks.length - 1]
+    if (last?.type === type && type !== 'heading') last.lines.push(cleaned)
+    else blocks.push({ type, lines: [cleaned] })
+  }
+  return <div className="chat-readable">
+    {blocks.map((block, index) => block.type === 'heading'
+      ? <h3 key={index}><InlineText text={block.lines[0]} /></h3>
+      : block.type === 'list'
+        ? <ul key={index}>{block.lines.map((line, itemIndex) => <li key={itemIndex}><InlineText text={line} /></li>)}</ul>
+        : <p key={index}>{block.lines.map((line, itemIndex) => <span key={itemIndex}><InlineText text={line} />{itemIndex < block.lines.length - 1 && <br />}</span>)}</p>
+    )}
+  </div>
+}
 
 export default function AskAI({ payments, events, updateCalendar }: {
   payments: Payment[]
@@ -29,6 +62,7 @@ export default function AskAI({ payments, events, updateCalendar }: {
 
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
 
   const bottom = useRef<HTMLDivElement>(null)
 
@@ -106,16 +140,22 @@ export default function AskAI({ payments, events, updateCalendar }: {
                 )}
 
                 <div className="chat-answer">
-                  <p>{message.text}</p>
+                  {message.role === 'assistant' ? <ReadableAnswer text={message.text} /> : <p>{message.text}</p>}
                   {message.mode === 'search' && <small className="chat-answer-mode">Saved-record search</small>}
                   {!!message.sources?.length && (
-                    <div className="chat-sources">
-                      {message.sources.map(source => source.url ? (
-                        <a key={source.id} href={source.url} target="_blank" rel="noopener noreferrer">
-                          {source.kind}: {source.title} <ExternalLink size={12} />
-                        </a>
-                      ) : <span key={source.id}>{source.kind}: {source.title}</span>)}
-                    </div>
+                    <details className="chat-source-panel">
+                      <summary>Sources <span>{message.sources.length}</span></summary>
+                      <div className="chat-sources">
+                        {message.sources.map(source => <div className="chat-source-card" key={source.id}>
+                          <span className="chat-source-kind">{source.kind}</span>
+                          <strong>{source.title}</strong>
+                          <div className="chat-source-links">
+                            {source.url && <a href={source.url} target="_blank" rel="noopener noreferrer">Open original <ExternalLink size={12} /></a>}
+                            <button onClick={() => void ask(`Tell me more about ${source.title}`)} disabled={busy}>Ask about this <ArrowRight size={12} /></button>
+                          </div>
+                        </div>)}
+                      </div>
+                    </details>
                   )}
                   {!!message.actions?.length && <div className="chat-actions">
                     {message.actions.map(action => {
@@ -127,6 +167,13 @@ export default function AskAI({ payments, events, updateCalendar }: {
                       </button>
                     })}
                   </div>}
+                  {message.role === 'assistant' && index > 0 && <button className="chat-copy" onClick={async () => {
+                    await navigator.clipboard.writeText(message.text)
+                    setCopiedIndex(index)
+                  }} aria-label="Copy answer">
+                    {copiedIndex === index ? <Check size={13} /> : <Copy size={13} />}
+                    {copiedIndex === index ? 'Copied' : 'Copy answer'}
+                  </button>}
                 </div>
               </div>
             ))}
