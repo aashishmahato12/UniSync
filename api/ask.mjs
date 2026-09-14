@@ -6,7 +6,7 @@ const tokens = text => [...new Set((text.toLowerCase().match(/[a-z0-9]{3,}/g) ||
   .filter(word => !'the and for from have with your about what when where which please show tell college herald'.split(' ').includes(word)))]
 const score = (text, terms) => terms.reduce((total, term) => total + (text.toLowerCase().includes(term) ? 1 : 0), 0)
 
-export default async function handler(request) {
+export default { async fetch(request) {
   if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405)
   const url = process.env.VITE_SUPABASE_URL
   const key = process.env.VITE_SUPABASE_PUBLISHABLE_KEY
@@ -85,4 +85,4 @@ export default async function handler(request) {
   const answer = String(raw.answer || '').trim().slice(0, 3000)
   if (!answer) return json({ error: 'AI workflow returned an empty answer.' }, 502)
   return json({ answer, sources, actions, mode: 'ai' })
-}
+} }

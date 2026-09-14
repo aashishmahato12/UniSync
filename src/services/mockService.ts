@@ -215,7 +215,7 @@ export const studentService = {
         }
         if (response.status !== 404) {
           const body = await response.json().catch(() => ({}))
-          throw new Error(body.error || 'AI chat is unavailable.')
+          throw new Error(body.error || `AI service error (${response.status}). Please try again after deployment.`)
         }
       }
     }
