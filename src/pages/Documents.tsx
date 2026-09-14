@@ -8,6 +8,29 @@ const topicFor = (file: DocumentItem) => file.emailSubject === '(No subject)'
   ? `${file.category} update from Herald College`
   : file.emailSubject
 
+type EmailGroup = { key: string; files: DocumentItem[] }
+type DayGroup = { key: string; sender: string; date: string; emails: EmailGroup[] }
+
+function groupDocuments(files: DocumentItem[]): DayGroup[] {
+  const days = new Map<string, DayGroup>()
+  for (const file of files) {
+    const dayKey = `${file.sender.trim().toLowerCase()}|${file.date}`
+    let day = days.get(dayKey)
+    if (!day) {
+      day = { key: dayKey, sender: file.sender, date: file.date, emails: [] }
+      days.set(dayKey, day)
+    }
+    const emailKey = file.gmailMessageId || `${file.emailSubject}|${file.sourceUrl}`
+    let email = day.emails.find(item => item.key === emailKey)
+    if (!email) {
+      email = { key: emailKey, files: [] }
+      day.emails.push(email)
+    }
+    email.files.push(file)
+  }
+  return [...days.values()]
+}
+
 export default function Documents({
   documents,
   loadError,
@@ -27,17 +50,19 @@ export default function Documents({
     return () => window.removeEventListener('keydown', closeOnEscape)
   }, [selected])
   const categories = ['Academic', 'Finance', 'Campus', 'General']
-  const filtered = documents.filter(file =>
-    (category === 'All files' || file.category === category) &&
-    `${file.name} ${file.emailSubject} ${file.sender} ${file.noticeSummary ?? ''} ${file.extractedText ?? ''}`.toLowerCase().includes(query.toLowerCase())
-  )
+  const categoryFiles = documents.filter(file => category === 'All files' || file.category === category)
+  const search = query.trim().toLowerCase()
+  const groups = groupDocuments(categoryFiles).filter(group => !search || group.emails.some(email => email.files.some(file =>
+    `${file.name} ${file.emailSubject} ${file.sender} ${file.noticeSummary ?? ''} ${file.extractedText ?? ''}`.toLowerCase().includes(search)
+  )))
+  const visibleFiles = groups.reduce((count, group) => count + group.emails.reduce((total, email) => total + email.files.length, 0), 0)
 
   return (
     <>
       <div className="page-intro">
         <div>
           <h1>Documents</h1>
-          <p>Your college files, their email context, and the text that has been read from them.</p>
+          <p>Your college files grouped by sender and day, with each email’s topic and attachments together.</p>
         </div>
       </div>
       <div className="document-categories">
@@ -54,7 +79,7 @@ export default function Documents({
       </div>
       <div className="document-panel">
         <div className="document-toolbar">
-          <SectionHeading eyebrow="COLLEGE LIBRARY" title={`${filtered.length} ${filtered.length === 1 ? 'document' : 'documents'}`} />
+          <SectionHeading eyebrow="COLLEGE LIBRARY" title={`${groups.length} ${groups.length === 1 ? 'sender day' : 'sender days'} · ${visibleFiles} ${visibleFiles === 1 ? 'file' : 'files'}`} />
           <div className="document-search">
             <Search size={16} />
             <input
@@ -65,31 +90,35 @@ export default function Documents({
             />
           </div>
         </div>
-        {filtered.length ? <div className="document-grid">{filtered.map(file => (
-          <article className="document-card" key={file.id}>
+        {groups.length ? <div className="document-grid">{groups.map(group => {
+          const fileCount = group.emails.reduce((count, email) => count + email.files.length, 0)
+          return <article className="document-card" key={group.key}>
             <div className="document-card-top">
-              <span className="document-icon"><FileText size={21} /></span>
-              <span className="document-card-category">{file.category}</span>
+              <span className="document-icon"><Mail size={21} /></span>
+              <span className="document-card-category">{fileCount} {fileCount === 1 ? 'file' : 'files'}</span>
             </div>
             <div className="document-card-content">
-              <p className="document-card-from">From {file.sender} · {formatDate(file.date)}</p>
-              <h3 title={topicFor(file)}>{topicFor(file)}</h3>
-              <p className="document-card-preview">{file.noticeSummary || (file.extractedText ? file.extractedText.slice(0, 200) : 'Open this file to read its college notice.')}</p>
-              <div className="document-card-file">
-                <FileText size={16} />
-                <div><span>ATTACHED FILE</span><strong title={file.name}>{file.name}</strong><small>{file.type} · {file.size}</small></div>
-              </div>
-            </div>
-            <div className="document-card-bottom">
-              <span className={`document-read-state ${file.extractedText ? 'ready' : ''}`}>{file.extractedText ? 'File text ready' : file.extractionStatus === 'No text' ? 'Could not read text' : 'File text pending'}</span>
-              <div className="document-card-actions">
-                <button className="document-card-read" onClick={() => setSelected(file)}>Read details</button>
-                <button aria-label={`Open file ${file.name}`} title="Open original file" onClick={() => onOpen(file)}><ExternalLink size={15} /></button>
-                <a href={file.sourceUrl} target="_blank" rel="noopener noreferrer" aria-label={`Open source email for ${file.name}`} title="Open source email"><Mail size={15} /></a>
-              </div>
+              <p className="document-card-from">From {group.sender} · {formatDate(group.date)}</p>
+              <p className="document-card-meta">{group.emails.length} {group.emails.length === 1 ? 'email' : 'emails'} on this day</p>
+              <div className="document-email-list">{group.emails.map(email => {
+                const lead = email.files[0]
+                const summary = email.files.find(file => file.noticeSummary)?.noticeSummary
+                const text = email.files.find(file => file.extractedText)?.extractedText
+                return <section className="document-email" key={email.key}>
+                  <h3 title={topicFor(lead)}>{topicFor(lead)}</h3>
+                  <p className="document-card-preview">{summary || (text ? text.slice(0, 200) : 'Open a file to read its college notice.')}</p>
+                  <div className="document-attachment-list">{email.files.map(file => <div className="document-card-file" key={file.id}>
+                    <FileText size={16} />
+                    <div className="document-file-info"><strong title={file.name}>{file.name}</strong><small>{file.type} · {file.size} · {file.extractedText ? 'Text ready' : file.extractionStatus === 'No text' ? 'No text found' : 'Text pending'}</small></div>
+                    <button className="document-file-read" onClick={() => setSelected(file)} aria-label={`Read details for ${file.name}`}>Read</button>
+                    <button className="document-file-open" onClick={() => onOpen(file)} aria-label={`Open original file ${file.name}`} title="Open original file"><ExternalLink size={15} /></button>
+                  </div>)}</div>
+                  <a className="document-email-source" href={lead.sourceUrl} target="_blank" rel="noopener noreferrer"><Mail size={14} /> Open source email</a>
+                </section>
+              })}</div>
             </div>
           </article>
-        ))}</div> : (
+        })}</div> : (
           <EmptyState
             title={loadError ? 'Documents need setup' : documents.length ? 'No matching files' : 'No documents yet'}
             copy={loadError
