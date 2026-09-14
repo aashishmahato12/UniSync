@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 const ownerEmail = 'mahatoaashish5@gmail.com'
 const json = (body, status = 200) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store' } })
 const tokens = text => [...new Set((text.toLowerCase().match(/[a-z0-9]{3,}/g) || [])
-  .filter(word => !'the and for from have with your about what when where which please show tell college herald'.split(' ').includes(word)))]
+  .filter(word => !'the and for from have with your about what when where which please show tell college herald does say'.split(' ').includes(word)))]
 const score = (text, terms) => terms.reduce((total, term) => total + (text.toLowerCase().includes(term) ? 1 : 0), 0)
 
 export default { async fetch(request) {
@@ -39,6 +39,8 @@ export default { async fetch(request) {
     client.from('college_attachments').select('id,file_name,subject,sender,extracted_text,received_at,gmail_message_id').eq('extraction_status', 'Ready').order('received_at', { ascending: false }).limit(120),
   ])
   if (noticesResult.error || eventsResult.error) return json({ error: 'Could not read college records.' }, 502)
+  const asksAboutFile = /\b(pdf|document|attachment|file|image|scan)\b/i.test(question)
+  if (asksAboutFile && documentsResult.error) return json({ error: 'Could not load read documents. Check the attachment-text setup in Supabase.' }, 502)
   const terms = tokens(question)
   const notices = (noticesResult.data || []).map(row => ({
     id: row.id, kind: 'Notice', title: row.subject, date: row.received_at?.slice(0, 10) || '',
@@ -61,6 +63,23 @@ export default { async fetch(request) {
     url: /^[a-zA-Z0-9_-]{8,100}$/.test(row.gmail_message_id || '')
       ? `https://mail.google.com/mail/u/0/#all/${encodeURIComponent(row.gmail_message_id)}` : undefined,
   }))
+  if (asksAboutFile && !documents.length) return json({
+    answer: 'I can see that you asked about a file, but no PDF or image text is ready yet. Check the attachment reader and try again after a file shows as Ready.',
+    sources: [], actions: [], mode: 'ai',
+  })
+  const fileTerms = terms.filter(term => !['pdf', 'document', 'attachment', 'file', 'image', 'scan', 'read', 'inside'].includes(term))
+  const matchingDocuments = asksAboutFile ? documents.map(item => ({ item,
+    rank: score(`${item.title} ${item.detail}`, fileTerms),
+  })).filter(entry => entry.rank > 0).sort((a, b) => b.rank - a.rank || b.item.date.localeCompare(a.item.date)) : []
+  if (asksAboutFile && fileTerms.length <= 2 && (matchingDocuments.length > 1 || (!fileTerms.length && documents.length > 1))) {
+    const candidates = matchingDocuments.length ? matchingDocuments.map(entry => entry.item) : documents
+    const choices = candidates.slice(0, 5)
+    return json({
+      answer: `I found ${candidates.length} read files that could match. Which one do you mean? Choose a source below, then use “Ask about this.”`,
+      sources: choices.map(({ id, kind, title, url }) => ({ id, kind, title, url })),
+      actions: [], mode: 'ai',
+    })
+  }
   const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kathmandu', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date())
   const ranked = [...notices, ...events, ...documents].map(item => ({ item,
     rank: score(`${item.title} ${item.detail} ${item.category}`, terms) +
@@ -70,8 +89,10 @@ export default { async fetch(request) {
       (item.kind === 'Document' && /document|attachment|file|pdf|image|scan|read|inside/i.test(question) ? 2 : 0),
   })).sort((a, b) => b.rank - a.rank || (a.item.kind === 'Event' && b.item.kind === 'Event' && a.item.date >= today && b.item.date >= today
     ? a.item.date.localeCompare(b.item.date) : b.item.date.localeCompare(a.item.date)))
-  const context = ranked.filter(entry => entry.rank > 0).slice(0, 12).map(entry => entry.item)
-  if (!context.length) return json({ answer: 'I could not find a matching saved notice or event.', sources: [], actions: [], mode: 'ai' })
+  const context = asksAboutFile
+    ? (matchingDocuments.length ? matchingDocuments.slice(0, 4).map(entry => entry.item) : documents.slice(0, 4))
+    : ranked.filter(entry => entry.rank > 0).slice(0, 12).map(entry => entry.item)
+  if (!context.length) return json({ answer: 'I could not find a matching saved college record.', sources: [], actions: [], mode: 'ai' })
 
   let upstream
   try {
