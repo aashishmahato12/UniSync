@@ -1,7 +1,7 @@
 export type CalendarState = 'Pending' | 'Added' | 'Ignored'
 export type EventCategory = 'Exam' | 'Deadline' | 'College event' | 'Holiday'
 export type EventItem = { id: string; title: string; date: string; time?: string; location?: string; category: EventCategory; description: string; source: string; calendarState: CalendarState; googleCalendarEventId?: string }
-export type Notice = { id: string; title: string; date: string; category: string; priority: 'High' | 'Normal'; summary: string; attachment?: string; source: string }
+export type Notice = { id: string; title: string; date: string; category: string; priority: 'High' | 'Normal'; summary: string; attachment?: string; attachmentNames?: string[]; gmailMessageId?: string; sourceUrl?: string; source: string }
 export type PaymentStatus = 'Due' | 'Paid' | 'Receipt Uploaded' | 'Receipt Sent' | 'Awaiting Confirmation' | 'Confirmed'
 export type Payment = {
   id: string
@@ -18,7 +18,7 @@ export type Payment = {
   details: string
   transactionId?: string
 }
-export type DocumentItem = { id: string; name: string; category: string; date: string; size: string; type: string }
+export type DocumentItem = { id: string; name: string; category: string; date: string; size: string; type: string; mimeType: string; storagePath: string; gmailMessageId: string; noticeTitle: string }
 
 const year = new Date().getFullYear()
 const month = new Date().getMonth()
@@ -49,12 +49,5 @@ export const payments: Payment[] = [
 ]
 export const paymentScheduleTotals = { admissionFee: 140000, universityExamFee: 330000, collegeFee: 922500, total: 1392500 }
 
-export const documents: DocumentItem[] = [
-  { id: 'd1', name: 'Practical timetable.pdf', category: 'Academic', date: iso(11), size: '238 KB', type: 'PDF' },
-  { id: 'd2', name: 'Revised class routine.pdf', category: 'Academic', date: iso(10), size: '184 KB', type: 'PDF' },
-  { id: 'd3', name: 'Fee payment instructions.pdf', category: 'Finance', date: iso(12), size: '312 KB', type: 'PDF' },
-  { id: 'd4', name: 'Student ID card.png', category: 'Personal', date: iso(1), size: '1.4 MB', type: 'Image' },
-  { id: 'd5', name: 'Semester registration.pdf', category: 'Forms', date: iso(4), size: '428 KB', type: 'PDF' },
-]
 export const formatDate = (value: string, options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' }) => new Date(`${value}T12:00:00`).toLocaleDateString('en-US', options)
 export const money = (value: number) => `NPR ${value.toLocaleString('en-US')}`

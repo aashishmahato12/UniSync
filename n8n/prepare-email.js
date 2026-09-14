@@ -18,6 +18,8 @@ function collect(part, output = { plain: [], html: [], attachments: [] }) {
 }
 
 const contents = collect(message.payload);
+const downloadedNames = Object.values($input.item.binary || {})
+  .map(file => String(file.fileName || '').trim()).filter(Boolean);
 const stripHtml = html => html.replace(/<style[\s\S]*?<\/style>/gi, ' ')
   .replace(/<script[\s\S]*?<\/script>/gi, ' ')
   .replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ')
@@ -37,7 +39,8 @@ const plain = message.textPlain || message.text || contents.plain.join('\n');
 const html = message.textHtml || message.html || contents.html.join('\n');
 const body = String(plain || stripHtml(String(html || '')) || message.snippet || '').slice(0, 20000);
 const id = message.id || '';
-if (!id || !body.trim()) throw new Error('Email ID or body missing. Check Gmail Get Message settings.');
+if (!id || (!body.trim() && !downloadedNames.length && !contents.attachments.length))
+  throw new Error('Email ID or notice content missing. Check Gmail Get Message settings.');
 const rawDate = message.internalDate ? Number(message.internalDate) : (message.date || headers.date);
 const dateValue = typeof rawDate === 'number' && rawDate < 100000000000 ? rawDate * 1000 : rawDate;
 const parsedDate = dateValue ? new Date(dateValue) : null;
@@ -49,7 +52,8 @@ return { json: {
   subject,
   sender,
   received_at: received,
-  attachment_names: [...new Set(contents.attachments)],
+  attachment_names: [...new Set([...contents.attachments, ...downloadedNames])],
+  attachment_only: !body.trim(),
   source_url: `https://mail.google.com/mail/u/0/#all/${id}`,
-  ai_input: `Today's date: ${new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kathmandu', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date())}. Time zone: Asia/Kathmandu.\nSender: ${sender}\nSubject: ${subject}\nReceived: ${received || 'unknown'}\n\n${body}`,
+  ai_input: `Today's date: ${new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kathmandu', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date())}. Time zone: Asia/Kathmandu.\nSender: ${sender}\nSubject: ${subject}\nReceived: ${received || 'unknown'}\nAttachments: ${[...new Set([...contents.attachments, ...downloadedNames])].join(', ') || 'none'}\n\n${body || 'The email has no body; the notice is in an attachment. Do not invent its contents or dates.'}`,
 } };

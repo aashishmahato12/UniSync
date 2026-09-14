@@ -28,7 +28,6 @@ import {
 } from 'lucide-react'
 
 import {
-  documents as seedDocuments,
   payments as seedPayments,
   type CalendarState,
   type DocumentItem,
@@ -135,7 +134,9 @@ function Workspace({ email }: { email: string }) {
   }, [payments])
 
   const [documents, setDocuments] =
-    useState<DocumentItem[]>(seedDocuments)
+    useState<DocumentItem[]>([])
+
+  const [documentsError, setDocumentsError] = useState(false)
 
   const [toast, setToast] =
     useState('')
@@ -184,6 +185,9 @@ function Workspace({ email }: { email: string }) {
 
         setNotices(noticeData)
         setEvents(eventData)
+        void studentService.getDocuments(noticeData)
+          .then(files => { setDocuments(files); setDocumentsError(false) })
+          .catch(error => { console.error('Could not load documents:', error); setDocumentsError(true) })
       } catch (error) {
         console.error(error)
       } finally {
@@ -200,6 +204,32 @@ function Workspace({ email }: { email: string }) {
         .then(setEvents)
         .catch(error => console.error('Could not refresh events:', error))
     }, 30000)
+    return () => window.clearInterval(timer)
+  }, [])
+
+  const openDocument = async (file: DocumentItem) => {
+    const tab = window.open('about:blank', '_blank')
+    try {
+      const url = await studentService.openDocument(file)
+      if (tab) tab.location.href = url
+      else window.location.href = url
+    } catch (error) {
+      tab?.close()
+      console.error('Could not open document:', error)
+      notify('Could not open this file. Please try again.')
+    }
+  }
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      void studentService.getNotices()
+        .then(latest => {
+          setNotices(latest)
+          return studentService.getDocuments(latest)
+        })
+        .then(files => { setDocuments(files); setDocumentsError(false) })
+        .catch(error => { console.error('Could not refresh notices or documents:', error) })
+    }, 60000)
     return () => window.clearInterval(timer)
   }, [])
 
@@ -554,12 +584,8 @@ function Workspace({ email }: { email: string }) {
                   documents={
                     documents
                   }
-                  setDocuments={
-                    setDocuments
-                  }
-                  notify={
-                    notify
-                  }
+                  loadError={documentsError}
+                  onOpen={openDocument}
                 />
               )}
 
@@ -655,12 +681,19 @@ function Workspace({ email }: { email: string }) {
             }
           </p>
 
-          <button>
-            <ExternalLink
-              size={15}
-            />
-            Original source
-          </button>
+          {documents.filter(file => file.gmailMessageId === selectedNotice.gmailMessageId).map(file => (
+            <button key={file.id} className="secondary-button" onClick={() => void openDocument(file)}>
+              <FileText size={15} /> Open {file.name}
+            </button>
+          ))}
+          {selectedNotice.attachmentNames?.filter(name =>
+            !documents.some(file => file.gmailMessageId === selectedNotice.gmailMessageId && file.name === name)
+          ).map(name => <p key={name}>Attachment in Gmail: {name}</p>)}
+          {selectedNotice.sourceUrl && (
+            <a className="secondary-button" href={selectedNotice.sourceUrl} target="_blank" rel="noopener noreferrer">
+              <ExternalLink size={15} /> Original email
+            </a>
+          )}
         </Modal>
       )}
 

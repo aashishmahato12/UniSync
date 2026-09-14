@@ -25,4 +25,4 @@ Notices and events load from Supabase; calendar approval states are saved there.
 
 The payment form uploads a PDF/JPG/PNG receipt to private Supabase Storage and queues an email job only when `payment_receipt_settings.enabled` is true. The separate n8n workflow polls the queue, sends through Gmail, and updates the job status. The website shows that status; clicking Send first means **queued**, not delivered. The configured recipient is currently the owner's **test inbox**, so a test send is not a college submission. Follow the [receipt setup and test steps](./n8n/README.md) before using a real college address.
 
-Documents and Ask AI still use sample data through `src/services/mockService.ts`. Document and notice source links show previews until mail and file storage are connected.
+Documents now reads private college PDF/image attachments from Supabase after the [attachment migration and n8n workflow](./n8n/README.md) are applied. The notice modal links to its saved files and original Gmail message. Ask AI still uses sample behavior.

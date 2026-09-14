@@ -3,9 +3,11 @@ const source = $('Prepare Email').item.json;
 const raw = $json.output || $json;
 const allowedCategory = ['Payments','Exams','Academics','Campus life','General'];
 const allowedEventCategory = ['Exam','Deadline','College event','Holiday'];
-const summary = String(raw.summary || '').trim().slice(0, 1200);
+const summary = source.attachment_only
+  ? 'The notice is in an attachment. Open the file to read its details.'
+  : String(raw.summary || '').trim().slice(0, 1200);
 if (!summary) throw new Error('AI returned no summary. Review the extractor output.');
-const events = (Array.isArray(raw.events) ? raw.events : []).slice(0, 10)
+const events = (source.attachment_only ? [] : Array.isArray(raw.events) ? raw.events : []).slice(0, 10)
   .map((event, index) => ({
     event_key: `${source.gmail_message_id}:${index}`,
     gmail_message_id: source.gmail_message_id,

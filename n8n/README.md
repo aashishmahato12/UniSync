@@ -28,6 +28,16 @@ The importable file is [heritage-gmail-to-supabase.json](./heritage-gmail-to-sup
 
 The owner-only access migration is in [002_single_owner_access.sql](./002_single_owner_access.sql) and has been applied according to the user. The secret key is for n8n only; the website uses a publishable key and the approved email's session. Gmail mail bodies are sent to the configured Gemini API for extraction; the database stores only the derived fields and Gmail source reference.
 
+## College notice attachments
+
+Some college notices are PDF or image attachments with little or no email body. Apply [004_college_attachments.sql](./004_college_attachments.sql) to create a private file bucket and owner-only document rows. Then import [college-attachments-to-supabase.json](./college-attachments-to-supabase.json) as a **new, inactive** n8n workflow. Select the Gmail credential on its trigger and both Gmail Get nodes, and the Supabase secret-key HTTP credential on **Upload Private File** and **Save Document Row**. Keep secrets in n8n credentials, not in the JSON.
+
+Use **Manual Backfill** to test up to 20 existing Herald emails with attachments. Check that a PDF or image reaches the private bucket, a matching row appears in `college_attachments`, and the file opens from Documents and its notice in UniSync. Then publish the new workflow to collect future attachments. It accepts PDFs, JPEGs and PNGs up to 10 MB, validates the sender domain again, and uses stable file paths so retries do not create duplicates.
+
+The main Gmail notice workflow also needs its updated **Get Full Email** option (`Download Attachments` on), **Prepare Email** code, and **Validate Extraction** code from this repository. Test an attachment-only email before publishing that update. Such a notice is saved with an explicit “open the file” summary and no inferred events or deadlines; AI reading of PDF/image contents is a later step. The app never claims it read a file it has only stored.
+
+Run `node n8n/build-attachment-workflow.mjs` and `node n8n/test-attachment-workflow.mjs` after editing the attachment workflow.
+
 ## Google Calendar approval sync
 
 The [approval-sync workflow](http://192.168.0.58:30109/workflow/2mpPWZbKEfz6DMiD) is imported into n8n as an **inactive draft**. Its importable source is [here](./approved-events-to-google-calendar.json). It checks Supabase every five minutes for events that the app marked `Added` but have no `google_calendar_event_id`. It creates a Google Calendar event on the connected account's primary calendar, then stores the Google event ID in Supabase.

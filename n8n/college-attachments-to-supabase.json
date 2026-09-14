@@ -1,0 +1,270 @@
+{
+  "name": "Herald College — save Gmail attachments privately",
+  "nodes": [
+    {
+      "id": "bbca0e2f-7b5e-4000-a267-88f0647f96e1",
+      "name": "Gmail Attachment Trigger",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyX",
+              "value": 5,
+              "unit": "minutes"
+            }
+          ]
+        },
+        "simple": true,
+        "filters": {
+          "q": "from:(@heraldcollege.edu.np) has:attachment"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "0735e61e-1f58-4f32-ae37-717805362eaa",
+      "name": "Manual Backfill",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        240
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "9cf32f83-aa81-47ac-8e23-17a00a4a7d96",
+      "name": "Get Recent Attachment Emails",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        220,
+        240
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "getAll",
+        "returnAll": false,
+        "limit": 20,
+        "filters": {
+          "q": "from:(@heraldcollege.edu.np) has:attachment"
+        },
+        "simple": false,
+        "options": {
+          "downloadAttachments": true,
+          "dataPropertyAttachmentsPrefixName": "attachment_"
+        }
+      }
+    },
+    {
+      "id": "d037e886-96dd-419d-a7c6-66389e5b2c7d",
+      "name": "Get Email Attachments",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "get",
+        "messageId": "={{ $json.id }}",
+        "simple": false,
+        "options": {
+          "downloadAttachments": true,
+          "dataPropertyAttachmentsPrefixName": "attachment_"
+        }
+      }
+    },
+    {
+      "id": "28150dc8-f601-4b6f-8b7f-371cce133a0d",
+      "name": "Split Attachments",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Run once for all items after Gmail Get with Download Attachments enabled.\r\nconst output = [];\r\nconst allowed = new Set(['application/pdf', 'image/jpeg', 'image/png']);\r\nfor (const [itemIndex, item] of $input.all().entries()) {\r\n  const message = item.json;\r\n  const from = message.from || message.headers?.from || '';\r\n  const sender = typeof from === 'string' ? from : (from.text || from.value?.[0]?.address || '');\r\n  const address = (typeof from === 'object' && from.value?.[0]?.address\r\n    ? from.value[0].address : (/<([^<>]+)>/.exec(sender)?.[1] || sender))\r\n    .trim().toLowerCase();\r\n  if (!/^[^\\s@<>]+@heraldcollege\\.edu\\.np$/.test(address)) {\r\n    throw new Error('Attachment sender is outside the Herald College domain.');\r\n  }\r\n  const messageId = String(message.id || '');\r\n  if (!/^[a-zA-Z0-9_-]{8,100}$/.test(messageId)) {\r\n    throw new Error('Invalid Gmail message ID.');\r\n  }\r\n  const subject = String(message.subject || message.headers?.subject || '(No subject)').slice(0, 200);\r\n  const rawDate = message.date || message.internalDate || null;\r\n  const dateValue = /^\\d{12,}$/.test(String(rawDate || '')) ? Number(rawDate) : rawDate;\r\n  const received = dateValue && !Number.isNaN(new Date(dateValue).getTime())\r\n    ? new Date(dateValue).toISOString() : null;\r\n  for (const [property, file] of Object.entries(item.binary || {})) {\r\n    const mime = String(file.mimeType || '').toLowerCase();\r\n    if (!allowed.has(mime)) continue;\r\n    const index = Number(/(\\d+)$/.exec(property)?.[1] ?? output.length);\r\n    if (!Number.isInteger(index) || index < 0 || index > 49) continue;\r\n    const name = String(file.fileName || 'attachment')\r\n      .replace(/[\\/\\\\:<>\"|?*\\x00-\\x1f]/g, '_').slice(0, 180);\r\n    const sizeMatch = /^(\\d+(?:\\.\\d+)?)\\s*(B|KB|MB)?$/i.exec(String(file.fileSize || ''));\r\n    const multiplier = sizeMatch?.[2]?.toUpperCase() === 'MB' ? 1048576\r\n      : sizeMatch?.[2]?.toUpperCase() === 'KB' ? 1024 : 1;\r\n    const sizeBytes = sizeMatch ? Math.round(Number(sizeMatch[1]) * multiplier) : null;\r\n    if (sizeBytes !== null && (sizeBytes <= 0 || sizeBytes > 10485760)) continue;\r\n    const storagePath = `${messageId}/${index}-${name}`;\r\n    output.push({\r\n      json: {\r\n        gmail_message_id: messageId,\r\n        attachment_index: index,\r\n        file_name: name,\r\n        mime_type: mime,\r\n        size_bytes: sizeBytes,\r\n        storage_path: storagePath,\r\n        sender,\r\n        subject,\r\n        received_at: received,\r\n      },\r\n      binary: { data: file },\r\n      pairedItem: { item: itemIndex },\r\n    });\r\n  }\r\n}\r\nreturn output;\r\n"
+      }
+    },
+    {
+      "id": "784dc207-5035-4b25-b557-d0a8b4a03014",
+      "name": "Upload Private File",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ \"https://qozetqmklegcnjgxtgpd.supabase.co/storage/v1/object/college-attachments/\" + $json.storage_path.split(\"/\").map(encodeURIComponent).join(\"/\") }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "={{ $json.mime_type }}"
+            },
+            {
+              "name": "x-upsert",
+              "value": "true"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {
+          "timeout": 30000
+        }
+      }
+    },
+    {
+      "id": "1ac13df5-d996-4990-8034-53e8152001a8",
+      "name": "Restore File Metadata",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Restore source metadata after Supabase Storage returns its upload response.\r\nreturn { json: $('Split Attachments').item.json };\r\n"
+      }
+    },
+    {
+      "id": "86413b5b-c009-41c1-91bb-279b48e56e3f",
+      "name": "Save Document Row",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://qozetqmklegcnjgxtgpd.supabase.co/rest/v1/college_attachments?on_conflict=gmail_message_id,attachment_index",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates,return=representation"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}",
+        "options": {
+          "timeout": 15000
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Gmail Attachment Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Email Attachments",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Backfill": {
+      "main": [
+        [
+          {
+            "node": "Get Recent Attachment Emails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Recent Attachment Emails": {
+      "main": [
+        [
+          {
+            "node": "Split Attachments",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Email Attachments": {
+      "main": [
+        [
+          {
+            "node": "Split Attachments",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Attachments": {
+      "main": [
+        [
+          {
+            "node": "Upload Private File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Private File": {
+      "main": [
+        [
+          {
+            "node": "Restore File Metadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Restore File Metadata": {
+      "main": [
+        [
+          {
+            "node": "Save Document Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Kathmandu"
+  },
+  "active": false,
+  "tags": []
+}

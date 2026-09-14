@@ -1,190 +1,83 @@
 import './Documents.css'
-import { useRef, useState } from 'react'
-import {
-  FileText,
-  FolderOpen,
-  MoreHorizontal,
-  Plus,
-  Search,
-} from 'lucide-react'
-
-import {
-  formatDate,
-  today,
-  type DocumentItem,
-} from '../data'
-
-import {
-  EmptyState,
-  SectionHeading,
-} from '../components/UI'
+import { useState } from 'react'
+import { ExternalLink, FileText, FolderOpen, Search } from 'lucide-react'
+import { formatDate, type DocumentItem } from '../data'
+import { EmptyState, SectionHeading } from '../components/UI'
 
 export default function Documents({
   documents,
-  setDocuments,
-  notify,
+  loadError,
+  onOpen,
 }: {
   documents: DocumentItem[]
-  setDocuments: React.Dispatch<
-    React.SetStateAction<DocumentItem[]>
-  >
-  notify: (message: string) => void
+  loadError: boolean
+  onOpen: (file: DocumentItem) => void
 }) {
   const [category, setCategory] = useState('All files')
   const [query, setQuery] = useState('')
-
-  const inputRef = useRef<HTMLInputElement>(null)
-
-  const categories = [
-    'All files',
-    'Academic',
-    'Finance',
-    'Forms',
-    'Personal',
-  ]
-
-  const filtered = documents.filter(
-    document =>
-      (category === 'All files' ||
-        document.category === category) &&
-      document.name
-        .toLowerCase()
-        .includes(query.toLowerCase())
+  const categories = ['Academic', 'Finance', 'Campus', 'General']
+  const filtered = documents.filter(file =>
+    (category === 'All files' || file.category === category) &&
+    `${file.name} ${file.noticeTitle}`.toLowerCase().includes(query.toLowerCase())
   )
-
-  const upload = (file?: File) => {
-    if (!file) return
-
-    setDocuments(previous => [
-      {
-        id: `d${Date.now()}`,
-        name: file.name,
-        category: 'Personal',
-        date: today,
-        size: `${Math.max(
-          1,
-          Math.round(file.size / 1024)
-        )} KB`,
-        type: file.type.includes('image') ? 'Image' : 'File',
-      },
-      ...previous,
-    ])
-
-    notify('File added locally.')
-  }
 
   return (
     <>
       <div className="page-intro">
         <div>
           <h1>Documents</h1>
-          <p>Forms, routines, receipts and files.</p>
+          <p>Attachments saved from Herald College emails. Open a file to read the original notice.</p>
         </div>
-
-        <button
-          className="primary-button"
-          onClick={() => inputRef.current?.click()}
-        >
-          <Plus size={17} />
-          Add document
-        </button>
-
-        <input
-          ref={inputRef}
-          type="file"
-          hidden
-          onChange={e => upload(e.target.files?.[0])}
-        />
       </div>
-
       <div className="document-categories">
-        {categories.slice(1).map(item => (
+        {categories.map(item => (
           <button
             key={item}
-            className={
-              category === item ? 'selected' : ''
-            }
-            onClick={() =>
-              setCategory(
-                category === item ? 'All files' : item
-              )
-            }
+            className={category === item ? 'selected' : ''}
+            onClick={() => setCategory(category === item ? 'All files' : item)}
           >
-            <span className="folder-icon">
-              <FolderOpen size={21} />
-            </span>
-
+            <span className="folder-icon"><FolderOpen size={21} /></span>
             <strong>{item}</strong>
-
-            <small>
-              {
-                documents.filter(
-                  document => document.category === item
-                ).length
-              }{' '}
-              files
-            </small>
+            <small>{documents.filter(file => file.category === item).length} files</small>
           </button>
         ))}
       </div>
-
       <div className="panel document-panel">
         <div className="document-toolbar">
-          <SectionHeading title="All documents" />
-
+          <SectionHeading title="College attachments" />
           <div className="document-search">
             <Search size={16} />
-
             <input
+              aria-label="Search documents"
               placeholder="Search files"
               value={query}
-              onChange={e => setQuery(e.target.value)}
+              onChange={event => setQuery(event.target.value)}
             />
           </div>
         </div>
-
         <div className="document-table-head">
-          <span>NAME</span>
-          <span>CATEGORY</span>
-          <span>ADDED</span>
-          <span>SIZE</span>
-          <span />
+          <span>NAME</span><span>CATEGORY</span><span>ADDED</span><span>SIZE</span><span />
         </div>
-
-        {filtered.length ? (
-          filtered.map(document => (
-            <div
-              className="document-row"
-              key={document.id}
-            >
-              <div className="document-name">
-                <span className="document-icon">
-                  <FileText size={19} />
-                </span>
-
-                <div>
-                  <strong>{document.name}</strong>
-                  <small>{document.type}</small>
-                </div>
-              </div>
-
-              <span>{document.category}</span>
-              <span>{formatDate(document.date)}</span>
-              <span>{document.size}</span>
-
-              <button
-                onClick={() =>
-                  notify('Storage integration coming later.')
-                }
-              >
-                <MoreHorizontal size={19} />
-              </button>
+        {filtered.length ? filtered.map(file => (
+          <div className="document-row" key={file.id}>
+            <div className="document-name">
+              <span className="document-icon"><FileText size={19} /></span>
+              <div><strong>{file.name}</strong><small>{file.noticeTitle}</small></div>
             </div>
-          ))
-        ) : (
+            <span>{file.category}</span>
+            <span>{formatDate(file.date)}</span>
+            <span>{file.size}</span>
+            <button aria-label={`Open ${file.name}`} onClick={() => onOpen(file)}>
+              <ExternalLink size={19} />
+            </button>
+          </div>
+        )) : (
           <EmptyState
-            title="No documents"
-            copy="No files match your search."
+            title={loadError ? 'Documents need setup' : documents.length ? 'No matching files' : 'No documents yet'}
+            copy={loadError
+              ? 'The private attachment library is not connected yet.'
+              : documents.length ? 'Try another search or category.'
+              : 'PDFs and images from college emails will appear here after they are saved.'}
           />
         )}
       </div>

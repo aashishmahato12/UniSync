@@ -103,7 +103,8 @@ export default function Notices({
                 {notice.attachment ? (
                   <span>
                     <Paperclip size={15} />
-                    {notice.attachment}
+                    {notice.attachmentNames?.length && notice.attachmentNames.length > 1
+                      ? `${notice.attachmentNames.length} attachments` : notice.attachment}
                   </span>
                 ) : (
                   <span>No attachment</span>
