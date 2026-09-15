@@ -16,7 +16,26 @@ function InlineText({ text }: { text: string }) {
   )}</>
 }
 
-function ReadableAnswer({ text }: { text: string }) {
+function ReadableAnswer({ text, stream = false }: { text: string; stream?: boolean }) {
+  const [visible, setVisible] = useState(!stream)
+
+  useEffect(() => {
+    if (!stream) {
+      setVisible(true)
+      return
+    }
+
+    setVisible(false)
+    let secondFrame = 0
+    const firstFrame = requestAnimationFrame(() => {
+      secondFrame = requestAnimationFrame(() => setVisible(true))
+    })
+    return () => {
+      cancelAnimationFrame(firstFrame)
+      cancelAnimationFrame(secondFrame)
+    }
+  }, [stream, text])
+
   const lines = text.split(/\r?\n/)
   const blocks: { type: 'heading' | 'paragraph' | 'list'; lines: string[] }[] = []
   for (const line of lines) {
@@ -31,12 +50,34 @@ function ReadableAnswer({ text }: { text: string }) {
     if (last?.type === type && type !== 'heading') last.lines.push(cleaned)
     else blocks.push({ type, lines: [cleaned] })
   }
-  return <div className="chat-readable">
+  let wordIndex = 0
+  const animatedInline = (value: string, keyPrefix: string) => <>{value.split(/(\*\*[^*]+\*\*)/g).map((part, partIndex) => {
+    const bold = part.startsWith('**') && part.endsWith('**')
+    const content = bold ? part.slice(2, -2) : part
+    const words = content.split(/(\s+)/)
+    const nodes = words.map((word, tokenIndex) => {
+      if (!word || /^\s+$/.test(word)) return word
+      const delay = wordIndex * 60
+      wordIndex += 1
+      return <span
+        className={`t-stream-w ${visible ? 'is-in' : ''}`}
+        style={{ '--stream-delay': `${delay}ms` } as React.CSSProperties}
+        key={`${keyPrefix}-${partIndex}-${tokenIndex}`}
+      >{word}</span>
+    })
+    return bold ? <strong key={`${keyPrefix}-${partIndex}`}>{nodes}</strong> : <span key={`${keyPrefix}-${partIndex}`}>{nodes}</span>
+  })}</>
+
+  const renderInline = (value: string, keyPrefix: string) => stream
+    ? animatedInline(value, keyPrefix)
+    : <InlineText text={value} />
+
+  return <div className={`chat-readable ${stream ? 't-stream' : ''}`}>
     {blocks.map((block, index) => block.type === 'heading'
-      ? <h3 key={index}><InlineText text={block.lines[0]} /></h3>
+      ? <h3 key={index}>{renderInline(block.lines[0], `h-${index}`)}</h3>
       : block.type === 'list'
-        ? <ul key={index}>{block.lines.map((line, itemIndex) => <li key={itemIndex}><InlineText text={line} /></li>)}</ul>
-        : <p key={index}>{block.lines.map((line, itemIndex) => <span key={itemIndex}><InlineText text={line} />{itemIndex < block.lines.length - 1 && <br />}</span>)}</p>
+        ? <ul key={index}>{block.lines.map((line, itemIndex) => <li key={itemIndex}>{renderInline(line, `l-${index}-${itemIndex}`)}</li>)}</ul>
+        : <p key={index}>{block.lines.map((line, itemIndex) => <span key={itemIndex}>{renderInline(line, `p-${index}-${itemIndex}`)}{itemIndex < block.lines.length - 1 && <br />}</span>)}</p>
     )}
   </div>
 }
@@ -133,7 +174,7 @@ export default function AskAI({ payments, events, updateCalendar, theme }: {
           strength={1}
           brightness={1.85}
           saturation={1.5}
-          duration={1.96}
+          duration={22.96}
           borderRadius={15}
           active={motionAllowed}
           theme={theme}
@@ -165,7 +206,7 @@ export default function AskAI({ payments, events, updateCalendar, theme }: {
                 )}
 
                 <div className="chat-answer">
-                  {message.role === 'assistant' ? <ReadableAnswer text={message.text} /> : <p>{message.text}</p>}
+                  {message.role === 'assistant' ? <ReadableAnswer text={message.text} stream={index > 0} /> : <p>{message.text}</p>}
                   {message.mode === 'search' && <small className="chat-answer-mode">Saved-record search</small>}
                   {!!message.sources?.length && (
                     <details className="chat-source-panel">
