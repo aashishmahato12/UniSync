@@ -268,6 +268,11 @@ html[data-theme='dark'] .chat-source-panel,
 html[data-theme='dark'] .chat-source-card { border-color: #35445b; background: #141e2c; }
 html[data-theme='dark'] .chat-source-panel summary { color: #b8d2fa; }
 html[data-theme='dark'] .chat-composer input { background: transparent; color: #e6edf8; }
+html[data-theme='dark'] .t-clear-mirror { color: #e6edf8; }
+html[data-theme='dark'] .t-clear-placeholder { color: #73839a; }
+html[data-theme='dark'] .t-clear-glow { mix-blend-mode: screen; }
+html[data-theme='dark'] .chat-composer .t-clear-btn { color: #91a2ba; }
+html[data-theme='dark'] .chat-composer .t-clear-btn:hover { background: #24344b; color: #bcd5ff; }
 html[data-theme='dark'] .chat-thinking-bubble { background: #192438; color: #d3deed; }
 html[data-theme='dark'] .t-think { --think-base: #9aaac0; --think-highlight: #edf4ff; }
 
