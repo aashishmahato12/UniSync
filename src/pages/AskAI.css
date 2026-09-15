@@ -71,12 +71,6 @@
   width: 100%;
 }
 
-/* Keep the line beam crisp without the package's soft inner glow. */
-.chat-input-beam::before,
-.chat-input-beam > [data-beam-bloom] {
-  display: none !important;
-}
-
 .chat-mode {
   margin-left: auto;
   color: #4d8860;
@@ -367,6 +361,13 @@
   padding: 7px;
   font-size: 12px;
   min-width: 0;
+}
+
+.chat-composer input:focus,
+.chat-composer input:focus-visible {
+  outline: none;
+  outline-offset: 0;
+  box-shadow: none;
 }
 
 .chat-composer .chat-submit {
