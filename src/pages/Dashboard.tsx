@@ -15,6 +15,14 @@ import { formatDate, money, today, type CalendarState, type EventItem, type Noti
 
 type Page = 'Dashboard' | 'Notices' | 'Events' | 'Calendar' | 'Payments' | 'Documents' | 'Ask AI' | 'Profile'
 
+function NumberPop({ value }: { value: number }) {
+  return <span className="t-digit-group is-animating" key={value} aria-label={String(value)}>
+    {String(value).split('').map((digit, index) => (
+      <span className="t-digit" data-stagger={index || undefined} aria-hidden="true" key={`${digit}-${index}`}>{digit}</span>
+    ))}
+  </span>
+}
+
 export default function Dashboard({
   events,
   notices,
@@ -44,7 +52,10 @@ export default function Dashboard({
   const upcoming = events
     .filter(event => event.date >= today && event.calendarState !== 'Ignored')
     .sort((a, b) => a.date.localeCompare(b.date))
-  const pending = upcoming.filter(event => event.calendarState === 'Pending')
+  const pending = events
+    .filter(event => event.calendarState === 'Pending')
+    .sort((a, b) => a.date.localeCompare(b.date))
+  const allDuePayments = payments.filter(payment => payment.status === 'Due')
   const duePayments = payments
     .filter(payment => payment.status === 'Due' && payment.dueDate)
     .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
@@ -102,14 +113,14 @@ export default function Dashboard({
     </div>
 
     <div className="desk-signal-row" aria-label="Workspace snapshot">
-      <button onClick={() => navigate('Events')}><span className="desk-signal-icon blue"><CalendarDays size={17} /></span><strong>{pending.length}</strong><span>Calendar {pending.length === 1 ? 'decision' : 'decisions'}</span><ArrowUpRight size={15} /></button>
-      <button onClick={() => navigate('Payments')}><span className="desk-signal-icon coral"><CreditCard size={17} /></span><strong>{duePayments.length}</strong><span>Fees marked due</span><ArrowUpRight size={15} /></button>
-      <button onClick={() => navigate('Notices')}><span className="desk-signal-icon violet"><Bell size={17} /></span><strong>{notices.length}</strong><span>Saved notices</span><ArrowUpRight size={15} /></button>
+      <button onClick={() => navigate('Events')}><span className="desk-signal-icon blue"><CalendarDays size={17} /></span><strong><NumberPop value={pending.length} /></strong><span>Calendar {pending.length === 1 ? 'decision' : 'decisions'}</span><ArrowUpRight size={15} /></button>
+      <button onClick={() => navigate('Payments')}><span className="desk-signal-icon coral"><CreditCard size={17} /></span><strong><NumberPop value={allDuePayments.length} /></strong><span>Fees marked due</span><ArrowUpRight size={15} /></button>
+      <button onClick={() => navigate('Notices')}><span className="desk-signal-icon violet"><Bell size={17} /></span><strong><NumberPop value={notices.length} /></strong><span>Saved notices</span><ArrowUpRight size={15} /></button>
     </div>
 
     <div className="desk-main-grid">
       <section className="desk-panel desk-actions">
-        <div className="desk-section-head"><div><span>TAKE ACTION</span><h2>Decisions waiting for you</h2></div><b>{actionCount}</b></div>
+        <div className="desk-section-head"><div><span>TAKE ACTION</span><h2>Decisions waiting for you</h2></div><b><NumberPop value={actionCount} /></b></div>
         {actionCount ? <div className="desk-action-list">
           {actionPayment && <div className="desk-action">
             <span className="desk-action-icon coral"><CreditCard size={18} /></span>
