@@ -61,6 +61,15 @@
   margin-left: auto;
 }
 
+.chat-beam {
+  min-width: 0;
+  border-radius: 15px;
+}
+
+.chat-beam > .chat-panel {
+  height: 100%;
+}
+
 .chat-mode {
   margin-left: auto;
   color: #4d8860;

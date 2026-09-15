@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { ArrowRight, Check, Copy, ExternalLink, Sparkles } from 'lucide-react'
+import { BorderBeam } from 'border-beam'
 
 import { studentService } from '../services/mockService'
 import type { AssistantSource } from '../services/localAssistant'
@@ -40,10 +41,11 @@ function ReadableAnswer({ text }: { text: string }) {
   </div>
 }
 
-export default function AskAI({ payments, events, updateCalendar }: {
+export default function AskAI({ payments, events, updateCalendar, theme }: {
   payments: Payment[]
   events: EventItem[]
   updateCalendar: (event: EventItem, state: EventItem['calendarState']) => Promise<void>
+  theme: 'light' | 'dark'
 }) {
   const [messages, setMessages] = useState<
     {
@@ -63,6 +65,9 @@ export default function AskAI({ payments, events, updateCalendar }: {
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
+  const [motionAllowed, setMotionAllowed] = useState(() =>
+    !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  )
 
   const bottom = useRef<HTMLDivElement>(null)
 
@@ -71,6 +76,14 @@ export default function AskAI({ payments, events, updateCalendar }: {
       behavior: 'smooth',
     })
   }, [messages, busy])
+
+  useEffect(() => {
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const updateMotion = (event: MediaQueryListEvent | MediaQueryList) => setMotionAllowed(!event.matches)
+    updateMotion(media)
+    media.addEventListener('change', updateMotion)
+    return () => media.removeEventListener('change', updateMotion)
+  }, [])
 
   const ask = async (question: string) => {
     if (!question.trim() || busy) return
@@ -113,6 +126,14 @@ export default function AskAI({ payments, events, updateCalendar }: {
       />
 
       <div className="chat-layout">
+        <BorderBeam
+          className="chat-beam"
+          size="md"
+          colorVariant="colorful"
+          strength={0.7}
+          active={motionAllowed}
+          theme={theme}
+        >
         <section className="chat-panel">
           <div className="chat-header">
             <span className="chat-ai-icon">
@@ -216,6 +237,7 @@ export default function AskAI({ payments, events, updateCalendar }: {
           </form>
           <p className="chat-disclaimer">Relevant notice, event, and extracted file text goes to Gemini through your n8n workflow. Your own fee-status marks stay local. Unread files still need to be opened manually.</p>
         </section>
+        </BorderBeam>
         <aside className="chat-suggestions">
           <h2>Try asking</h2>
           {['What deadlines are coming up?', 'Show recent notices', 'Which fees have I marked paid?', 'Find my exam documents'].map(prompt => (

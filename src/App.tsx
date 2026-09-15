@@ -616,7 +616,7 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
 
               {page ===
                 'Ask AI' && (
-                <AskAI payments={payments} events={events} updateCalendar={updateCalendar} />
+                <AskAI payments={payments} events={events} updateCalendar={updateCalendar} theme={theme} />
               )}
 
               {page ===
