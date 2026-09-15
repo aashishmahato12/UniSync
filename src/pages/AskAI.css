@@ -170,6 +170,83 @@
   filter: blur(0);
 }
 
+.chat-thinking-bubble {
+  padding: 11px 14px;
+  border-radius: 3px 12px 12px 12px;
+  background: #f3f7f2;
+  color: #576f5b;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.t-think {
+  --think-distance: 8px;
+  --think-blur: 2px;
+  --think-base: #718097;
+  --think-highlight: #2e6fe0;
+  position: relative;
+  display: inline-block;
+  text-align: center;
+}
+
+.t-think-sizer {
+  display: block;
+  visibility: hidden;
+  white-space: nowrap;
+}
+
+.t-think-text {
+  position: absolute;
+  inset: 0;
+  display: block;
+  color: var(--think-base);
+  white-space: nowrap;
+  transform: translateY(0);
+  filter: blur(0);
+  opacity: 1;
+  transition:
+    transform 150ms ease-in-out,
+    filter 150ms ease-in-out,
+    opacity 150ms ease-in-out;
+  will-change: transform, filter, opacity;
+}
+
+.t-think-text::before {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: linear-gradient(90deg,
+    transparent 0%, transparent 40%,
+    var(--think-highlight) 50%,
+    transparent 60%, transparent 100%);
+  background-size: 400% 100%;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: t-think-shimmer 2000ms linear infinite;
+}
+
+@keyframes t-think-shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: 0% 0; }
+}
+
+.t-think-text.is-exit {
+  transform: translateY(calc(var(--think-distance) * -1));
+  filter: blur(var(--think-blur));
+  opacity: 0;
+}
+
+.t-think-text.is-enter-start {
+  transition: none;
+  transform: translateY(var(--think-distance));
+  filter: blur(var(--think-blur));
+  opacity: 0;
+}
+
 .chat-source-panel {
   margin-top: 9px;
   border: 1px solid #e4ece3;
@@ -381,5 +458,15 @@
     opacity: 1 !important;
     filter: none !important;
     transition: none !important;
+  }
+
+  .t-think-text {
+    transform: none !important;
+    filter: none !important;
+    transition: none !important;
+  }
+
+  .t-think-text::before {
+    display: none !important;
   }
 }

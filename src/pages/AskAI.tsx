@@ -82,6 +82,49 @@ function ReadableAnswer({ text, stream = false }: { text: string; stream?: boole
   </div>
 }
 
+const thinkingStates = [
+  'Reading your college records…',
+  'Checking notices and dates…',
+  'Preparing your answer…',
+]
+
+function ThinkingState() {
+  const [index, setIndex] = useState(0)
+  const [phase, setPhase] = useState<'idle' | 'exit' | 'enter'>('idle')
+
+  useEffect(() => {
+    let swapTimer = 0
+    let firstFrame = 0
+    let secondFrame = 0
+    const interval = window.setInterval(() => {
+      setPhase('exit')
+      swapTimer = window.setTimeout(() => {
+        setIndex(current => (current + 1) % thinkingStates.length)
+        setPhase('enter')
+        firstFrame = requestAnimationFrame(() => {
+          secondFrame = requestAnimationFrame(() => setPhase('idle'))
+        })
+      }, 150)
+    }, 2000)
+
+    return () => {
+      window.clearInterval(interval)
+      window.clearTimeout(swapTimer)
+      cancelAnimationFrame(firstFrame)
+      cancelAnimationFrame(secondFrame)
+    }
+  }, [])
+
+  const text = thinkingStates[index]
+  return <span className="t-think" role="status" aria-live="polite">
+    <span className="t-think-sizer" aria-hidden="true">Reading your college records…</span>
+    <span
+      className={`t-think-text ${phase === 'exit' ? 'is-exit' : phase === 'enter' ? 'is-enter-start' : ''}`}
+      data-text={text}
+    >{text}</span>
+  </span>
+}
+
 export default function AskAI({ payments, events, updateCalendar, theme }: {
   payments: Payment[]
   events: EventItem[]
@@ -250,7 +293,7 @@ export default function AskAI({ payments, events, updateCalendar, theme }: {
                   <Sparkles size={16} />
                 </span>
 
-                <p>Thinking...</p>
+                <div className="chat-thinking-bubble"><ThinkingState /></div>
               </div>
             )}
 

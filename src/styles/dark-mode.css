@@ -268,6 +268,8 @@ html[data-theme='dark'] .chat-source-panel,
 html[data-theme='dark'] .chat-source-card { border-color: #35445b; background: #141e2c; }
 html[data-theme='dark'] .chat-source-panel summary { color: #b8d2fa; }
 html[data-theme='dark'] .chat-composer input { background: transparent; color: #e6edf8; }
+html[data-theme='dark'] .chat-thinking-bubble { background: #192438; color: #d3deed; }
+html[data-theme='dark'] .t-think { --think-base: #9aaac0; --think-highlight: #edf4ff; }
 
 html[data-theme='dark'] .profile-main > p,
 html[data-theme='dark'] .profile-details span,
