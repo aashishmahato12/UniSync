@@ -18,10 +18,12 @@ import {
   Home,
   Menu,
   MoreHorizontal,
+  Moon,
   Plus,
   Search,
   Settings2,
   Sparkles,
+  Sun,
   X,
 } from 'lucide-react'
 
@@ -105,11 +107,29 @@ const nav: {
 
 const initials = 'AM'
 
-export default function App() {
-  return <AuthGate>{email => <Workspace email={email} />}</AuthGate>
+type Theme = 'light' | 'dark'
+
+const initialTheme = (): Theme => {
+  const saved = localStorage.getItem('unisync-theme')
+  if (saved === 'light' || saved === 'dark') return saved
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
 }
 
-function Workspace({ email }: { email: string }) {
+export default function App() {
+  const [theme, setTheme] = useState<Theme>(initialTheme)
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme
+    document.documentElement.style.colorScheme = theme
+    localStorage.setItem('unisync-theme', theme)
+  }, [theme])
+
+  const toggleTheme = () => setTheme(current => current === 'dark' ? 'light' : 'dark')
+
+  return <AuthGate>{email => <Workspace email={email} theme={theme} toggleTheme={toggleTheme} />}</AuthGate>
+}
+
+function Workspace({ email, theme, toggleTheme }: { email: string; theme: Theme; toggleTheme: () => void }) {
   const [page, setPage] =
     useState<Page>('Dashboard')
 
@@ -465,6 +485,15 @@ function Workspace({ email }: { email: string }) {
             </button>
 
             <button
+              className="icon-button theme-toggle"
+              onClick={toggleTheme}
+              aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+              title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+            >
+              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+
+            <button
               className="icon-button"
               onClick={() =>
                 navigate(
@@ -581,6 +610,8 @@ function Workspace({ email }: { email: string }) {
                     notify
                   }
                   email={email}
+                  theme={theme}
+                  toggleTheme={toggleTheme}
                 />
               )}
             </>

@@ -7,6 +7,7 @@ import './styles/layout.css'
 import './styles/components.css'
 import './styles/redesign.css'
 import './styles/blue-accent.css'
+import './styles/dark-mode.css'
 
 ReactDOM.createRoot(
   document.getElementById('root')!

@@ -3,6 +3,7 @@ import { useState } from 'react'
 import {
   Bell,
   CalendarDays,
+  Moon,
   ShieldCheck,
 } from 'lucide-react'
 
@@ -15,9 +16,13 @@ import { supabase } from '../services/supabase'
 export default function Profile({
   notify,
   email,
+  theme,
+  toggleTheme,
 }: {
   notify: (message: string) => void
   email: string
+  theme: 'light' | 'dark'
+  toggleTheme: () => void
 }) {
   const [notifications, setNotifications] =
     useState(true)
@@ -85,6 +90,25 @@ export default function Profile({
                 setNotifications(!notifications)
                 notify('Preference updated.')
               }}
+            >
+              <i />
+            </button>
+          </div>
+
+          <div className="preference-row">
+            <span className="preference-icon">
+              <Moon size={19} />
+            </span>
+
+            <div>
+              <strong>Dark mode</strong>
+              <p>Use a darker theme throughout UniSync.</p>
+            </div>
+
+            <button
+              className={`toggle ${theme === 'dark' ? 'on' : ''}`}
+              onClick={toggleTheme}
+              aria-label="Toggle dark mode"
             >
               <i />
             </button>
