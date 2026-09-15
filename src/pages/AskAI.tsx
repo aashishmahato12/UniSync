@@ -130,7 +130,11 @@ export default function AskAI({ payments, events, updateCalendar, theme }: {
           className="chat-beam"
           size="md"
           colorVariant="colorful"
-          strength={0.7}
+          strength={1}
+          brightness={1.85}
+          saturation={1.5}
+          duration={1.96}
+          borderRadius={15}
           active={motionAllowed}
           theme={theme}
         >
