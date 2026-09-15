@@ -173,8 +173,14 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
 
   const [documentsError, setDocumentsError] = useState(false)
 
-  const [toast, setToast] =
-    useState('')
+  const [toasts, setToasts] = useState<{
+    id: number
+    message: string
+    entering?: boolean
+    leaving?: boolean
+  }[]>([])
+
+  const [toastSpread, setToastSpread] = useState(false)
 
   const [
     selectedEvent,
@@ -200,10 +206,8 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
     setGlobalSearch,
   ] = useState('')
 
-  const toastTimer =
-    useRef<ReturnType<
-      typeof setTimeout
-    > | null>(null)
+  const toastId = useRef(0)
+  const toastTimers = useRef(new Map<number, ReturnType<typeof setTimeout>>())
 
   useEffect(() => {
     async function load() {
@@ -268,23 +272,33 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
     return () => window.clearInterval(timer)
   }, [])
 
-  const notify = (
-    message: string
-  ) => {
-    setToast(message)
-
-    if (toastTimer.current) {
-      clearTimeout(
-        toastTimer.current
-      )
-    }
-
-    toastTimer.current =
-      setTimeout(
-        () => setToast(''),
-        4000
-      )
+  const dismissToast = (id: number) => {
+    const existingTimer = toastTimers.current.get(id)
+    if (existingTimer) clearTimeout(existingTimer)
+    toastTimers.current.delete(id)
+    setToasts(current => current.map(item => item.id === id ? { ...item, leaving: true } : item))
+    window.setTimeout(() => setToasts(current => current.filter(item => item.id !== id)), 250)
   }
+
+  const notify = (message: string) => {
+    const id = ++toastId.current
+    setToasts(current => [{ id, message, entering: true }, ...current.map(item => ({ ...item, entering: false }))])
+    requestAnimationFrame(() => setToasts(current => current.map(item => item.id === id ? { ...item, entering: false } : item)))
+    toastTimers.current.set(id, window.setTimeout(() => dismissToast(id), 4000))
+  }
+
+  useEffect(() => {
+    if (toasts.length <= 3) return
+    const overflowIds = new Set(toasts.slice(3).map(item => item.id))
+    setToasts(current => current.map(item => overflowIds.has(item.id) ? { ...item, leaving: true } : item))
+    const timer = window.setTimeout(() => setToasts(current => current.filter(item => !overflowIds.has(item.id))), 250)
+    return () => window.clearTimeout(timer)
+  }, [toasts.length])
+
+  useEffect(() => () => {
+    toastTimers.current.forEach(timer => clearTimeout(timer))
+    toastTimers.current.clear()
+  }, [])
 
   const navigate = (
     target: Page
@@ -769,20 +783,25 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
         </Modal>
       )}
 
-      {toast && (
-        <div className="toast">
+      {!!toasts.length && <div
+        className={`t-stack toast-stack ${toastSpread ? 'is-spread' : ''}`}
+        onPointerEnter={() => setToastSpread(true)}
+        onPointerLeave={() => setToastSpread(false)}
+        aria-label="Notifications"
+      >
+        {toasts.map((toast, index) => <div
+          className={`t-stack-banner toast ${toast.entering ? 'is-enter' : ''} ${toast.leaving || index > 2 ? 'is-leaving' : ''}`}
+          data-depth={Math.min(index, 3)}
+          key={toast.id}
+          role="status"
+        >
           <Check size={18} />
-          {toast}
-
-          <button
-            onClick={() =>
-              setToast('')
-            }
-          >
+          <span>{toast.message}</span>
+          <button onClick={() => dismissToast(toast.id)} aria-label="Dismiss notification">
             <X size={16} />
           </button>
-        </div>
-      )}
+        </div>)}
+      </div>}
     </div>
   )
 }
