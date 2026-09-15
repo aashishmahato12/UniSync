@@ -11,6 +11,7 @@ create table if not exists public.college_notices (
   sender text not null,
   received_at timestamptz,
   summary text not null,
+  body_text text,
   category text not null default 'General'
     check (category in ('Payments','Exams','Academics','Campus life','General')),
   priority text not null default 'Normal'

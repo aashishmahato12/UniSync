@@ -5,7 +5,7 @@ The Gmail workflow is [**Herald College — Gmail notices to Supabase**](http://
 ## What this first workflow does
 
 1. Poll Gmail every five minutes for messages from any `@heraldcollege.edu.np` sender.
-2. Fetch the full message, preserve its Gmail ID, and extract attachment names.
+2. Fetch the full message, preserve its Gmail ID, store its plain-text body, and extract attachment names.
 3. Ask Gemini for a concise notice summary, category, priority, and explicit event/deadline dates.
 4. Validate the AI output. Dates without a clear day are excluded from event creation.
 5. Upsert the notice into Supabase by Gmail message ID.
@@ -24,6 +24,15 @@ This intake workflow does not create calendar events or send receipt emails. Tho
 
 The importable file is [heritage-gmail-to-supabase.json](./heritage-gmail-to-supabase.json). The source snippets live alongside it; rerun `node n8n/build-workflow.mjs` from the app directory after changing them.
 
+### Show the original email inside UniSync
+
+1. Run [006_notice_body.sql](./006_notice_body.sql) once in Supabase SQL Editor.
+2. Update the live Gmail intake workflow with the new **Prepare Email** and **Validate Extraction** code, or import the rebuilt workflow and reconnect its existing credentials.
+3. Send or receive one Herald test email and confirm `college_notices.body_text` is filled. New notices will immediately show the original message under **Original message** in UniSync.
+4. To fill older notices, update and run the manual [herald-all-notices-backfill.json](./herald-all-notices-backfill.json) once. The upsert uses the Gmail message ID, so it updates existing notice rows rather than creating copies.
+
+The app displays the stored body as plain text. It does not run HTML, scripts, images, or tracking pixels from an email.
+
 ## Backfill older Herald notices
 
 The published Gmail trigger handles new mail. To import older messages into **Notices** and **Events**, import [herald-all-notices-backfill.json](./herald-all-notices-backfill.json) as a separate, manual workflow. Select the existing Gmail credential on **Get All Herald Emails** and **Get Full Email**, the existing Gemini credential on **Google Gemini Chat Model**, and the existing Supabase Header Auth credential on **Save Notice** and **Save Pending Events**. Run **Manual Backfill** once; do not publish this one-time workflow. It searches all `@heraldcollege.edu.np` senders, and Gmail **Return All** is enabled. It does not download attachment binaries because the separate attachment workflow stores those files.
@@ -32,7 +41,7 @@ If Gemini limits a large run, add Gmail date filters to the **Get All Herald Ema
 
 ## Data and access
 
-The owner-only access migration is in [002_single_owner_access.sql](./002_single_owner_access.sql) and has been applied according to the user. The secret key is for n8n only; the website uses a publishable key and the approved email's session. Gmail mail bodies are sent to the configured Gemini API for extraction; the database stores only the derived fields and Gmail source reference.
+The owner-only access migration is in [002_single_owner_access.sql](./002_single_owner_access.sql) and has been applied according to the user. The secret key is for n8n only; the website uses a publishable key and the approved email's session. Gmail mail bodies are sent to the configured Gemini API for extraction. After applying 006, their capped plain-text bodies are also stored in the owner-only notice table so UniSync can display them.
 
 ## College notice attachments
 

@@ -54,6 +54,7 @@ return { json: {
   received_at: received,
   attachment_names: [...new Set([...contents.attachments, ...downloadedNames])],
   attachment_only: !body.trim(),
+  body_text: body.trim() || null,
   source_url: `https://mail.google.com/mail/u/0/#all/${id}`,
   ai_input: `Today's date: ${new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kathmandu', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date())}. Time zone: Asia/Kathmandu.\nSender: ${sender}\nSubject: ${subject}\nReceived: ${received || 'unknown'}\nAttachments: ${[...new Set([...contents.attachments, ...downloadedNames])].join(', ') || 'none'}\n\n${body || 'The email has no body; the notice is in an attachment. Do not invent its contents or dates.'}`,
 } };

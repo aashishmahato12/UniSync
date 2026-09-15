@@ -126,17 +126,24 @@
 .notice-reader-body { max-width: 750px; padding: 36px clamp(24px, 4vw, 58px); }
 .notice-reader-tags { display: flex; gap: 6px; }
 .notice-reader h2 { max-width: 650px; margin: 20px 0 10px; color: #252b36; font-size: clamp(24px, 2.6vw, 34px); line-height: 1.15; letter-spacing: -.06em; }
-.notice-reader-source { margin-bottom: 34px; color: #929baa; font-size: 12px; }
+.notice-reader-sender { display: flex; align-items: center; gap: 11px; margin: 0 0 28px; }
+.notice-reader-avatar { display: grid; place-items: center; flex: none; width: 38px; height: 38px; border-radius: 50%; background: #e7f0ff; color: #2e6fe0; font-size: 15px; font-weight: 800; }
+.notice-reader-sender > div { display: grid; min-width: 0; gap: 4px; }
+.notice-reader-sender strong { overflow-wrap: anywhere; color: #26364f; font-size: 12px; }
+.notice-reader-sender small { color: #8a98aa; font-size: 11px; }
 .notice-reader-summary { padding: 23px; border: 1px solid #e5ecf8; border-radius: 13px; background: #f6f9ff; }
 .notice-reader-summary > span { display: inline-flex; align-items: center; gap: 8px; color: #4c78c2; font-size: 9px; font-weight: 800; letter-spacing: .12em; }
 .notice-reader-summary p { margin: 15px 0 0; color: #394657; font-size: 14px; line-height: 1.8; }
+.notice-reader-original { margin-top: 30px; }
+.notice-reader-original h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 15px; color: #2a3850; font-size: 13px; }
+.notice-reader-original h3 svg { color: #477bcc; }
+.notice-reader-email-body { padding: 22px 0; border-top: 1px solid #e7ebf3; border-bottom: 1px solid #e7ebf3; color: #354258; font-size: 13px; line-height: 1.75; white-space: pre-wrap; overflow-wrap: anywhere; }
+.notice-reader-unavailable { margin: 0; padding: 18px; border: 1px solid #e5ebf6; border-radius: 10px; background: #f8faff; color: #728099; font-size: 12px; line-height: 1.6; }
 .notice-reader-files { margin-top: 32px; }
 .notice-reader-files h3 { margin-bottom: 12px; color: #303745; font-size: 13px; }
 .notice-reader-files > div { display: flex; align-items: center; gap: 9px; margin-top: 8px; padding: 12px; border: 1px solid #e6eaf2; border-radius: 9px; color: #5b7aa8; font-size: 11px; overflow-wrap: anywhere; }
 .notice-reader-files > div span { color: #435064; }
 .notice-reader-actions { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 32px; }
-.notice-toolbar-actions { display: flex; align-items: center; justify-content: flex-end; gap: 12px; flex-wrap: wrap; }
-.notice-toolbar-actions .secondary-button { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; text-decoration: none; }
 @media (max-width: 850px) {
   .notice-mail-layout { grid-template-columns: 1fr; }
   .notice-mail-list { display: flex; gap: 8px; padding: 12px; max-height: none; overflow-x: auto; border-right: 0; border-bottom: 1px solid #e9edf4; }

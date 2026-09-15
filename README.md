@@ -21,7 +21,7 @@ Open the local URL printed by Vite. To verify the production bundle, run `npm ru
 
 ## Current behavior and receipt setup
 
-Notices and events load from Supabase; calendar approval states are saved there. Payments use the Autumn 2026 batch schedule. You can mark each installment Due or Paid; those choices are saved in this browser only and are not college confirmations.
+Notices and events load from Supabase; calendar approval states are saved there. After the notice-body migration and workflow update below, the Notices reader also shows the original plain-text college email inside UniSync. Payments use the Autumn 2026 batch schedule. You can mark each installment Due or Paid; those choices are saved in this browser only and are not college confirmations.
 
 The payment form uploads a PDF/JPG/PNG receipt to private Supabase Storage and queues an email job only when `payment_receipt_settings.enabled` is true. The separate n8n workflow polls the queue, sends through Gmail, and updates the job status. The website shows that status; clicking Send first means **queued**, not delivered. The configured recipient is currently the owner's **test inbox**, so a test send is not a college submission. Follow the [receipt setup and test steps](./n8n/README.md) before using a real college address.
 

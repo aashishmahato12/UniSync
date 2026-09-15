@@ -53,12 +53,14 @@ export const studentService = {
       date:
         row.received_at?.split('T')[0] ??
         row.created_at?.split('T')[0],
+      receivedAt: row.received_at ?? undefined,
 
       category: row.category,
 
       priority: row.priority as 'High' | 'Normal',
 
       summary: row.summary,
+      bodyText: row.body_text ?? undefined,
 
       // Take first attachment if one exists
       attachment:

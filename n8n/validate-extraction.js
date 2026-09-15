@@ -33,6 +33,7 @@ return { json: {
     category: allowedCategory.includes(raw.category) ? raw.category : 'General',
     priority: raw.priority === 'High' ? 'High' : 'Normal',
     attachment_names: source.attachment_names,
+    body_text: source.body_text,
     source_url: source.source_url,
   },
   events,
