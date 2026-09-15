@@ -100,9 +100,15 @@ export default { async fetch(request) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-UniSync-AI-Secret': secret },
       body: JSON.stringify({ question, today, records: context }),
-      signal: AbortSignal.timeout(25000),
+      // Free Gemini calls can occasionally take longer when n8n is cold.
+      signal: AbortSignal.timeout(55000),
     })
-  } catch { return json({ error: 'AI workflow is unavailable. Please try again.' }, 502) }
+  } catch (error) {
+    const timedOut = error?.name === 'TimeoutError' || error?.name === 'AbortError'
+    return json({ error: timedOut
+      ? 'AI took too long to answer. Please try again.'
+      : 'AI workflow is unavailable. Check the n8n webhook URL in Vercel.' }, 502)
+  }
   if (!upstream.ok) return json({ error: 'AI workflow could not answer. Please try again.' }, 502)
   let result
   try { result = await upstream.json() } catch { return json({ error: 'AI workflow returned an invalid answer.' }, 502) }
