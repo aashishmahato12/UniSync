@@ -61,8 +61,8 @@ export default function Documents({
     <>
       <div className="page-intro">
         <div>
-          <h1>Documents</h1>
-          <p>Your college files grouped by sender and day, with each email’s topic and attachments together.</p>
+          <h1>Files from college</h1>
+          <p>Find attachments by topic, sender, and day without remembering the original filename.</p>
         </div>
       </div>
       <div className="document-categories">

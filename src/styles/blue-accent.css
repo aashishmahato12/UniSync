@@ -64,7 +64,8 @@ body .desk-action-controls button.primary { border-color: var(--accent); backgro
 body .desk-action-controls button.primary:hover { background: var(--accent-strong); }
 body .desk-date-tile { background: #e8f1ff; color: var(--accent-strong); }
 body .desk-upcoming-row:hover,
-body .desk-notice-row:hover { background: #f7faff; }
+body .desk-notice-row:hover,
+body .desk-shortcut-list > button:hover { background: #f7faff; }
 body .desk-clear { color: var(--accent); }
 body .desk-upcoming-row em.added { background: #e8f7ec; color: #38855c; }
 

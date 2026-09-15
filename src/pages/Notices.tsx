@@ -50,8 +50,8 @@ export default function Notices({
   return (
     <>
       <PageIntro
-        title="Notices"
-        copy="Read college emails and their attachments right here."
+        title="College inbox"
+        copy="Read the useful part first, then open the full email or its attachments when needed."
       />
 
       <div className="page-toolbar">

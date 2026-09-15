@@ -81,7 +81,11 @@ html[data-theme='dark'] .desk-brief p { color: #a9bad2; }
 html[data-theme='dark'] .desk-action { border-color: #2c3a51; background: #17202e; }
 html[data-theme='dark'] .desk-action-controls button { border-color: #344765; background: #192536; color: #b9d2fa; }
 html[data-theme='dark'] .desk-upcoming-row,
-html[data-theme='dark'] .desk-notice-row { border-color: #28354a; color: #cdd8e8; }
+html[data-theme='dark'] .desk-notice-row,
+html[data-theme='dark'] .desk-shortcut-list > button { border-color: #28354a; color: #cdd8e8; }
+html[data-theme='dark'] .desk-shortcut-list > button:hover { background: #1a2536; }
+html[data-theme='dark'] .desk-shortcut-list strong { color: #e4ecf8; }
+html[data-theme='dark'] .desk-shortcut-list small { color: #9eacc0; }
 
 /* Notices and events */
 html[data-theme='dark'] .notice-mail-layout,

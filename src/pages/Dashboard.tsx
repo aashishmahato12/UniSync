@@ -9,6 +9,7 @@ import {
   ChevronRight,
   Clock3,
   CreditCard,
+  FolderOpen,
   Sparkles,
 } from 'lucide-react'
 import { formatDate, money, today, type CalendarState, type EventItem, type Notice, type Payment } from '../data'
@@ -60,8 +61,6 @@ export default function Dashboard({
     .filter(payment => payment.status === 'Due' && payment.dueDate)
     .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
   const actionPayment = duePayments.find(payment => payment.dueDate <= new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10))
-  const importantNotice = notices.find(notice => notice.priority === 'High' && (!actionPayment || notice.category !== 'Payments'))
-    || notices.find(notice => notice.priority === 'High')
   const actionCount = pending.length + (actionPayment ? 1 : 0)
   const weekEnd = new Date(`${today}T12:00:00`)
   weekEnd.setDate(weekEnd.getDate() + 7)
@@ -139,14 +138,13 @@ export default function Dashboard({
         </div> : <div className="desk-clear"><CheckCircle2 size={22} /><strong>Nothing to approve right now</strong><span>New payment and calendar decisions will appear here.</span></div>}
       </section>
 
-      <section className="desk-panel desk-important">
-        <div className="desk-section-head"><div><span>IMPORTANT</span><h2>From the college</h2></div><Bell size={18} /></div>
-        {importantNotice ? <>
-          <span className="desk-important-tag">HIGH PRIORITY · {formatDate(importantNotice.date)}</span>
-          <h3>{importantNotice.title}</h3>
-          <p>{importantNotice.summary}</p>
-          <button onClick={() => onNotice(importantNotice)}>Read notice <ArrowUpRight size={15} /></button>
-        </> : <div className="desk-clear compact"><CheckCircle2 size={22} /><strong>No high-priority notices</strong><span>Check Notices for all college updates.</span></div>}
+      <section className="desk-panel desk-shortcuts">
+        <div className="desk-section-head"><div><span>START HERE</span><h2>Common tasks</h2></div></div>
+        <div className="desk-shortcut-list">
+          <button onClick={() => navigate('Ask AI')}><span className="desk-shortcut-icon"><Sparkles size={17} /></span><span><strong>Ask about college</strong><small>Search notices, dates and file text</small></span><ChevronRight size={16} /></button>
+          <button onClick={() => navigate('Payments')}><span className="desk-shortcut-icon"><CreditCard size={17} /></span><span><strong>Send payment proof</strong><small>Prepare and track a receipt email</small></span><ChevronRight size={16} /></button>
+          <button onClick={() => navigate('Documents')}><span className="desk-shortcut-icon"><FolderOpen size={17} /></span><span><strong>Find an attachment</strong><small>Browse files grouped by source email</small></span><ChevronRight size={16} /></button>
+        </div>
       </section>
       <section className="desk-panel desk-upcoming">
         <div className="desk-section-head"><div><span>YOUR SCHEDULE</span><h2>Coming up</h2></div><button onClick={() => navigate('Events')}>All events <ArrowRight size={14} /></button></div>

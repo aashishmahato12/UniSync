@@ -21,7 +21,6 @@ import {
   Moon,
   Plus,
   Search,
-  Settings2,
   Sparkles,
   Sun,
   X,
@@ -69,41 +68,47 @@ type Page =
 
 const nav: {
   name: Page
+  label: string
   icon: typeof Home
 }[] = [
   {
     name: 'Dashboard',
+    label: 'Today',
     icon: Home,
   },
   {
     name: 'Notices',
+    label: 'Inbox',
     icon: Bell,
   },
   {
     name: 'Events',
+    label: 'Calendar decisions',
     icon: CalendarDays,
   },
   {
     name: 'Calendar',
+    label: 'Calendar',
     icon: Clock3,
   },
   {
     name: 'Payments',
+    label: 'Payments',
     icon: CreditCard,
   },
   {
     name: 'Documents',
+    label: 'Files',
     icon: FolderOpen,
   },
   {
     name: 'Ask AI',
+    label: 'Ask UniSync',
     icon: Sparkles,
   },
-  {
-    name: 'Profile',
-    icon: Settings2,
-  },
 ]
+
+const pageLabel = (page: Page) => nav.find(item => item.name === page)?.label || page
 
 const initials = 'AM'
 
@@ -430,12 +435,13 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
           </div>
         </div>
 
-        <div className="sidebar-label">YOUR SPACE <span>01 / 08</span></div>
+        <div className="sidebar-label">YOUR SPACE <span>LIVE</span></div>
 
         <nav className="side-nav">
           {nav.map(
             ({
               name,
+              label,
               icon: Icon,
             }, index) => (
               <button
@@ -452,19 +458,14 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
                 <Icon size={18} />
 
                 <span>
-                  {name}
+                  {label}
                 </span>
 
                 <small className="nav-index">{String(index + 1).padStart(2, '0')}</small>
 
-                {name ===
-                  'Notices' &&
-                  notices.length >
-                    0 && (
+                {name === 'Events' && events.filter(event => event.calendarState === 'Pending').length > 0 && (
                     <em>
-                      {
-                        notices.length
-                      }
+                      {events.filter(event => event.calendarState === 'Pending').length}
                     </em>
                   )}
               </button>
@@ -521,7 +522,7 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
 
             <div className="topbar-context">
               <span>UNISYNC <b>/</b> HERALD COLLEGE</span>
-              <strong>{page}</strong>
+              <strong>{pageLabel(page)}</strong>
             </div>
           </div>
 

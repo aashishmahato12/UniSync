@@ -56,8 +56,8 @@ export default function Events({
   return (
     <>
       <PageIntro
-        title="Events & deadlines"
-        copy="Review detected dates and decide what belongs on your calendar."
+        title="Calendar decisions"
+        copy="Review dates detected from college messages and choose what belongs on your calendar."
       />
 
       <div className="page-toolbar">
