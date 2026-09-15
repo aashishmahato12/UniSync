@@ -179,6 +179,18 @@
   line-height: 1.65;
 }
 
+.chat-thinking {
+  align-items: center;
+}
+
+.chat-thinking-orb {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 64px;
+  height: 64px;
+}
+
 .t-think {
   --think-distance: 8px;
   --think-blur: 2px;

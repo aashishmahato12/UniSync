@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { ArrowRight, Check, Copy, ExternalLink, Sparkles } from 'lucide-react'
 import { BorderBeam } from 'border-beam'
+import { ThinkingOrb } from 'thinking-orbs'
 
 import { studentService } from '../services/mockService'
 import type { AssistantSource } from '../services/localAssistant'
@@ -288,11 +289,10 @@ export default function AskAI({ payments, events, updateCalendar, theme }: {
             ))}
 
             {busy && (
-              <div className="chat-message assistant">
-                <span className="chat-bot-avatar">
-                  <Sparkles size={16} />
+              <div className="chat-message assistant chat-thinking">
+                <span className="chat-thinking-orb">
+                  <ThinkingOrb state="searching" size={64} />
                 </span>
-
                 <div className="chat-thinking-bubble"><ThinkingState /></div>
               </div>
             )}
