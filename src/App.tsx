@@ -108,28 +108,44 @@ const nav: {
 const initials = 'AM'
 
 type Theme = 'light' | 'dark'
+type ThemeMode = Theme | 'system'
 
-const initialTheme = (): Theme => {
-  const saved = localStorage.getItem('unisync-theme')
-  if (saved === 'light' || saved === 'dark') return saved
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+const initialThemeMode = (): ThemeMode => {
+  const saved = localStorage.getItem('unisync-theme-mode')
+  return saved === 'light' || saved === 'dark' || saved === 'system' ? saved : 'system'
 }
 
 export default function App() {
-  const [theme, setTheme] = useState<Theme>(initialTheme)
+  const [themeMode, setThemeMode] = useState<ThemeMode>(initialThemeMode)
+  const [systemTheme, setSystemTheme] = useState<Theme>(() =>
+    window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  )
+  const theme: Theme = themeMode === 'system' ? systemTheme : themeMode
+
+  useEffect(() => {
+    const media = window.matchMedia('(prefers-color-scheme: dark)')
+    const updateSystemTheme = (event: MediaQueryListEvent | MediaQueryList) =>
+      setSystemTheme(event.matches ? 'dark' : 'light')
+    updateSystemTheme(media)
+    media.addEventListener('change', updateSystemTheme)
+    return () => media.removeEventListener('change', updateSystemTheme)
+  }, [])
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
     document.documentElement.style.colorScheme = theme
-    localStorage.setItem('unisync-theme', theme)
   }, [theme])
 
-  const toggleTheme = () => setTheme(current => current === 'dark' ? 'light' : 'dark')
+  useEffect(() => {
+    localStorage.setItem('unisync-theme-mode', themeMode)
+  }, [themeMode])
 
-  return <AuthGate>{email => <Workspace email={email} theme={theme} toggleTheme={toggleTheme} />}</AuthGate>
+  const toggleTheme = () => setThemeMode(theme === 'dark' ? 'light' : 'dark')
+
+  return <AuthGate>{email => <Workspace email={email} theme={theme} themeMode={themeMode} setThemeMode={setThemeMode} toggleTheme={toggleTheme} />}</AuthGate>
 }
 
-function Workspace({ email, theme, toggleTheme }: { email: string; theme: Theme; toggleTheme: () => void }) {
+function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { email: string; theme: Theme; themeMode: ThemeMode; setThemeMode: (mode: ThemeMode) => void; toggleTheme: () => void }) {
   const [page, setPage] =
     useState<Page>('Dashboard')
 
@@ -611,7 +627,8 @@ function Workspace({ email, theme, toggleTheme }: { email: string; theme: Theme;
                   }
                   email={email}
                   theme={theme}
-                  toggleTheme={toggleTheme}
+                  themeMode={themeMode}
+                  setThemeMode={setThemeMode}
                 />
               )}
             </>

@@ -17,12 +17,14 @@ export default function Profile({
   notify,
   email,
   theme,
-  toggleTheme,
+  themeMode,
+  setThemeMode,
 }: {
   notify: (message: string) => void
   email: string
   theme: 'light' | 'dark'
-  toggleTheme: () => void
+  themeMode: 'system' | 'light' | 'dark'
+  setThemeMode: (mode: 'system' | 'light' | 'dark') => void
 }) {
   const [notifications, setNotifications] =
     useState(true)
@@ -101,17 +103,18 @@ export default function Profile({
             </span>
 
             <div>
-              <strong>Dark mode</strong>
-              <p>Use a darker theme throughout UniSync.</p>
+              <strong>Appearance</strong>
+              <p>{themeMode === 'system' ? `Following your device · currently ${theme}` : `Using ${themeMode} mode`}</p>
             </div>
 
-            <button
-              className={`toggle ${theme === 'dark' ? 'on' : ''}`}
-              onClick={toggleTheme}
-              aria-label="Toggle dark mode"
-            >
-              <i />
-            </button>
+            <div className="theme-options" aria-label="Appearance setting">
+              {(['system', 'light', 'dark'] as const).map(mode => <button
+                key={mode}
+                className={themeMode === mode ? 'selected' : ''}
+                onClick={() => setThemeMode(mode)}
+                aria-pressed={themeMode === mode}
+              >{mode === 'system' ? 'Device' : mode[0].toUpperCase() + mode.slice(1)}</button>)}
+            </div>
           </div>
 
           <div className="preference-row">

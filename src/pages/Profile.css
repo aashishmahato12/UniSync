@@ -113,6 +113,31 @@
   margin: 4px 0 0;
 }
 
+.theme-options {
+  display: flex;
+  gap: 3px;
+  padding: 3px;
+  border: 1px solid #dfe7e0;
+  border-radius: 9px;
+  background: #f5f8f5;
+}
+
+.theme-options button {
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #76867a;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.theme-options button.selected {
+  background: #fff;
+  color: #2e6fe0;
+  box-shadow: 0 1px 4px #1e382516;
+}
+
 .toggle {
   width: 36px;
   height: 21px;
@@ -193,4 +218,20 @@
   color: #3c7053;
   font-size: 12px;
   font-weight: 800;
+}
+
+@media (max-width: 520px) {
+  .preference-row:has(.theme-options) {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .theme-options {
+    width: 100%;
+    margin-left: 48px;
+  }
+
+  .theme-options button {
+    flex: 1;
+  }
 }

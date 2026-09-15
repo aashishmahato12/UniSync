@@ -279,3 +279,6 @@ html[data-theme='dark'] .connection-card > span { background: #294363; color: #b
 html[data-theme='dark'] .profile-avatar { border-color: #151d2a; background: #203858; color: #a9caff; }
 html[data-theme='dark'] .profile-signout { border-color: #3a4b64; background: #1b2738; color: #b9d2fb; }
 html[data-theme='dark'] .profile-signout:hover { background: #24344b; }
+html[data-theme='dark'] .theme-options { border-color: #34445b; background: #111a27; }
+html[data-theme='dark'] .theme-options button { color: #94a5bb; }
+html[data-theme='dark'] .theme-options button.selected { background: #253650; color: #bcd5ff; box-shadow: none; }
