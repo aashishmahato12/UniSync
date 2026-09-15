@@ -286,3 +286,5 @@ html[data-theme='dark'] .theme-options button { color: #94a5bb; }
 html[data-theme='dark'] .theme-options button.selected { background: #253650; color: #bcd5ff; box-shadow: none; }
 html[data-theme='dark'] .toast { border: 1px solid #3a5680; background: #1d3352; color: #eef5ff; box-shadow: 0 16px 44px #02050c80; }
 html[data-theme='dark'] .toast button { color: #b8cff2; }
+html[data-theme='dark'] .skel-line,
+html[data-theme='dark'] .skel-card { border-color: #29374d; background: #182334; }

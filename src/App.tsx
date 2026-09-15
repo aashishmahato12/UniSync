@@ -145,6 +145,31 @@ export default function App() {
   return <AuthGate>{email => <Workspace email={email} theme={theme} themeMode={themeMode} setThemeMode={setThemeMode} toggleTheme={toggleTheme} />}</AuthGate>
 }
 
+function WorkspaceSkeleton() {
+  return <div className="workspace-skeleton" aria-hidden="true">
+    <div className="skel-heading">
+      <span className="skel-line short" />
+      <span className="skel-line title" />
+      <span className="skel-line medium" />
+    </div>
+    <div className="skel-lead">
+      <span className="skel-card hero" />
+      <span className="skel-card side" />
+    </div>
+    <div className="skel-stats">
+      <span className="skel-card" />
+      <span className="skel-card" />
+      <span className="skel-card" />
+    </div>
+    <div className="skel-content-grid">
+      <span className="skel-card tall" />
+      <span className="skel-card tall" />
+      <span className="skel-card medium-card" />
+      <span className="skel-card medium-card" />
+    </div>
+  </div>
+}
+
 function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { email: string; theme: Theme; themeMode: ThemeMode; setThemeMode: (mode: ThemeMode) => void; toggleTheme: () => void }) {
   const [page, setPage] =
     useState<Page>('Dashboard')
@@ -536,13 +561,10 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
           </div>
         </header>
 
-        <main className="content">
-          {loading ? (
-            <div className="panel">
-              Loading...
-            </div>
-          ) : (
-            <>
+        <main className="content" aria-busy={loading}>
+          <div className={`workspace-reveal t-skel ${loading ? '' : 'is-revealed'}`} data-state={loading ? 'loading' : 'ready'}>
+            <div className="t-skel-skeleton is-pulsing"><WorkspaceSkeleton /></div>
+            <div className="t-skel-content">
               {page ===
                 'Dashboard' && (
                 <Dashboard
@@ -645,8 +667,8 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
                   setThemeMode={setThemeMode}
                 />
               )}
-            </>
-          )}
+            </div>
+          </div>
         </main>
       </div>
 
