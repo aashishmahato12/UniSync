@@ -20,6 +20,7 @@ import {
   badge,
 } from '../components/UI'
 import { gmailUrlForNotice } from '../services/gmailLinks'
+import { cleanEmailForReading } from '../services/emailText'
 
 export default function Notices({
   notices,
@@ -93,8 +94,8 @@ export default function Notices({
             <h2>{selected.title}</h2>
             <div className="notice-reader-sender"><span className="notice-reader-avatar">H</span><div><strong>{selected.source.replace(/ · Email$/, '')}</strong><small>Herald College email</small></div></div>
             <section className="notice-reader-summary"><span><Sparkles size={17} /> AT A GLANCE</span><p>{selected.summary}</p></section>
-            <section className="notice-reader-original"><h3><FileText size={17} /> Original message</h3>{selected.bodyText?.trim()
-              ? <div className="notice-reader-email-body">{selected.bodyText}</div>
+            <section className="notice-reader-original"><h3><FileText size={17} /> Original message</h3>{cleanEmailForReading(selected.bodyText)
+              ? <div className="notice-reader-email-body">{cleanEmailForReading(selected.bodyText)}</div>
               : <p className="notice-reader-unavailable">{selected.attachment ? 'This email may contain the notice in an attachment. Open the saved files below.' : 'The full message has not been saved here yet. You can open the original in Gmail for now.'}</p>}
             </section>
             {selected.attachment && <section className="notice-reader-files"><h3>Attached files</h3>{(selected.attachmentNames?.length ? selected.attachmentNames : [selected.attachment]).map(name => <div key={name}><Paperclip size={15} /><span>{name}</span></div>)}</section>}

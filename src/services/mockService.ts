@@ -1,5 +1,6 @@
 import { supabase } from './supabase'
 import { answerFromSavedRecords } from './localAssistant'
+import { cleanEmailForReading } from './emailText'
 
 import {
   payments,
@@ -107,7 +108,7 @@ export const studentService = {
 
       category: row.category,
 
-      description: row.description ?? '',
+      description: cleanEmailForReading(row.description ?? ''),
 
       source: 'College Email',
       sourceUrl: /^[a-zA-Z0-9_-]{8,100}$/.test(row.gmail_message_id ?? '')
