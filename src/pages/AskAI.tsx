@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowRight, Check, Copy, ExternalLink, Sparkles, X } from 'lucide-react'
+import { ArrowRight, Check, Copy, ExternalLink, Sparkles } from 'lucide-react'
 import { BorderBeam } from 'border-beam'
-import { ThinkingOrb } from 'thinking-orbs'
 
 import { studentService } from '../services/mockService'
 import type { AssistantSource } from '../services/localAssistant'
@@ -17,26 +16,7 @@ function InlineText({ text }: { text: string }) {
   )}</>
 }
 
-function ReadableAnswer({ text, stream = false }: { text: string; stream?: boolean }) {
-  const [visible, setVisible] = useState(!stream)
-
-  useEffect(() => {
-    if (!stream) {
-      setVisible(true)
-      return
-    }
-
-    setVisible(false)
-    let secondFrame = 0
-    const firstFrame = requestAnimationFrame(() => {
-      secondFrame = requestAnimationFrame(() => setVisible(true))
-    })
-    return () => {
-      cancelAnimationFrame(firstFrame)
-      cancelAnimationFrame(secondFrame)
-    }
-  }, [stream, text])
-
+function ReadableAnswer({ text }: { text: string }) {
   const lines = text.split(/\r?\n/)
   const blocks: { type: 'heading' | 'paragraph' | 'list'; lines: string[] }[] = []
   for (const line of lines) {
@@ -51,79 +31,14 @@ function ReadableAnswer({ text, stream = false }: { text: string; stream?: boole
     if (last?.type === type && type !== 'heading') last.lines.push(cleaned)
     else blocks.push({ type, lines: [cleaned] })
   }
-  let wordIndex = 0
-  const animatedInline = (value: string, keyPrefix: string) => <>{value.split(/(\*\*[^*]+\*\*)/g).map((part, partIndex) => {
-    const bold = part.startsWith('**') && part.endsWith('**')
-    const content = bold ? part.slice(2, -2) : part
-    const words = content.split(/(\s+)/)
-    const nodes = words.map((word, tokenIndex) => {
-      if (!word || /^\s+$/.test(word)) return word
-      const delay = wordIndex * 60
-      wordIndex += 1
-      return <span
-        className={`t-stream-w ${visible ? 'is-in' : ''}`}
-        style={{ '--stream-delay': `${delay}ms` } as React.CSSProperties}
-        key={`${keyPrefix}-${partIndex}-${tokenIndex}`}
-      >{word}</span>
-    })
-    return bold ? <strong key={`${keyPrefix}-${partIndex}`}>{nodes}</strong> : <span key={`${keyPrefix}-${partIndex}`}>{nodes}</span>
-  })}</>
-
-  const renderInline = (value: string, keyPrefix: string) => stream
-    ? animatedInline(value, keyPrefix)
-    : <InlineText text={value} />
-
-  return <div className={`chat-readable ${stream ? 't-stream' : ''}`}>
+  return <div className="chat-readable">
     {blocks.map((block, index) => block.type === 'heading'
-      ? <h3 key={index}>{renderInline(block.lines[0], `h-${index}`)}</h3>
+      ? <h3 key={index}><InlineText text={block.lines[0]} /></h3>
       : block.type === 'list'
-        ? <ul key={index}>{block.lines.map((line, itemIndex) => <li key={itemIndex}>{renderInline(line, `l-${index}-${itemIndex}`)}</li>)}</ul>
-        : <p key={index}>{block.lines.map((line, itemIndex) => <span key={itemIndex}>{renderInline(line, `p-${index}-${itemIndex}`)}{itemIndex < block.lines.length - 1 && <br />}</span>)}</p>
+        ? <ul key={index}>{block.lines.map((line, itemIndex) => <li key={itemIndex}><InlineText text={line} /></li>)}</ul>
+        : <p key={index}>{block.lines.map((line, itemIndex) => <span key={itemIndex}><InlineText text={line} />{itemIndex < block.lines.length - 1 && <br />}</span>)}</p>
     )}
   </div>
-}
-
-const thinkingStates = [
-  'Reading your college records…',
-  'Checking notices and dates…',
-  'Preparing your answer…',
-]
-
-function ThinkingState() {
-  const [index, setIndex] = useState(0)
-  const [phase, setPhase] = useState<'idle' | 'exit' | 'enter'>('idle')
-
-  useEffect(() => {
-    let swapTimer = 0
-    let firstFrame = 0
-    let secondFrame = 0
-    const interval = window.setInterval(() => {
-      setPhase('exit')
-      swapTimer = window.setTimeout(() => {
-        setIndex(current => (current + 1) % thinkingStates.length)
-        setPhase('enter')
-        firstFrame = requestAnimationFrame(() => {
-          secondFrame = requestAnimationFrame(() => setPhase('idle'))
-        })
-      }, 150)
-    }, 2000)
-
-    return () => {
-      window.clearInterval(interval)
-      window.clearTimeout(swapTimer)
-      cancelAnimationFrame(firstFrame)
-      cancelAnimationFrame(secondFrame)
-    }
-  }, [])
-
-  const text = thinkingStates[index]
-  return <span className="t-think" role="status" aria-live="polite">
-    <span className="t-think-sizer" aria-hidden="true">Reading your college records…</span>
-    <span
-      className={`t-think-text ${phase === 'exit' ? 'is-exit' : phase === 'enter' ? 'is-enter-start' : ''}`}
-      data-text={text}
-    >{text}</span>
-  </span>
 }
 
 export default function AskAI({ payments, events, updateCalendar, theme }: {
@@ -150,18 +65,11 @@ export default function AskAI({ payments, events, updateCalendar, theme }: {
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
-  const [clearing, setClearing] = useState(false)
-  const [clearingText, setClearingText] = useState('')
   const [motionAllowed, setMotionAllowed] = useState(() =>
     !window.matchMedia('(prefers-reduced-motion: reduce)').matches
   )
 
   const bottom = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
-  const clearMirrorRef = useRef<HTMLDivElement>(null)
-  const clearPlaceholderRef = useRef<HTMLDivElement>(null)
-  const clearGlowRef = useRef<HTMLDivElement>(null)
-  const clearFrameRef = useRef(0)
 
   useEffect(() => {
     bottom.current?.scrollIntoView({
@@ -176,65 +84,6 @@ export default function AskAI({ payments, events, updateCalendar, theme }: {
     media.addEventListener('change', updateMotion)
     return () => media.removeEventListener('change', updateMotion)
   }, [])
-
-  useEffect(() => () => cancelAnimationFrame(clearFrameRef.current), [])
-
-  const clearInput = () => {
-    if (!input || clearing) return
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      setInput('')
-      inputRef.current?.focus()
-      return
-    }
-
-    const oldText = input
-    const words = [...oldText.matchAll(/\S+/g)].map(match => ({
-      center: (((match.index ?? 0) + match[0].length / 2) / Math.max(oldText.length, 1)) * 100,
-    }))
-    setClearingText(oldText)
-    setClearing(true)
-    setInput('')
-    const started = performance.now()
-    const easeOut = (value: number) => 1 - Math.pow(1 - value, 3)
-
-    const animate = (now: number) => {
-      const elapsed = now - started
-      const progress = Math.min(elapsed / 1000, 1)
-      const outgoing = easeOut(Math.min(progress / .4, 1))
-      const incoming = easeOut(Math.max(0, Math.min((progress - .18) / .4, 1)))
-
-      if (clearMirrorRef.current) {
-        clearMirrorRef.current.style.transform = `translateY(${-12 * outgoing}px)`
-        clearMirrorRef.current.style.opacity = String(1 - outgoing)
-        clearMirrorRef.current.style.filter = `blur(${2 * outgoing}px)`
-      }
-      if (clearPlaceholderRef.current) {
-        clearPlaceholderRef.current.style.transform = `translateY(${12 * (1 - incoming)}px)`
-        clearPlaceholderRef.current.style.opacity = String(incoming)
-        clearPlaceholderRef.current.style.filter = `blur(${2 * (1 - incoming)}px)`
-      }
-      if (clearGlowRef.current) {
-        clearGlowRef.current.style.backgroundImage = words.map((word, index) => {
-          const local = Math.max(0, Math.min((elapsed - index * 50) / 430, 1))
-          const envelope = local < .15 ? local / .15 : Math.max(0, 1 - (local - .15) / .85)
-          return `radial-gradient(circle at ${word.center}% 50%, rgba(75, 132, 255, ${(.85 * envelope).toFixed(3)}) 0%, transparent 13%)`
-        }).join(',')
-        clearGlowRef.current.style.opacity = progress < .7 ? '1' : String((1 - progress) / .3)
-      }
-
-      if (progress < 1) clearFrameRef.current = requestAnimationFrame(animate)
-      else {
-        setClearing(false)
-        setClearingText('')
-        clearMirrorRef.current?.removeAttribute('style')
-        clearPlaceholderRef.current?.removeAttribute('style')
-        clearGlowRef.current?.removeAttribute('style')
-        inputRef.current?.focus()
-      }
-    }
-
-    clearFrameRef.current = requestAnimationFrame(animate)
-  }
 
   const ask = async (question: string) => {
     if (!question.trim() || busy) return
@@ -277,6 +126,18 @@ export default function AskAI({ payments, events, updateCalendar, theme }: {
       />
 
       <div className="chat-layout">
+        <BorderBeam
+          className="chat-beam"
+          size="md"
+          colorVariant="colorful"
+          strength={1}
+          brightness={1.85}
+          saturation={1.5}
+          duration={1.96}
+          borderRadius={15}
+          active={motionAllowed}
+          theme={theme}
+        >
         <section className="chat-panel">
           <div className="chat-header">
             <span className="chat-ai-icon">
@@ -304,7 +165,7 @@ export default function AskAI({ payments, events, updateCalendar, theme }: {
                 )}
 
                 <div className="chat-answer">
-                  {message.role === 'assistant' ? <ReadableAnswer text={message.text} stream={index > 0} /> : <p>{message.text}</p>}
+                  {message.role === 'assistant' ? <ReadableAnswer text={message.text} /> : <p>{message.text}</p>}
                   {message.mode === 'search' && <small className="chat-answer-mode">Saved-record search</small>}
                   {!!message.sources?.length && (
                     <details className="chat-source-panel">
@@ -343,44 +204,44 @@ export default function AskAI({ payments, events, updateCalendar, theme }: {
             ))}
 
             {busy && (
-              <div className="chat-message assistant chat-thinking">
-                <span className="chat-thinking-orb">
-                  <ThinkingOrb state="searching" size={64} />
+              <div className="chat-message assistant">
+                <span className="chat-bot-avatar">
+                  <Sparkles size={16} />
                 </span>
-                <div className="chat-thinking-bubble"><ThinkingState /></div>
+
+                <p>Thinking...</p>
               </div>
             )}
 
             <div ref={bottom} />
           </div>
 
-          <BorderBeam className="chat-input-beam" size="line" colorVariant="colorful" strength={1} active={motionAllowed} theme={theme}>
-            <form
-              className={`chat-composer t-clear ${input ? 'has-value' : ''} ${clearing ? 'is-clearing' : ''}`}
-              onSubmit={e => {
-                e.preventDefault()
-                void ask(input)
-              }}
+          <form
+            className="chat-composer"
+            onSubmit={e => {
+              e.preventDefault()
+              void ask(input)
+            }}
+          >
+            <input
+              placeholder="Ask about deadlines, notices, or events..."
+              aria-label="Question about saved college records"
+              maxLength={600}
+              value={input}
+              onChange={e => setInput(e.target.value)}
+            />
+
+            <button
+              type="submit"
+              disabled={!input.trim() || busy}
+              aria-label="Ask Herald Assistant"
             >
-              <input
-                ref={inputRef}
-                aria-label="Question about saved college records"
-                maxLength={600}
-                value={input}
-                readOnly={clearing}
-                onChange={e => setInput(e.target.value)}
-              />
-              <div className="t-clear-mirror" ref={clearMirrorRef} aria-hidden="true">{clearing ? clearingText : input}</div>
-              <div className="t-clear-placeholder" ref={clearPlaceholderRef} aria-hidden="true">Ask about deadlines, notices, or events...</div>
-              <div className="t-clear-glow" ref={clearGlowRef} aria-hidden="true" />
-              {(input || clearing) && <button className="t-clear-btn" type="button" onClick={clearInput} disabled={clearing} aria-label="Clear message"><X size={15} /></button>}
-              <button className="chat-submit" type="submit" disabled={!input.trim() || busy || clearing} aria-label="Ask Herald Assistant">
-                <ArrowRight size={19} />
-              </button>
-            </form>
-          </BorderBeam>
+              <ArrowRight size={19} />
+            </button>
+          </form>
           <p className="chat-disclaimer">Relevant notice, event, and extracted file text goes to Gemini through your n8n workflow. Your own fee-status marks stay local. Unread files still need to be opened manually.</p>
         </section>
+        </BorderBeam>
         <aside className="chat-suggestions">
           <h2>Try asking</h2>
           {['What deadlines are coming up?', 'Show recent notices', 'Which fees have I marked paid?', 'Find my exam documents'].map(prompt => (
