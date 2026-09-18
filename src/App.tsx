@@ -57,6 +57,7 @@ import Documents from './pages/Documents'
 import AskAI from './pages/AskAI'
 import Profile from './pages/Profile'
 import AuthGate from './components/AuthGate'
+import { cleanEmailForReading } from './services/emailText'
 
 type Page =
   | 'Dashboard'
@@ -750,51 +751,94 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
       )}
 
       {selectedNotice && (
-        <Modal
-          title="Notice"
-          onClose={() =>
-            setSelectedNotice(
-              null
-            )
-          }
-        >
+  <Modal
+    title=""
+    onClose={() => setSelectedNotice(null)}
+  >
+    <article className="notice-detail-view">
+      <header className="notice-detail-header">
+        <div className="notice-detail-sender">
+          <span className="notice-detail-avatar">
+            {selectedNotice.source?.match(/[A-Za-z]/)?.[0].toUpperCase() || 'H'}
+          </span>
+
           <div>
-            {badge(
-              selectedNotice.priority
-            )}
-
-            {badge(
-              selectedNotice.category
-            )}
+            <strong>{selectedNotice.source.replace(/ · Email$/, '')}</strong>
+            <small>Herald College email</small>
           </div>
+        </div>
 
-          <h2>
-            {
-              selectedNotice.title
-            }
-          </h2>
+        <time>
+          {selectedNotice.receivedAt
+            ? new Date(selectedNotice.receivedAt).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+              })
+            : selectedNotice.date}
+        </time>
+      </header>
 
-          <p>
-            {
-              selectedNotice.summary
-            }
-          </p>
+      <div className="notice-detail-chip">
+        {badge(selectedNotice.category)}
+        {selectedNotice.priority === 'High' && badge('High')}
+      </div>
 
-          {documents.filter(file => file.gmailMessageId === selectedNotice.gmailMessageId).map(file => (
-            <button key={file.id} className="secondary-button" onClick={() => void openDocument(file)}>
-              <FileText size={15} /> Open {file.name}
-            </button>
+      <h2>{selectedNotice.title}</h2>
+
+      <section className="notice-detail-summary">
+        <span>✦</span>
+        <p>{selectedNotice.summary}</p>
+      </section>
+
+      <section className="notice-detail-original">
+        <h3>
+          <FileText size={16} />
+          Original Message
+        </h3>
+
+        <div>
+          {cleanEmailForReading(selectedNotice.bodyText) ||
+            'The original message is not saved yet. Open this email in Gmail to read the complete message.'}
+        </div>
+      </section>
+
+      {!!selectedNotice.attachmentNames?.length && (
+        <section className="notice-detail-files">
+          <h3>Attachments</h3>
+
+          {selectedNotice.attachmentNames.map(name => (
+            <p key={name}>
+              <FileText size={14} />
+              {name}
+            </p>
           ))}
-          {selectedNotice.attachmentNames?.filter(name =>
-            !documents.some(file => file.gmailMessageId === selectedNotice.gmailMessageId && file.name === name)
-          ).map(name => <p key={name}>Attachment in Gmail: {name}</p>)}
-          {gmailUrlForNotice(selectedNotice) && (
-            <a className="secondary-button" href={gmailUrlForNotice(selectedNotice)} target="_blank" rel="noopener noreferrer">
-              <ExternalLink size={15} /> Open this email in Gmail
-            </a>
-          )}
-        </Modal>
+        </section>
       )}
+
+      <div className="notice-detail-actions">
+        <button
+          className="primary-button"
+          onClick={() => navigate('Ask AI')}
+        >
+          Ask AI
+        </button>
+
+        {gmailUrlForNotice(selectedNotice) && (
+          <a
+            className="secondary-button"
+            href={gmailUrlForNotice(selectedNotice)}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Open in Gmail
+            <ExternalLink size={14} />
+          </a>
+        )}
+      </div>
+    </article>
+  </Modal>
+)}
 
       {searchOpen && (
         <Modal

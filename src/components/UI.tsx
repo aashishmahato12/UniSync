@@ -69,11 +69,14 @@ export function Modal({
   title,
   children,
   onClose,
+  className = '',
 }: {
   title: string
   children: React.ReactNode
   onClose: () => void
+  className?: string
 }) {
+  
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
@@ -89,7 +92,7 @@ export function Modal({
   return (
     <div className="modal-backdrop" onMouseDown={onClose}>
       <div
-        className="modal"
+        className={`modal ${className}`}
         role="dialog"
         aria-modal="true"
         aria-label={title}
