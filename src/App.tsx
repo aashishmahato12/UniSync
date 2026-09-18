@@ -16,7 +16,9 @@ import {
   FileText,
   FolderOpen,
   Home,
+  Inbox,
   Menu,
+  MessageSquareMore,
   MoreHorizontal,
   Moon,
   Plus,
@@ -111,6 +113,13 @@ const nav: {
 const pageLabel = (page: Page) => nav.find(item => item.name === page)?.label || page
 
 const initials = 'AM'
+
+function MobileSortIcon() {
+  return <svg className="mobile-sort-icon" viewBox="0 0 24 24" aria-hidden="true">
+    <path className="mobile-sort-lines" d="M10 6h9M10 11h6M10 16h3" />
+    <path className="mobile-sort-arrow" d="M5 5v13m0 0-3-3m3 3 3-3" />
+  </svg>
+}
 
 type Theme = 'light' | 'dark'
 type ThemeMode = Theme | 'system'
@@ -508,8 +517,17 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
         </div>
       </aside>
 
+      {menuOpen && <button className="mobile-scrim" onClick={() => setMenuOpen(false)} aria-label="Close navigation" />}
+
       <div className="main-column">
         <header className="topbar">
+          <div className="mobile-account">
+            <button className="mobile-account-avatar" onClick={() => navigate('Profile')} aria-label="Open profile">{initials}</button>
+            <button className="mobile-account-copy" onClick={() => navigate('Notices')}>
+              <small>{email}</small>
+              <strong>{page === 'Notices' ? 'All Inboxes' : pageLabel(page)}</strong>
+            </button>
+          </div>
           <div className="topbar-left">
             <button
               className="icon-button mobile-menu"
@@ -550,7 +568,7 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
             </button>
 
             <button
-              className="icon-button"
+              className="icon-button desktop-notice-button"
               onClick={() =>
                 navigate(
                   'Notices'
@@ -558,6 +576,14 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
               }
             >
               <Bell size={19} />
+            </button>
+
+            <button
+              className="icon-button figma-mobile-menu"
+              onClick={() => setMenuOpen(true)}
+              aria-label="Open all UniSync pages"
+            >
+              <MobileSortIcon />
             </button>
           </div>
         </header>
@@ -671,6 +697,14 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
             </div>
           </div>
         </main>
+
+        <nav className="mobile-bottom-nav" aria-label="Primary navigation">
+          <button className={page === 'Dashboard' ? 'active' : ''} onClick={() => navigate('Dashboard')}><Home size={23} /><span>Home</span></button>
+          <button className={page === 'Notices' ? 'active' : ''} onClick={() => navigate('Notices')}><Inbox size={23} /><span>Inbox</span></button>
+          <button className={`mobile-ai-action ${page === 'Ask AI' ? 'active' : ''}`} onClick={() => navigate('Ask AI')} aria-label="Ask UniSync"><MessageSquareMore size={25} /></button>
+          <button className={page === 'Calendar' || page === 'Events' ? 'active' : ''} onClick={() => navigate('Calendar')}><CalendarDays size={23} /><span>Calendar</span></button>
+          <button className={page === 'Documents' ? 'active' : ''} onClick={() => navigate('Documents')}><FolderOpen size={23} /><span>Files</span></button>
+        </nav>
       </div>
 
       {selectedEvent && (

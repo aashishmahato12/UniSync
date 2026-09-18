@@ -48,7 +48,27 @@ export default function Notices({
   const selected = filtered.find(notice => notice.id === selectedId) || filtered[0]
 
   return (
-    <>
+    <div className="notices-page">
+      <section className="figma-mobile-feed" aria-label="Latest college emails">
+        {filtered.slice(0, 12).map((notice, index) => <button
+          className={`figma-mail-card depth-${Math.min(index, 2)} ${(index === 0 || index === 2) ? 'is-stacked' : ''}`}
+          key={notice.id}
+          onClick={() => onNotice(notice)}
+        >
+          <span className="figma-sender-avatar">{notice.source?.match(/[A-Za-z]/)?.[0].toUpperCase() || 'H'}</span>
+          <span className="figma-mail-content">
+            <span className="figma-mail-heading">
+              <strong>{notice.title}</strong>
+              <span className="figma-mail-tags"><em className={`category-${notice.category.toLowerCase().replace(/\s+/g, '-')}`}>{notice.category}</em>{notice.priority === 'High' && <em className="urgent">High</em>}</span>
+              <time>{index === 0 ? 'Now' : formatDate(notice.date, { month: 'short', day: 'numeric' })}</time>
+            </span>
+            <span className="figma-mail-summary"><Sparkles size={13} />{notice.summary}</span>
+          </span>
+          {notice.attachment && <span className="figma-attachment" title="Has attachment"><Paperclip size={14} /></span>}
+        </button>)}
+        {!filtered.length && <div className="figma-feed-empty">Your Herald College emails will appear here.</div>}
+      </section>
+
       <PageIntro
         title="College inbox"
         copy="Read the useful part first, then open the full email or its attachments when needed."
@@ -106,6 +126,6 @@ export default function Notices({
           </div>
         </article>
       </div> : <EmptyState title="No notices" copy="New notices will appear here." />}
-    </>
+    </div>
   )
 }

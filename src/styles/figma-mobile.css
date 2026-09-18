@@ -1,0 +1,289 @@
+/* Figma source: Mobile / Today (14:2). This file is loaded last on purpose. */
+:root {
+  --figma-blue: #346fc9;
+  --figma-ink: #172236;
+  --figma-muted: #78859a;
+  --figma-line: rgba(91, 112, 145, .14);
+  --figma-glass: rgba(255, 255, 255, .78);
+}
+
+html,
+body,
+button,
+input,
+textarea,
+select,
+h1,
+h2,
+h3,
+.brand strong,
+.section-heading h2 {
+  font-family: "Google Sans", Arial, sans-serif !important;
+  font-optical-sizing: auto;
+}
+
+.mobile-account,
+.mobile-bottom-nav,
+.figma-mobile-feed,
+.figma-mobile-menu { display: none; }
+
+/* Carry the frame's soft glass and layered cards into wider screens. */
+.app-shell {
+  background:
+    radial-gradient(circle at 76% -5%, rgba(145, 190, 255, .18), transparent 34%),
+    linear-gradient(145deg, #f1f6fc 0%, #f7f9fd 48%, #eef4fb 100%);
+}
+.main-column { background: transparent; }
+.topbar {
+  background: rgba(255, 255, 255, .72);
+  border-bottom-color: var(--figma-line);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+}
+.sidebar {
+  background: rgba(255, 255, 255, .78);
+  border-right-color: var(--figma-line);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+}
+.desk-panel,
+.panel,
+.notice-mail-layout,
+.document-card,
+.event-card,
+.chat-panel,
+.payment-stats > div {
+  border-color: var(--figma-line);
+  background: var(--figma-glass);
+  box-shadow: 0 18px 45px rgba(45, 74, 116, .08), inset 0 1px 0 rgba(255,255,255,.72);
+  backdrop-filter: blur(16px) saturate(130%);
+  -webkit-backdrop-filter: blur(16px) saturate(130%);
+}
+.desk-brief,
+.desk-next { border-radius: 24px; }
+.desk-panel { border-radius: 20px; }
+
+@media (max-width: 760px) {
+  html, body, #root { min-height: 100%; background: #edf2f6; }
+  body { overflow-x: hidden; }
+  .app-shell {
+    min-height: 100dvh;
+    background:
+      radial-gradient(circle at 79% 2%, rgba(207, 231, 255, .75), transparent 34%),
+      linear-gradient(180deg, #eef6ff 0%, #f1f4f7 48%, #eceff1 100%);
+    color: #111922;
+    font-family: "Google Sans", Arial, sans-serif;
+  }
+  .sidebar {
+    display: flex;
+    z-index: 50;
+    width: min(300px, 84vw);
+    border-radius: 0 24px 24px 0;
+    box-shadow: 24px 0 70px rgba(31, 52, 80, .18);
+  }
+  .main-column { min-height: 100dvh; padding-bottom: 104px; }
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    height: 133px;
+    padding: 56px 20px 22px;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  .topbar-left { display: none; }
+  .mobile-account { display: flex; align-items: center; gap: 19px; min-width: 0; }
+  .mobile-account-avatar {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 43px;
+    height: 43px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: #205497;
+    color: white;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: -.03em;
+    box-shadow: none;
+  }
+  .mobile-account-copy { display: grid; gap: 4px; min-width: 0; padding: 0; border: 0; background: transparent; text-align: left; }
+  .mobile-account-copy small { max-width: 180px; overflow: hidden; color: #8a8e93; font-size: 9px; font-weight: 400; text-overflow: ellipsis; white-space: nowrap; }
+  .mobile-account-copy strong { position: relative; color: #111820; font-size: 16px; font-weight: 700; letter-spacing: -.025em; }
+  .mobile-account-copy strong::after { content: '⌄'; display: inline-grid; place-items: center; width: 13px; height: 13px; margin-left: 6px; border-radius: 50%; background: #dce3e8; color: #71808c; font-size: 9px; vertical-align: 2px; }
+  .topbar-actions { margin-left: auto; gap: 8px; }
+  .topbar-actions .theme-toggle { display: none; }
+  .topbar-actions .desktop-notice-button { display: none; }
+  .topbar-actions .figma-mobile-menu { display: grid; }
+  .topbar-actions .icon-button,
+  .search-trigger {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    padding: 0;
+    border: 1px solid rgba(128,145,165,.1);
+    border-radius: 50%;
+    background: rgba(255,255,255,.72);
+    color: #111820;
+    box-shadow: 0 4px 12px rgba(54,68,84,.11), inset 0 1px 0 rgba(255,255,255,.9);
+  }
+  .search-trigger span { display: none; }
+  .mobile-sort-icon { width: 22px; height: 22px; fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+  .mobile-sort-lines { stroke: #17202a; }
+  .mobile-sort-arrow { stroke: #2771d8; }
+  .content { max-width: none; padding: 0 20px 28px; }
+  .workspace-reveal,
+  .workspace-reveal > .t-skel-content { min-height: 0; }
+  .workspace-skeleton { padding-top: 10px; }
+
+  .figma-mobile-feed { display: grid; gap: 10px; padding: 0 0 10px; }
+  .figma-mail-card {
+    position: relative;
+    display: grid;
+    grid-template-columns: 38px minmax(0, 1fr);
+    gap: 12px;
+    width: 100%;
+    min-height: 96px;
+    padding: 14px 17px 13px 21px;
+    isolation: isolate;
+    overflow: visible;
+    border: 1px solid rgba(255,255,255,.82);
+    border-radius: 20px;
+    background: rgba(255,255,255,.82);
+    color: var(--figma-ink);
+    text-align: left;
+    box-shadow: 0 9px 22px rgba(67, 76, 87, .08), inset 0 1px 0 rgba(255,255,255,.9);
+    transition: transform .18s ease, box-shadow .18s ease;
+  }
+  .figma-mail-card > * { position: relative; z-index: 2; }
+  .figma-mail-card:active { transform: scale(.985); }
+  .figma-mail-card.depth-0 { margin-bottom: 0; }
+  
+ 
+  }
+  .figma-mail-card.is-stacked::after {
+    z-index: -1;
+    left: 27px;
+    right: 27px;
+    bottom: -14px;
+    background: rgba(255,255,255,.43);
+  }
+  .figma-sender-avatar {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #add3fb;
+    color: #fff;
+    font-size: 19px;
+    font-weight: 600;
+    box-shadow: none;
+  }
+  .figma-mail-content { display: grid; gap: 6px; min-width: 0; }
+  .figma-mail-heading { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 5px 8px; }
+  .figma-mail-heading > strong { overflow: hidden; color: #111820; font-size: 12px; font-weight: 700; line-height: 1.35; text-overflow: ellipsis; white-space: nowrap; }
+  .figma-mail-heading time { color: #a3aab1; font-size: 10px; line-height: 16px; }
+  .figma-mail-tags { display: flex; gap: 4px; grid-column: 1 / -1; grid-row: 2; }
+  .figma-mail-tags em { padding: 2px 7px; border-radius: 999px; background: #cbe9ff; color: #1772d2; font-size: 8px; font-style: normal; font-weight: 600; letter-spacing: 0; }
+  .figma-mail-tags .category-payments { background: #d1f5d4; color: #24a243; }
+  .figma-mail-tags .category-general,
+  .figma-mail-tags .category-exams,
+  .figma-mail-tags .category-academics { background: #e8eef3; color: #182634; }
+  .figma-mail-tags em.urgent { background: #ffe1dc; color: #f05a51; }
+  .figma-mail-summary { display: -webkit-box; min-width: 0; padding-right: 14px; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; color: #64717e; font-size: 11px; line-height: 1.35; }
+  .figma-mail-summary svg { float: left; margin: 1px 5px 0 0; color: #2e82e8; }
+  .figma-attachment { position: absolute; right: 21px; bottom: 15px; color: #69747d; font-size: 14px; }
+  .figma-feed-empty { padding: 46px 24px; border: 1px solid rgba(255,255,255,.75); border-radius: 20px; background: rgba(255,255,255,.62); color: #78879a; text-align: center; font-size: 12px; }
+
+  .notices-page > :not(.figma-mobile-feed) { display: none; }
+
+  .mobile-bottom-nav {
+    position: fixed;
+    z-index: 30;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    align-items: end;
+    min-height: 95px;
+    padding: 19px max(14px, env(safe-area-inset-left)) max(9px, env(safe-area-inset-bottom));
+    border-top: 0;
+    background: linear-gradient(180deg, rgba(242,244,246,0), rgba(242,244,246,.94) 27%, #f2f4f6 100%);
+    box-shadow: none;
+    backdrop-filter: blur(7px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  .mobile-bottom-nav > button {
+    display: grid;
+    justify-items: center;
+    gap: 5px;
+    min-width: 0;
+    padding: 5px 2px;
+    border: 0;
+    background: transparent;
+    color: #969a9d;
+    font-size: 11px;
+    font-weight: 400;
+  }
+  .mobile-bottom-nav > button.active { color: var(--figma-blue); }
+  .mobile-bottom-nav > button:nth-child(2).active { color: #05080a; font-weight: 600; }
+  .mobile-bottom-nav .mobile-ai-action {
+    align-self: start;
+    width: 64px;
+    height: 64px;
+    margin: -28px auto 0;
+    padding: 0;
+    border: 1px solid rgba(125,133,142,.15);
+    border-radius: 50%;
+    background: #fff;
+    color: #101820;
+    box-shadow: 0 10px 22px rgba(52,58,65,.14), inset 0 1px 0 rgba(255,255,255,.95);
+  }
+
+  /* Secondary pages keep their behavior and use the same mobile surface language. */
+  .page-intro { margin: 5px 0 18px; }
+  .page-intro h1 { font-size: 27px; }
+  .page-toolbar { gap: 10px; }
+  .tab-filters { flex-wrap: nowrap; margin: 0 -20px; padding: 0 20px 5px; overflow-x: auto; scrollbar-width: none; }
+  .tab-filters::-webkit-scrollbar { display: none; }
+  .tab-filters button { flex: none; border-radius: 999px; }
+  .notice-mail-layout { border-radius: 20px; }
+  .notice-mail-list { background: rgba(255,255,255,.42); }
+  .notice-mail-item { background: rgba(255,255,255,.75); border-radius: 15px; }
+  .notice-reader { background: rgba(255,255,255,.76); }
+  .document-card,
+  .event-card,
+  .panel,
+  .chat-panel { border-radius: 19px; }
+}
+
+[data-theme="dark"] .app-shell {
+  background:
+    radial-gradient(circle at 78% 0%, rgba(52, 104, 178, .17), transparent 34%),
+    linear-gradient(145deg, #0b1320, #101a2a 58%, #0c1522);
+}
+[data-theme="dark"] .topbar,
+[data-theme="dark"] .sidebar,
+[data-theme="dark"] .mobile-bottom-nav { background: rgba(12, 22, 36, .78); border-color: rgba(146, 177, 219, .14); }
+[data-theme="dark"] .figma-mail-card { background: #142133; border-color: rgba(151, 182, 222, .15); box-shadow: 0 14px 30px rgba(0,0,0,.2); }
+[data-theme="dark"] .figma-mail-card.is-stacked::before { background: #111d2c; border-color: rgba(151,182,222,.09); }
+[data-theme="dark"] .figma-mail-card.is-stacked::after { background: #0e1825; }
+[data-theme="dark"] .mobile-bottom-nav .mobile-ai-action { background: #f6f8fb; color: #101820; }
+[data-theme="dark"] .figma-mail-heading > strong { color: #edf4ff; }
+[data-theme="dark"] .figma-mail-summary { color: #a7b5c9; }
+[data-theme="dark"] .mobile-account-copy strong { color: #eef4ff; }
+[data-theme="dark"] .topbar-actions .icon-button,
+[data-theme="dark"] .search-trigger { background: rgba(23, 38, 58, .82); border-color: rgba(156,183,218,.13); color: #dbe8f8; box-shadow: 0 8px 24px rgba(0,0,0,.16); }
+
+@media (prefers-reduced-motion: reduce) {
+  .figma-mail-card { transition: none; }
+}
