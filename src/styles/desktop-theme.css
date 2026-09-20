@@ -1,0 +1,143 @@
+/* The mobile glass theme, adapted to a spacious desktop workspace. */
+@media (min-width: 761px) {
+  :root {
+    --desktop-glass: rgba(250, 252, 255, .74);
+    --desktop-edge: rgba(255, 255, 255, .88);
+    --desktop-shadow: 0 8px 28px #233c5810, inset 0 1px 0 #ffffff99;
+  }
+  .app-shell { background: radial-gradient(ellipse at 70% 0, #e5f2ff 0, transparent 55%), linear-gradient(160deg, #eff7ff, #e9ebee); }
+  .main-column { background: transparent; }
+  .sidebar { background: #f7fbffad; border-color: #ffffffb3; backdrop-filter: blur(28px); }
+  .brand-mark { border-radius: 50%; background: #205497; }
+  .nav-item { border-radius: 14px; min-height: 44px; }
+  .nav-item.active { background: #ffffffb8; border-color: #fff; box-shadow: 0 5px 18px #233c5810; }
+  .nav-index { display: none; }
+  .help-card { border-radius: 20px; background: #dbeaff8c; border-color: #ffffffb3; }
+  .topbar { height: 82px; background: #f5faff8c; border-color: #ffffff99; backdrop-filter: blur(24px); box-shadow: none; }
+  .search-trigger { width: 260px; border-radius: 24px; padding: 12px 18px; background: #ffffffad; border-color: #ffffffd9; box-shadow: 0 4px 12px #233c580a; }
+  .topbar .icon-button { width: 41px; height: 41px; border-radius: 50%; background: #ffffffad; box-shadow: 0 4px 12px #233c5810; }
+  .content { max-width: 1500px; padding: 32px clamp(24px, 3vw, 48px) 64px; }
+  .page-intro h1 { font-size: 32px; letter-spacing: -.035em; font-weight: 500; }
+  .page-intro p { color: #717980; font-size: 13px; }
+  .panel, .desk-panel, .event-card, .chat-panel, .payment-stats > div,
+  .document-card, .desk-signal-row > button {
+    border-radius: 22px; background: var(--desktop-glass); border-color: var(--desktop-edge);
+    box-shadow: var(--desktop-shadow); backdrop-filter: blur(24px);
+  }
+  .tab-filters button, .document-categories button { border-radius: 999px; }
+  .tab-filters button.selected { background: #d2e6ff; color: #185cad; }
+  .notices-page .notice-mail-layout { gap: 22px; grid-template-columns: minmax(280px, .85fr) minmax(0, 1.35fr); background: transparent; border: 0; box-shadow: none; overflow: visible; backdrop-filter: none; }
+  .notices-page .notice-mail-list { display: grid; align-content: start; gap: 12px; padding: 2px 8px 20px 2px; max-height: 78vh; overflow-y: auto; border: 0; scrollbar-width: thin; }
+  .notice-mail-list-heading { border: 0; padding: 10px 14px; }
+  .notices-page .notice-mail-item { flex: initial; min-width: 0; border: 1px solid var(--desktop-edge); border-radius: 20px; background: var(--desktop-glass); padding: 19px 20px; gap: 10px; box-shadow: var(--desktop-shadow); backdrop-filter: blur(24px); }
+  .notices-page .notice-mail-item.selected { background: #e6f1ffde; border-color: #91bff4; box-shadow: 0 7px 22px #3478c61a; }
+  .notice-mail-item-top > span { background: #d5e9ff; color: #2474cd; padding: 3px 9px; border-radius: 999px; font-size: 10px; font-weight: 500; }
+  .notice-mail-item strong { font-size: 14px; font-weight: 500; line-height: 1.4; }
+  .notice-mail-snippet { font-size: 12px; line-height: 1.5; color: #717980; }
+  .notices-page .notice-reader { background: var(--desktop-glass); border: 1px solid var(--desktop-edge); border-radius: 24px; box-shadow: var(--desktop-shadow); overflow: hidden; backdrop-filter: blur(28px); }
+  .notice-reader-body { padding: 30px clamp(24px, 3vw, 44px); }
+  .notice-reader h2 { font-size: 28px; font-weight: 500; letter-spacing: -.03em; line-height: 1.25; }
+  .notice-reader-avatar { background: #add3fb; color: white; font-size: 24px; font-weight: 500; }
+  .notice-reader-summary { border-radius: 22px; background: linear-gradient(145deg,#d8eaffb3,#c6dcf3b3); border-color: #ffffffcc; box-shadow: 0 8px 22px #294a7110; }
+  .notice-reader-email-body { font-size: 14px; line-height: 1.75; }
+  .notice-detail-page { max-width: 880px; }
+  .notice-detail-page .notice-detail-view { padding: 36px 44px; border-radius: 26px; background: var(--desktop-glass); border-color: var(--desktop-edge); box-shadow: var(--desktop-shadow); }
+  .notice-detail-view > h2 { max-width: none; font-size: 30px; font-weight: 500; line-height: 1.25; }
+  .notice-detail-original > div { font-size: 14px; line-height: 1.75; }
+  html[data-theme='dark'] { --desktop-glass: rgba(23,35,52,.83); --desktop-edge: rgba(144,174,211,.17); --desktop-shadow: 0 8px 28px #00000024, inset 0 1px 0 #ffffff05; }
+  html[data-theme='dark'] .app-shell { background: radial-gradient(ellipse at 70% 0,#1c3651,transparent 60%),#0d1622; }
+  html[data-theme='dark'] .main-column { background: transparent; }
+  html[data-theme='dark'] .sidebar, html[data-theme='dark'] .topbar { background: #111e2ecc; border-color: var(--desktop-edge); }
+  html[data-theme='dark'] .panel, html[data-theme='dark'] .desk-panel,
+  html[data-theme='dark'] .event-card, html[data-theme='dark'] .chat-panel,
+  html[data-theme='dark'] .payment-stats > div, html[data-theme='dark'] .document-card,
+  html[data-theme='dark'] .desk-signal-row > button,
+  html[data-theme='dark'] .notices-page .notice-mail-item,
+  html[data-theme='dark'] .notices-page .notice-reader,
+  html[data-theme='dark'] .notice-detail-page .notice-detail-view { background: var(--desktop-glass); border-color: var(--desktop-edge); box-shadow: var(--desktop-shadow); }
+  html[data-theme='dark'] .notices-page .notice-mail-layout { background: transparent; border: 0; box-shadow: none; }
+  html[data-theme='dark'] .notices-page .notice-mail-item.selected { background: #213b58; border-color: #527ba8; }
+  html[data-theme='dark'] .notice-mail-item-top > span { background: #23415f; color: #add3fb; }
+  html[data-theme='dark'] .notice-reader-summary { background: linear-gradient(145deg,#244464,#203650); border-color: #476583; }
+  html[data-theme='dark'] .notice-mail-snippet, html[data-theme='dark'] .page-intro p { color: #adbacb; }
+  html[data-theme='dark'] .topbar .icon-button, html[data-theme='dark'] .search-trigger { background: #1b2b40; border-color: #33455d; }
+}
+
+/* A floating workspace and a paper-like reader give desktop its own hierarchy. */
+@media (min-width: 1001px) {
+  .app-shell { padding: 20px; gap: 12px; background: radial-gradient(ellipse at 12% 12%, #d2e8ff 0, transparent 46%), linear-gradient(145deg, #eff7ff 12%, #e5e7e9 85%); }
+  .sidebar { top: 20px; height: calc(100vh - 40px); width: 204px; padding: 26px 12px 18px; border: 1px solid #ffffffa8; border-radius: 30px; box-shadow: 0 16px 48px #29445e0a, inset 0 1px #ffffffcc; background: #ffffff45; }
+  .brand { padding: 0 8px 38px; }
+  .brand strong { font-weight: 500; font-size: 19px; }
+  .side-nav { gap: 9px; }
+  .nav-item { min-height: 46px; font-size: 13px; font-weight: 400; border-radius: 17px; }
+  .nav-item.active { background: #244f85; color: #fff; border-color: #244f85; font-weight: 500; box-shadow: 0 7px 16px #254f8526; }
+  .nav-item.active::before { display: none; }
+  .help-card { border: 0; background: transparent; padding: 16px 10px; box-shadow: none; }
+  .help-card::after { display: none; }
+  .sidebar-profile { padding-top: 20px; }
+  .topbar { top: 0; height: 76px; padding: 0 30px; background: transparent; border: 0; backdrop-filter: blur(18px); border-radius: 24px; }
+  .content { padding: 24px 30px 60px; }
+  .page-intro { margin-bottom: 30px; }
+  .page-intro h1 { font-size: 40px; font-weight: 400; letter-spacing: -.045em; }
+  .page-intro p { margin-top: 10px; max-width: 560px; line-height: 1.65; }
+  .notices-page .notice-mail-layout { grid-template-columns: minmax(290px, .8fr) minmax(0, 1.35fr); gap: 28px; align-items: start; }
+  .notices-page .notice-mail-list { padding: 0 4px 24px; gap: 14px; }
+  .notice-mail-list-heading { padding: 6px 12px 14px; }
+  .notices-page .notice-mail-item { padding: 22px; border-radius: 24px; background: #ffffff70; box-shadow: 0 5px 16px #30435b06, inset 0 1px #fff; transition: background-color .2s ease, border-color .2s ease, box-shadow .2s ease; }
+  .notices-page .notice-mail-item.selected { background: #ffffffe6; border-color: #fff; box-shadow: 0 12px 28px #294b7320, inset 3px 0 #6aa6ed; }
+  .notice-mail-item strong { font-size: 15px; line-height: 1.45; }
+  .notice-mail-snippet { line-height: 1.65; }
+  .notices-page .notice-reader { border-radius: 30px; background: linear-gradient(155deg, #ffffffdb, #ffffff70); box-shadow: 0 18px 50px #30435b10, inset 0 1px #fff; }
+  .notice-reader-bar { border-bottom: 0; padding: 12px 34px 0; }
+  .notice-reader-body { padding: 20px clamp(28px, 3vw, 48px) 44px; }
+  .notice-reader h2 { font-size: clamp(26px, 2.4vw, 36px); margin: 24px 0; font-weight: 400; letter-spacing: -.035em; }
+  .notice-reader-summary { padding: 26px; border-radius: 24px; background: linear-gradient(130deg, #d4e7fb, #bed8f380); box-shadow: 0 10px 24px #284b7112, inset 0 1px #fff; }
+  .notice-reader-email-body { border: 0; padding-top: 12px; color: #536176; line-height: 1.85; }
+  .notice-reader-original { margin-top: 36px; }
+  .notice-reader-files > div { border: 0; background: #ffffff75; border-radius: 14px; padding: 16px; }
+  .desk-panel { box-shadow: none; background: #ffffff50; }
+  .primary-button, .outline-button, .secondary-button { border-radius: 999px; }
+  html[data-theme='dark'] .app-shell { background: radial-gradient(ellipse at 10% 5%, #203d59, transparent 50%), #101820; }
+  html[data-theme='dark'] .sidebar { background: #192b3c85; border-color: #aecce51c; }
+  html[data-theme='dark'] .topbar { background: transparent; border: 0; }
+  html[data-theme='dark'] .nav-item.active { background: #accff2; color: #152e48; border-color: #accff2; }
+  html[data-theme='dark'] .notices-page .notice-mail-item { background: #22314485; box-shadow: inset 0 1px #ffffff07; }
+  html[data-theme='dark'] .notices-page .notice-mail-item.selected { background: #2a4058; border-color: #8bb9e24a; box-shadow: 0 12px 28px #00000020, inset 3px 0 #8bb9e2; }
+  html[data-theme='dark'] .notices-page .notice-reader { background: linear-gradient(150deg, #25364ae6, #192633e6); }
+  html[data-theme='dark'] .notice-reader-files > div { background: #ffffff06; }
+  html[data-theme='dark'] .notice-reader-email-body { color: #bfccda; }
+  html[data-theme='dark'] .help-card { background: transparent; border: 0; }
+}
+
+@media (min-width: 761px) {
+  .side-nav .nav-item { position: relative; isolation: isolate; transition: color .2s ease, transform .28s cubic-bezier(.34,1.6,.5,1); }
+  .side-nav .nav-item:hover:not(.active) { transform: translateX(4px); }
+  body .sidebar .side-nav .nav-item.active { background: transparent; border-color: transparent; box-shadow: none; color: #fff; }
+  .side-nav .nav-item.active::before { display: none; }
+  .side-nav .nav-item > :not(.nav-jelly-selection) { position: relative; z-index: 1; }
+  .side-nav .nav-jelly-selection { position: absolute; inset: 0; z-index: 0; border-radius: 17px; background: #244f85; box-shadow: 0 7px 16px #254f8526, inset 0 1px #ffffff42; pointer-events: none; }
+  html[data-theme='dark'] body .sidebar .side-nav .nav-item.active { background: transparent; border-color: transparent; color: #152e48; }
+  html[data-theme='dark'] .side-nav .nav-jelly-selection { background: #accff2; box-shadow: 0 7px 18px #0003, inset 0 1px #fff9; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .side-nav .nav-item { transition: none !important; }
+}
+@media (max-width: 760px) {
+  .mobile-bottom-nav > button:not(.mobile-ai-action) { position: relative; isolation: isolate; }
+  .mobile-bottom-nav > button:not(.mobile-ai-action) > svg,
+  .mobile-bottom-nav > button:not(.mobile-ai-action) > span { position: relative; z-index: 1; }
+  .mobile-bottom-nav .mobile-nav-jelly { position: absolute; z-index: 0; top: -5px; left: 50%; width: 44px; height: 44px; border-radius: 17px; transform: translateX(-50%); background: #d4e8ff9c; box-shadow: inset 0 1px #fff, 0 4px 12px #39649d16; pointer-events: none; }
+  html[data-theme='dark'] .mobile-bottom-nav .mobile-nav-jelly { background: #48668988; box-shadow: inset 0 1px #ffffff26; }
+  .figma-mobile-feed > .figma-mail-glass { width: 100%; border: 1px solid #ffffffb8; }
+  .figma-mail-glass .figma-mail-card { min-height: 96px; margin: 0; border: 0; border-radius: inherit; background: transparent; box-shadow: none; }
+  .figma-mail-glass .figma-mail-card:focus-visible { outline-offset: -3px; }
+  html[data-theme='dark'] .figma-mobile-feed > .figma-mail-glass { border-color: #ffffff24; }
+}
+.notices-page .notice-summary-glass { width: 100%; border: 1px solid #ffffffb8; }
+.notices-page .notice-summary-glass .notice-reader-summary { margin: 0; border: 0; border-radius: inherit; background: transparent; box-shadow: none; }
+html[data-theme='dark'] .notices-page .notice-summary-glass { border-color: #ffffff22; }
+
+/* Radix dialog behavior under the existing UniSync modal surface. */
+.modal { position: fixed; z-index: 51; top: 50%; left: 50%; transform: translate(-50%, -50%); width: min(560px, calc(100vw - 36px)); max-height: min(740px, calc(100dvh - 36px)); }
+.modal-backdrop { z-index: 50; }

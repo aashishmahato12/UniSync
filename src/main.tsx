@@ -9,6 +9,7 @@ import './styles/redesign.css'
 import './styles/blue-accent.css'
 import './styles/dark-mode.css'
 import './styles/figma-mobile.css'
+import './styles/desktop-theme.css'
 
 ReactDOM.createRoot(
   document.getElementById('root')!

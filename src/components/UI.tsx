@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import * as DialogPrimitive from '@radix-ui/react-dialog'
 import { FolderOpen, X } from 'lucide-react'
 
 export const badge = (value: string) => (
@@ -76,30 +76,13 @@ export function Modal({
   onClose: () => void
   className?: string
 }) {
-  
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-
-    document.addEventListener('keydown', onKey)
-
-    return () => {
-      document.removeEventListener('keydown', onKey)
-    }
-  }, [onClose])
-
   return (
-    <div className="modal-backdrop" onMouseDown={onClose}>
-      <div
-        className={`modal ${className}`}
-        role="dialog"
-        aria-modal="true"
-        aria-label={title}
-        onMouseDown={e => e.stopPropagation()}
-      >
+    <DialogPrimitive.Root open onOpenChange={open => { if (!open) onClose() }}>
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Overlay className="modal-backdrop" />
+        <DialogPrimitive.Content className={`modal ${className}`}>
         <div className="modal-header">
-          <strong>{title}</strong>
+          <DialogPrimitive.Title asChild><strong>{title}</strong></DialogPrimitive.Title>
 
           <button
             className="icon-button"
@@ -111,7 +94,8 @@ export function Modal({
         </div>
 
         <div className="modal-content">{children}</div>
-      </div>
-    </div>
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
   )
 }

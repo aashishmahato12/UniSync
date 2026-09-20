@@ -1,5 +1,6 @@
 import './Notices.css'
 import { useState } from 'react'
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import {
   ArrowUpRight,
   ExternalLink,
@@ -21,6 +22,8 @@ import {
 } from '../components/UI'
 import { gmailUrlForNotice } from '../services/gmailLinks'
 import { cleanEmailForReading } from '../services/emailText'
+import GlassSurface from '../components/GlassSurface'
+import JellyRadio from '../components/JellyRadio'
 
 export default function Notices({
   notices,
@@ -31,6 +34,7 @@ export default function Notices({
 }) {
   const [filter, setFilter] = useState('All')
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const reduceMotion = useReducedMotion()
 
   const categories = [
     'All',
@@ -50,7 +54,8 @@ export default function Notices({
   return (
     <div className="notices-page">
       <section className="figma-mobile-feed" aria-label="Latest college emails">
-        {filtered.slice(0, 12).map((notice, index) => <button
+        {filtered.map((notice, index) => {
+          const card = <button
           className={`figma-mail-card depth-${Math.min(index, 2)} ${(index === 0 || index === 2) ? 'is-stacked' : ''}`}
           key={notice.id}
           onClick={() => onNotice(notice)}
@@ -60,12 +65,16 @@ export default function Notices({
             <span className="figma-mail-heading">
               <strong>{notice.title}</strong>
               <span className="figma-mail-tags"><em className={`category-${notice.category.toLowerCase().replace(/\s+/g, '-')}`}>{notice.category}</em>{notice.priority === 'High' && <em className="urgent">High</em>}</span>
-              <time>{index === 0 ? 'Now' : formatDate(notice.date, { month: 'short', day: 'numeric' })}</time>
+              <time>{formatDate(notice.date, { month: 'short', day: 'numeric' })}</time>
             </span>
             <span className="figma-mail-summary"><Sparkles size={13} />{notice.summary}</span>
           </span>
           {notice.attachment && <span className="figma-attachment" title="Has attachment"><Paperclip size={14} /></span>}
-        </button>)}
+          </button>
+          return index === 0
+            ? <GlassSurface key={notice.id} className="figma-mail-glass" borderRadius={21} backgroundOpacity={0.38}>{card}</GlassSurface>
+            : card
+        })}
         {!filtered.length && <div className="figma-feed-empty">Your Herald College emails will appear here.</div>}
       </section>
 
@@ -75,19 +84,7 @@ export default function Notices({
       />
 
       <div className="page-toolbar">
-        <div className="tab-filters">
-          {categories.map(category => (
-            <button
-              key={category}
-              className={
-                filter === category ? 'selected' : ''
-              }
-              onClick={() => setFilter(category)}
-            >
-              {category}
-            </button>
-          ))}
-        </div>
+        <JellyRadio items={categories} value={filter} onChange={setFilter} ariaLabel="Filter college emails" className="inbox-category-filter" />
 
         <span className="result-count">{filtered.length} notices</span>
       </div>
@@ -95,9 +92,15 @@ export default function Notices({
       {selected ? <div className="notice-mail-layout">
         <div className="notice-mail-list" aria-label="College notices">
           <div className="notice-mail-list-heading"><strong>Inbox</strong><span>{filtered.length} updates</span></div>
-          {filtered.map(notice => <button
+          <AnimatePresence initial={!reduceMotion}>
+          {filtered.map((notice, index) => <motion.button
             className={`notice-mail-item ${selected.id === notice.id ? 'selected' : ''}`}
             key={notice.id}
+            layout={reduceMotion ? false : 'position'}
+            initial={reduceMotion ? false : { opacity: 0, y: 16, scale: .96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={reduceMotion ? undefined : { opacity: 0, y: -8, scale: .97, transition: { duration: .16 } }}
+            transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 390, damping: 29, delay: Math.min(index, 7) * .045 }}
             onClick={() => setSelectedId(notice.id)}
             aria-pressed={selected.id === notice.id}
           >
@@ -105,15 +108,24 @@ export default function Notices({
             <strong>{notice.title}</strong>
             <span className="notice-mail-snippet">{notice.summary}</span>
             <span className="notice-mail-item-bottom">{notice.priority === 'High' && badge('High')}{notice.attachment && <span><Paperclip size={13} /> Attachment</span>}<ArrowUpRight size={15} /></span>
-          </button>)}
+          </motion.button>)}
+          </AnimatePresence>
         </div>
-        <article className="notice-reader">
+        <AnimatePresence mode="wait" initial={!reduceMotion}>
+        <motion.article
+          key={selected.id}
+          className="notice-reader"
+          initial={reduceMotion ? false : { opacity: 0, y: 18, scale: .985 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={reduceMotion ? undefined : { opacity: 0, y: -8, scale: .99, transition: { duration: .15 } }}
+          transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 360, damping: 30, mass: .85 }}
+        >
           <div className="notice-reader-bar"><span><Mail size={16} /> COLLEGE EMAIL</span><span>{selected.receivedAt ? new Date(selected.receivedAt).toLocaleString('en-US', { timeZone: 'Asia/Kathmandu', dateStyle: 'medium', timeStyle: 'short' }) : formatDate(selected.date, { month: 'long', day: 'numeric', year: 'numeric' })}</span></div>
           <div className="notice-reader-body">
             <div className="notice-reader-tags">{badge(selected.category)} {selected.priority === 'High' && badge('High')}</div>
             <h2>{selected.title}</h2>
             <div className="notice-reader-sender"><span className="notice-reader-avatar">H</span><div><strong>{selected.source.replace(/ · Email$/, '')}</strong><small>Herald College email</small></div></div>
-            <section className="notice-reader-summary"><span><Sparkles size={17} /> AT A GLANCE</span><p>{selected.summary}</p></section>
+            <GlassSurface className="notice-summary-glass" borderRadius={23} backgroundOpacity={0.42}><section className="notice-reader-summary"><span><Sparkles size={17} /> AT A GLANCE</span><p>{selected.summary}</p></section></GlassSurface>
             <section className="notice-reader-original"><h3><FileText size={17} /> Original message</h3>{cleanEmailForReading(selected.bodyText)
               ? <div className="notice-reader-email-body">{cleanEmailForReading(selected.bodyText)}</div>
               : <p className="notice-reader-unavailable">{selected.attachment ? 'This email may contain the notice in an attachment. Open the saved files below.' : 'The full message has not been saved here yet. You can open the original in Gmail for now.'}</p>}
@@ -124,7 +136,8 @@ export default function Notices({
               {gmailUrlForNotice(selected) && <a className="secondary-button" href={gmailUrlForNotice(selected)} target="_blank" rel="noopener noreferrer">Open this email in Gmail <ExternalLink size={15} /></a>}
             </div>
           </div>
-        </article>
+        </motion.article>
+        </AnimatePresence>
       </div> : <EmptyState title="No notices" copy="New notices will appear here." />}
     </div>
   )

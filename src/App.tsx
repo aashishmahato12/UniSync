@@ -4,6 +4,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import { motion, useReducedMotion } from 'motion/react'
 
 import {
   ArrowRight,
@@ -186,9 +187,9 @@ function WorkspaceSkeleton() {
 }
 
 function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { email: string; theme: Theme; themeMode: ThemeMode; setThemeMode: (mode: ThemeMode) => void; toggleTheme: () => void }) {
+  const reduceMotion = useReducedMotion()
   const [page, setPage] =
     useState<Page>('Dashboard')
-
   const [menuOpen, setMenuOpen] =
     useState(false)
 
@@ -343,6 +344,7 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
   const navigate = (
     target: Page
   ) => {
+    setSelectedNotice(null)
     setPage(target)
     setMenuOpen(false)
     setSearchOpen(false)
@@ -465,6 +467,13 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
                   navigate(name)
                 }
               >
+                {page === name && <motion.span
+                  className="nav-jelly-selection"
+                  layoutId="nav-jelly-selection"
+                  initial={false}
+                  transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 460, damping: 23, mass: 0.85 }}
+                  aria-hidden="true"
+                />}
                 <Icon size={18} />
 
                 <span>
@@ -593,6 +602,94 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
           <div className={`workspace-reveal t-skel ${loading ? '' : 'is-revealed'}`} data-state={loading ? 'loading' : 'ready'}>
             <div className="t-skel-skeleton is-pulsing"><WorkspaceSkeleton /></div>
             <div className="t-skel-content">
+{selectedNotice && (
+  <section className="notice-detail-page">
+<button className="secondary-button" onClick={() => setSelectedNotice(null)}>← Back to Inbox</button>
+    <article className="notice-detail-view">
+      <header className="notice-detail-header">
+        <div className="notice-detail-sender">
+          <span className="notice-detail-avatar">
+            {selectedNotice.source?.match(/[A-Za-z]/)?.[0].toUpperCase() || 'H'}
+          </span>
+
+          <div>
+            <strong>{selectedNotice.source.replace(/ · Email$/, '')}</strong>
+            <small>Herald College email</small>
+          </div>
+        </div>
+
+        <time>
+          {selectedNotice.receivedAt
+            ? new Date(selectedNotice.receivedAt).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+              })
+            : selectedNotice.date}
+        </time>
+      </header>
+
+      <div className="notice-detail-chip">
+        {badge(selectedNotice.category)}
+        {selectedNotice.priority === 'High' && badge('High')}
+      </div>
+
+      <h2>{selectedNotice.title}</h2>
+
+      <section className="notice-detail-summary">
+        <span>✦</span>
+        <p>{selectedNotice.summary}</p>
+      </section>
+
+      <section className="notice-detail-original">
+        <h3>
+          <FileText size={16} />
+          Original Message
+        </h3>
+
+        <div>
+          {cleanEmailForReading(selectedNotice.bodyText) ||
+            'The original message is not saved yet. Open this email in Gmail to read the complete message.'}
+        </div>
+      </section>
+
+      {!!selectedNotice.attachmentNames?.length && (
+        <section className="notice-detail-files">
+          <h3>Attachments</h3>
+
+          {selectedNotice.attachmentNames.map(name => (
+            <p key={name}>
+              <FileText size={14} />
+              {name}
+            </p>
+          ))}
+        </section>
+      )}
+
+      <div className="notice-detail-actions">
+        <button
+          className="primary-button"
+          onClick={() => navigate('Ask AI')}
+        >
+          Ask AI
+        </button>
+
+        {gmailUrlForNotice(selectedNotice) && (
+          <a
+            className="secondary-button"
+            href={gmailUrlForNotice(selectedNotice)}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Open in Gmail
+            <ExternalLink size={14} />
+          </a>
+        )}
+      </div>
+    </article>
+  </section>
+)}
+<div hidden={!!selectedNotice}>
               {page ===
                 'Dashboard' && (
                 <Dashboard
@@ -696,15 +793,16 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
                 />
               )}
             </div>
+            </div>
           </div>
         </main>
 
         <nav className="mobile-bottom-nav" aria-label="Primary navigation">
-          <button className={page === 'Dashboard' ? 'active' : ''} onClick={() => navigate('Dashboard')}><Home size={23} /><span>Home</span></button>
-          <button className={page === 'Notices' ? 'active' : ''} onClick={() => navigate('Notices')}><Inbox size={23} /><span>Inbox</span></button>
+          <button className={page === 'Dashboard' ? 'active' : ''} onClick={() => navigate('Dashboard')}>{page === 'Dashboard' && <motion.i className="mobile-nav-jelly" layoutId="mobile-nav-jelly" initial={false} transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 460, damping: 23 }} aria-hidden="true" />}<Home size={23} /><span>Home</span></button>
+          <button className={page === 'Notices' ? 'active' : ''} onClick={() => navigate('Notices')}>{page === 'Notices' && <motion.i className="mobile-nav-jelly" layoutId="mobile-nav-jelly" initial={false} transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 460, damping: 23 }} aria-hidden="true" />}<Inbox size={23} /><span>Inbox</span></button>
           <button className={`mobile-ai-action ${page === 'Ask AI' ? 'active' : ''}`} onClick={() => navigate('Ask AI')} aria-label="Ask UniSync"><MessageSquareMore size={25} /></button>
-          <button className={page === 'Calendar' || page === 'Events' ? 'active' : ''} onClick={() => navigate('Calendar')}><CalendarDays size={23} /><span>Calendar</span></button>
-          <button className={page === 'Documents' ? 'active' : ''} onClick={() => navigate('Documents')}><FolderOpen size={23} /><span>Files</span></button>
+          <button className={page === 'Calendar' || page === 'Events' ? 'active' : ''} onClick={() => navigate('Calendar')}>{(page === 'Calendar' || page === 'Events') && <motion.i className="mobile-nav-jelly" layoutId="mobile-nav-jelly" initial={false} transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 460, damping: 23 }} aria-hidden="true" />}<CalendarDays size={23} /><span>Calendar</span></button>
+          <button className={page === 'Documents' ? 'active' : ''} onClick={() => navigate('Documents')}>{page === 'Documents' && <motion.i className="mobile-nav-jelly" layoutId="mobile-nav-jelly" initial={false} transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 460, damping: 23 }} aria-hidden="true" />}<FolderOpen size={23} /><span>Files</span></button>
         </nav>
       </div>
 
@@ -749,96 +847,6 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
           )}
         </Modal>
       )}
-
-      {selectedNotice && (
-  <Modal
-    title=""
-    onClose={() => setSelectedNotice(null)}
-  >
-    <article className="notice-detail-view">
-      <header className="notice-detail-header">
-        <div className="notice-detail-sender">
-          <span className="notice-detail-avatar">
-            {selectedNotice.source?.match(/[A-Za-z]/)?.[0].toUpperCase() || 'H'}
-          </span>
-
-          <div>
-            <strong>{selectedNotice.source.replace(/ · Email$/, '')}</strong>
-            <small>Herald College email</small>
-          </div>
-        </div>
-
-        <time>
-          {selectedNotice.receivedAt
-            ? new Date(selectedNotice.receivedAt).toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-              })
-            : selectedNotice.date}
-        </time>
-      </header>
-
-      <div className="notice-detail-chip">
-        {badge(selectedNotice.category)}
-        {selectedNotice.priority === 'High' && badge('High')}
-      </div>
-
-      <h2>{selectedNotice.title}</h2>
-
-      <section className="notice-detail-summary">
-        <span>✦</span>
-        <p>{selectedNotice.summary}</p>
-      </section>
-
-      <section className="notice-detail-original">
-        <h3>
-          <FileText size={16} />
-          Original Message
-        </h3>
-
-        <div>
-          {cleanEmailForReading(selectedNotice.bodyText) ||
-            'The original message is not saved yet. Open this email in Gmail to read the complete message.'}
-        </div>
-      </section>
-
-      {!!selectedNotice.attachmentNames?.length && (
-        <section className="notice-detail-files">
-          <h3>Attachments</h3>
-
-          {selectedNotice.attachmentNames.map(name => (
-            <p key={name}>
-              <FileText size={14} />
-              {name}
-            </p>
-          ))}
-        </section>
-      )}
-
-      <div className="notice-detail-actions">
-        <button
-          className="primary-button"
-          onClick={() => navigate('Ask AI')}
-        >
-          Ask AI
-        </button>
-
-        {gmailUrlForNotice(selectedNotice) && (
-          <a
-            className="secondary-button"
-            href={gmailUrlForNotice(selectedNotice)}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Open in Gmail
-            <ExternalLink size={14} />
-          </a>
-        )}
-      </div>
-    </article>
-  </Modal>
-)}
 
       {searchOpen && (
         <Modal
