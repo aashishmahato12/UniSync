@@ -251,6 +251,9 @@ export default function AskAI({ payments, events, updateCalendar, theme }: {
     }
   }
 
+  const liveWords = [voiceFinal, voiceInterim].filter(Boolean).join(' ').trim().split(/\s+/).filter(Boolean)
+  const finalWordCount = voiceFinal.trim() ? voiceFinal.trim().split(/\s+/).length : 0
+
   return (
     <div className={`ask-ai-page ${messages.length ? 'has-conversation' : 'is-welcome'}`}>
       <PageIntro
@@ -373,10 +376,13 @@ export default function AskAI({ payments, events, updateCalendar, theme }: {
           >
             <button className="chat-composer-plus" type="button" onClick={() => setShowQuickPrompts(value => !value)} aria-label={showQuickPrompts ? 'Hide suggested questions' : 'Show suggested questions'}><Plus size={23} /></button>
             {listening ? <div className="chat-live-transcript" role="status" aria-live="polite" aria-atomic="true">
-              {voiceBaseRef.current && <span>{voiceBaseRef.current} </span>}
-              <span>{voiceFinal}</span>{voiceFinal && voiceInterim ? ' ' : ''}
-              <span className="chat-live-interim">{voiceInterim}</span>
-              {!voiceFinal && !voiceInterim && <span className="chat-live-placeholder">{voiceHint || 'Listening… speak now'}</span>}
+              {voiceBaseRef.current && <span className="chat-live-base">{voiceBaseRef.current}</span>}
+              {liveWords.map((word, index) => <span
+                className={`chat-live-word${index >= finalWordCount ? ' chat-live-interim' : ''}`}
+                key={index}
+                style={{ animationDelay: `${(index % 5) * 55}ms` }}
+              >{word}</span>)}
+              {!liveWords.length && <span className="chat-live-placeholder">{voiceHint || 'Listening… speak now'}</span>}
             </div> : <input
               placeholder="Ask UniSync"
               aria-label="Question about saved college records"

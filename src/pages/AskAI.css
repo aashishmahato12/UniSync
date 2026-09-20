@@ -605,8 +605,18 @@ body .ask-ai-page .chat-composer .chat-send:not(:disabled):hover{background:#dce
   overflow-y:auto;color:#253447;font:500 16px/1.4 'Google Sans',Arial,sans-serif;
   overflow-wrap:anywhere;
 }
+.chat-live-base{margin-right:.28em}
+.chat-live-word{
+  display:inline-block;margin-right:.28em;
+  animation:chat-live-word-in 420ms cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes chat-live-word-in{
+  from{opacity:0;filter:blur(4px);transform:translateY(5px)}
+  to{opacity:1;filter:blur(0);transform:translateY(0)}
+}
 .chat-live-interim,.chat-live-placeholder{color:#8b99ab}
 .chat-live-placeholder{font-weight:400}
+@media(prefers-reduced-motion:reduce){.chat-live-word{animation:none}}
 html[data-theme='dark'] .chat-welcome h2{color:#f4f7fb}
 html[data-theme='dark'] .chat-composer-beam .chat-composer{
   border-color:#ffffff2a;background:#222324;color:#eef4fa;
