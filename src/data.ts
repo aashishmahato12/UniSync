@@ -1,6 +1,14 @@
 export type CalendarState = 'Pending' | 'Added' | 'Ignored'
 export type EventCategory = 'Exam' | 'Deadline' | 'College event' | 'Holiday'
 export type EventItem = { id: string; title: string; date: string; time?: string; location?: string; category: EventCategory; description: string; source: string; sourceUrl?: string; calendarState: CalendarState; googleCalendarEventId?: string }
+export const normalizeEventCategory = (title: string, category: string): EventCategory => {
+  // Correct clear extraction mistakes without guessing at less obvious notices.
+  if (/\b(holiday|day of mourning|martyrs?['’]?(?:s)? day)\b/i.test(title)) return 'Holiday'
+  if (/\b(deadline|due date|last date)\b/i.test(title) && category === 'College event') return 'Deadline'
+  return category === 'Exam' || category === 'Deadline' || category === 'Holiday'
+    ? category
+    : 'College event'
+}
 export type Notice = { id: string; title: string; date: string; receivedAt?: string; category: string; priority: 'High' | 'Normal'; summary: string; bodyText?: string; attachment?: string; attachmentNames?: string[]; gmailMessageId?: string; sourceUrl?: string; source: string }
 export type PaymentStatus = 'Due' | 'Paid' | 'Receipt Uploaded' | 'Receipt Sent' | 'Awaiting Confirmation' | 'Confirmed'
 export type Payment = {

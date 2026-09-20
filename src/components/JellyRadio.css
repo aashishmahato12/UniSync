@@ -9,3 +9,43 @@ html[data-theme='dark'] .jelly-radio__skin { background: #223349; border-color: 
 html[data-theme='dark'] .jelly-radio__chip[data-on='true'] .jelly-radio__skin { background: #a6cafa; border-color: #a6cafa; color: #142a43; }
 html[data-theme='dark'] .jelly-radio__chip:hover:not([data-on='true']) .jelly-radio__skin { background: #304766; color: #e2efff; }
 @media (prefers-reduced-motion: reduce) { .jelly-radio__skin { transition: none; } }
+
+/* Category colors shared by the Calendar and Inbox filters. */
+.jelly-radio__chip[data-tone='all'] { --tone-solid:#24548f; }
+.jelly-radio__chip[data-tone='payment'] { --tone-solid:#248653; }
+.jelly-radio__chip[data-tone='exam'] { --tone-solid:#286fc7; }
+.jelly-radio__chip[data-tone='deadline'] { --tone-solid:#ad741c; }
+.jelly-radio__chip[data-tone='event'] { --tone-solid:#c45463; }
+.jelly-radio__chip[data-tone='holiday'] { --tone-solid:#7959b5; }
+.jelly-radio__chip[data-tone='academic'] { --tone-solid:#5666b1; }
+.jelly-radio__chip[data-tone='general'] { --tone-solid:#53697d; }
+.jelly-radio__chip[data-tone]:not([data-on='true']) .jelly-radio__skin {
+  background:color-mix(in srgb,var(--tone-solid) 10%,white);
+  border-color:color-mix(in srgb,var(--tone-solid) 19%,white);
+  color:var(--tone-solid);
+}
+.jelly-radio__chip[data-tone][data-on='true'] .jelly-radio__skin {
+  background:var(--tone-solid);
+  border-color:var(--tone-solid);
+  color:white;
+  box-shadow:0 5px 16px color-mix(in srgb,var(--tone-solid) 32%,transparent),inset 0 1px #ffffff55;
+}
+.jelly-radio__chip[data-tone]:hover:not([data-on='true']) .jelly-radio__skin {
+  background:color-mix(in srgb,var(--tone-solid) 18%,white);
+  color:var(--tone-solid);
+}
+.jelly-radio__chip[data-tone]:focus-visible { outline-color:var(--tone-solid); }
+html[data-theme='dark'] .jelly-radio__chip[data-tone]:not([data-on='true']) .jelly-radio__skin {
+  background:color-mix(in srgb,var(--tone-solid) 17%,#223349);
+  border-color:color-mix(in srgb,var(--tone-solid) 34%,#223349);
+  color:color-mix(in srgb,var(--tone-solid) 48%,white);
+}
+html[data-theme='dark'] .jelly-radio__chip[data-tone][data-on='true'] .jelly-radio__skin {
+  background:var(--tone-solid);
+  border-color:var(--tone-solid);
+  color:white;
+}
+html[data-theme='dark'] .jelly-radio__chip[data-tone]:hover:not([data-on='true']) .jelly-radio__skin {
+  background:color-mix(in srgb,var(--tone-solid) 28%,#223349);
+  color:white;
+}

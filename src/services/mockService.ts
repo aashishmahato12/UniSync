@@ -4,6 +4,7 @@ import { cleanEmailForReading } from './emailText'
 
 import {
   payments,
+  normalizeEventCategory,
   type EventItem,
   type Notice,
   type Payment,
@@ -106,7 +107,7 @@ export const studentService = {
 
       location: row.location ?? undefined,
 
-      category: row.category,
+      category: normalizeEventCategory(row.title ?? '', row.category ?? ''),
 
       description: cleanEmailForReading(row.description ?? ''),
 

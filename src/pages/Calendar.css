@@ -1,217 +1,208 @@
-.calendar-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1.65fr) minmax(290px, .8fr);
-  gap: 20px;
+.uni-calendar{--cal-ink:#203040;--cal-muted:#8090a2;--cal-glass:#ffffffb8;--cal-edge:#ffffffed;color:var(--cal-ink)}
+.uni-cal-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:26px}
+.uni-cal-heading small{color:#6487ae;font-size:10px;font-weight:700;letter-spacing:.1em}
+.uni-cal-heading h1{margin:4px 0;color:var(--cal-ink);font-size:38px;font-weight:500;letter-spacing:-.05em}
+.uni-cal-heading p{margin:0;color:var(--cal-muted);font-size:13px}
+.uni-cal-heading>svg{box-sizing:content-box;padding:13px;border:1px solid var(--cal-edge);border-radius:17px;background:#fff9;color:#478fe6}
+.uni-cal-layout{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(280px,.8fr);align-items:start;gap:22px}
+.uni-cal-main,.uni-cal-side{min-width:0;padding:25px;border:1px solid var(--cal-edge);border-radius:30px;background:var(--cal-glass);box-shadow:0 15px 35px #31527312,inset 0 1px #fff;backdrop-filter:blur(28px)}
+.uni-cal-toolbar,.uni-cal-title,.uni-cal-controls,.uni-cal-selected-head,.uni-cal-upcoming-head{display:flex;align-items:center;justify-content:space-between}
+.uni-cal-toolbar{gap:12px;margin-bottom:20px}.uni-cal-title{justify-content:flex-start;gap:9px;min-width:0}
+.uni-cal-toolbar h2{overflow:hidden;margin:0;font-size:21px;font-weight:600;letter-spacing:-.04em;text-overflow:ellipsis;white-space:nowrap}
+.uni-cal-controls{flex:none;gap:6px}.uni-cal-controls button,.uni-cal-title button{display:grid;place-items:center;border:1px solid #e6effa;background:#fff9;color:#6882a0;cursor:pointer}
+.uni-cal-controls button:hover,.uni-cal-title button:hover{background:#e6f2ff}
+.uni-cal-today{min-height:31px;padding:0 11px;border-radius:20px;font-size:10px;font-weight:600}
+.uni-cal-round{width:31px;height:31px;border-radius:50%}
+.uni-cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}
+.uni-cal-weekday{padding-bottom:10px;color:#93a0ad;font-size:10px;font-weight:600;text-align:center}
+.uni-cal-date{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0;height:56px;border:0;border-radius:13px;background:none;color:#3d4c60;font:inherit;font-size:12px;cursor:pointer}
+.uni-cal-date:hover{background:#edf5ff}.uni-cal-date.is-selected{background:#e2efff;color:#2b7bdb;font-weight:700}
+.uni-cal-date.is-today>span{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#548fee;color:white}
+.uni-cal-dot{width:4px;height:4px;margin-top:3px;border-radius:50%;background:#4688e9}
+.uni-cal-dot.uni-cal-payment{background:#2bc377}.uni-cal-dot.uni-cal-event{background:#ef8288}
+.uni-cal-selected-head{gap:10px;margin:18px 0 11px;padding-top:17px;border-top:1px solid #e0ebf6}
+.uni-cal-selected-head strong{font-size:13px;font-weight:600}
+.uni-cal-selected-head button,.uni-cal-upcoming-head button{display:flex;align-items:center;gap:2px;border:0;background:none;color:#7b91a9;font-size:10px;cursor:pointer}
+.uni-cal-events{display:grid;gap:9px}
+.uni-cal-event{overflow:hidden;border:1px solid #fff;border-radius:20px;background:#ffffffbf;box-shadow:0 6px 18px #28476c10}
+.uni-cal-event-main{display:flex;align-items:center;gap:10px;width:100%;min-width:0;padding:10px;border:0;background:none;color:inherit;text-align:left;cursor:pointer}
+.uni-cal-event-icon,.uni-cal-upcoming-icon{display:grid;place-items:center;flex:none;width:41px;height:41px;border-radius:14px;background:#e6f2ff;color:#4e95ed}
+.uni-cal-payment .uni-cal-event-icon,.uni-cal-payment .uni-cal-upcoming-icon{background:#def9eb;color:#22bd70}
+.uni-cal-event-copy,.uni-cal-upcoming-copy{display:grid;gap:3px;min-width:0;flex:1}
+.uni-cal-event-copy strong,.uni-cal-upcoming-copy strong{overflow:hidden;color:#2b3b4c;font-size:12px;font-weight:600;text-overflow:ellipsis;white-space:nowrap}
+.uni-cal-event-copy small{overflow:hidden;color:#8795a3;font-size:10px;text-overflow:ellipsis;white-space:nowrap}
+.uni-cal-event-meta{display:grid;justify-items:end;gap:4px;color:#73869a;font-size:10px;white-space:nowrap}
+.uni-cal-event-meta em{padding:3px 7px;border-radius:8px;background:#e0efff;color:#4a85cc;font-size:9px;font-style:normal}
+.uni-cal-payment .uni-cal-event-meta em{background:#e3f9eb;color:#27a766}
+.uni-cal-event-main>svg{flex:none;color:#8092a5}
+.uni-cal-time-band{position:relative;display:flex;justify-content:space-between;gap:16px;overflow:hidden;margin:1px 10px 11px;padding:13px 17px 24px;border-radius:18px;background:linear-gradient(155deg,#264968,#142838 75%,#111e2b);box-shadow:0 9px 17px #19395435;color:white}
+.uni-cal-time-band>div{position:relative;z-index:1;display:grid;gap:4px;min-width:0}.uni-cal-time-band>div:last-of-type{text-align:right}
+.uni-cal-time-band span{display:flex;align-items:center;gap:3px;color:#c7d8e8;font-size:9px}.uni-cal-time-band>div:last-of-type span{justify-content:flex-end}
+.uni-cal-time-band strong{overflow:hidden;font-size:12px;font-weight:600;text-overflow:ellipsis;white-space:nowrap}
+.uni-cal-time-band i{position:absolute;right:-4%;bottom:-54px;left:-4%;height:68px;border-top:3px solid #d9eaff;border-radius:50% 50% 0 0;box-shadow:0 -4px 10px #7cb7ff99}
+.uni-cal-time-band i:after{position:absolute;top:-9px;left:47%;width:13px;height:13px;border:3px solid #d8e8f8;border-radius:50%;background:#fff;box-shadow:0 0 0 2px #648bae;content:""}
+.uni-cal-event-more{padding:0 16px 16px 61px}.uni-cal-event-more p{margin:2px 0 13px;color:#708196;font-size:12px;line-height:1.55}
+.uni-cal-event-more>div{display:flex;flex-wrap:wrap;gap:7px}
+.uni-cal-event-more button,.uni-cal-event-more span{display:inline-flex;align-items:center;gap:4px;min-height:29px;padding:0 11px;border:1px solid #cee3fa;border-radius:999px;background:#eff6ff;color:#3576c3;font-size:10px;font-weight:600}
+.uni-cal-event-more button{cursor:pointer}
+.uni-cal-empty{display:flex;align-items:center;gap:9px;min-height:57px;padding:12px;border:1px solid #e8f1fb;border-radius:16px;background:#f4f9ffad;color:#8c9dae;font-size:11px}
+.uni-cal-empty svg{color:#629ce8}
+.uni-cal-upcoming-head{margin-bottom:16px}.uni-cal-upcoming-head h2{margin:0;font-size:19px;font-weight:600;letter-spacing:-.04em}
+.uni-cal-upcoming-list{display:grid;gap:10px}
+.uni-cal-upcoming{display:flex;align-items:center;gap:9px;width:100%;min-width:0;padding:11px;border:1px solid #fff;border-radius:19px;background:#ffffffbc;box-shadow:0 6px 16px #3152730e;color:inherit;text-align:left;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease}
+.uni-cal-upcoming:hover{transform:translateY(-2px);box-shadow:0 9px 20px #31527318}
+.uni-cal-upcoming-icon{width:37px;height:37px;border-radius:13px}
+.uni-cal-upcoming-copy small{color:#26a765;font-size:9px}.uni-cal-exam .uni-cal-upcoming-copy small{color:#4a8ce0}
+.uni-cal-upcoming-copy strong{font-size:11px}.uni-cal-upcoming-copy em{color:#9aa8b5;font-size:9px;font-style:normal}
+.uni-cal-upcoming-date{display:grid;justify-items:center;align-content:center;align-self:stretch;min-width:36px;padding-left:8px;border-left:1px solid #e7eef7}
+.uni-cal-upcoming-date small{color:#8498ae;font-size:8px}.uni-cal-upcoming-date strong{font-size:17px;font-weight:600;line-height:1}
+.uni-cal-no-upcoming{color:var(--cal-muted);font-size:12px}
+.uni-cal-day-content{min-height:270px}.uni-cal-day-empty{display:grid;justify-items:center;align-content:center;min-height:270px;text-align:center}
+.uni-cal-day-empty>svg{box-sizing:content-box;padding:14px;border-radius:17px;background:#e7f3ff;color:#4d95e9}
+.uni-cal-day-empty h3{margin:13px 0 4px;font-size:16px;font-weight:600}.uni-cal-day-empty p{margin:0;color:#8a99a9;font-size:11px}
+@media(max-width:900px){.uni-cal-layout{grid-template-columns:minmax(0,1fr) 260px;gap:14px}.uni-cal-main,.uni-cal-side{padding:17px}}
+@media(max-width:760px){
+ .uni-cal-heading{display:none}.uni-cal-layout{display:flex;flex-direction:column;gap:14px}.uni-cal-main,.uni-cal-side{width:100%;padding:0;border:0;border-radius:0;background:none;box-shadow:none;backdrop-filter:none}
+ .uni-cal-toolbar{margin:0 0 13px}.uni-cal-toolbar h2{font-size:16px}.uni-cal-controls{gap:5px}.uni-cal-today{min-height:26px;padding:0 9px;border:0;font-size:9px}.uni-cal-round{width:26px;height:26px;border:0!important}
+ .uni-cal-grid{gap:0}.uni-cal-weekday{padding-bottom:6px;font-size:9px}.uni-cal-date{height:42px;border-radius:10px;font-size:10px}.uni-cal-date.is-today>span{width:25px;height:25px}
+ .uni-cal-selected-head{margin:14px 0 9px;padding-top:0;border:0}.uni-cal-selected-head strong{font-size:11px}.uni-cal-selected-head button{font-size:9px}
+ .uni-cal-event{border-radius:18px}.uni-cal-event-main{gap:7px;padding:9px}.uni-cal-event-icon{width:36px;height:36px;border-radius:13px}.uni-cal-event-icon svg{width:16px}.uni-cal-event-copy strong{font-size:10px}.uni-cal-event-copy small{font-size:9px}.uni-cal-event-meta{font-size:9px}.uni-cal-event-main>svg{width:13px}
+ .uni-cal-event-more{padding:0 12px 13px 52px}
+ .uni-cal-side{margin-top:2px}.uni-cal-upcoming-head{margin-bottom:8px}.uni-cal-upcoming-head h2{font-size:14px}.uni-cal-upcoming-head button{font-size:9px}
+ .uni-cal-upcoming-list{display:flex;gap:8px;margin:0 -20px;padding:0 20px 12px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}.uni-cal-upcoming-list::-webkit-scrollbar{display:none}
+ .uni-cal-upcoming{flex:0 0 46%;min-height:92px;padding:9px;gap:6px;border-radius:18px;scroll-snap-align:start}.uni-cal-upcoming-icon{align-self:flex-start;width:27px;height:27px;border-radius:10px}.uni-cal-upcoming-icon svg{width:14px}
+ .uni-cal-upcoming-copy strong{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;white-space:normal;font-size:10px}.uni-cal-upcoming-date{min-width:28px;padding-left:4px}.uni-cal-upcoming-date strong{font-size:14px}
+ .uni-cal-day-content{min-height:205px}.uni-cal-day-empty{min-height:205px;padding:16px;border:1px solid #fff;border-radius:24px;background:#ffffffac}.uni-calendar-day .uni-cal-side{margin-top:11px}
 }
+html[data-theme='dark'] .uni-calendar{--cal-ink:#eaf4ff;--cal-muted:#9aacbf;--cal-glass:#18283ade;--cal-edge:#ffffff20}
+html[data-theme='dark'] .uni-cal-main,html[data-theme='dark'] .uni-cal-side{box-shadow:0 13px 30px #0002}
+html[data-theme='dark'] .uni-cal-controls button,html[data-theme='dark'] .uni-cal-title button,html[data-theme='dark'] .uni-cal-event,html[data-theme='dark'] .uni-cal-upcoming,html[data-theme='dark'] .uni-cal-day-empty{background:#1d3045;border-color:#ffffff1f;color:#dceaff}
+html[data-theme='dark'] .uni-cal-date{color:#c3d3e6}html[data-theme='dark'] .uni-cal-date.is-selected{background:#2b4c72;color:#e0efff}
+html[data-theme='dark'] .uni-cal-event-copy strong,html[data-theme='dark'] .uni-cal-upcoming-copy strong{color:#eaf4ff}
+html[data-theme='dark'] .uni-cal-empty{background:#1b3047;border-color:#ffffff1d}
+@media(max-width:760px){html[data-theme='dark'] .uni-cal-main,html[data-theme='dark'] .uni-cal-side{background:none;box-shadow:none}}
+@media(prefers-reduced-motion:reduce){.uni-cal-upcoming{transition:none}}
 
-.calendar-panel,
-.day-panel {
-  padding: 24px;
+/* Calendar cards follow the rounded capsule shapes in the Today frames. */
+.uni-cal-event.is-compact{
+  min-height:58px;
+  border-radius:999px;
+  background:linear-gradient(135deg,#f9fcffec,#ffffffd9);
+  box-shadow:0 9px 23px #33445a20,inset 0 1px #fff;
+  backdrop-filter:blur(26px);
 }
-
-.calendar-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 22px;
+.uni-cal-event.is-compact .uni-cal-event-main{min-height:58px;padding:6px 9px;gap:10px}
+.uni-cal-event.is-expanded{
+  border-radius:31px;
+  background:linear-gradient(145deg,#ffffffed,#f8fbffdb);
+  box-shadow:0 12px 28px #33445a20,inset 0 1px #fff;
+  backdrop-filter:blur(26px);
 }
-
-.calendar-toolbar h2,
-.day-panel h2 {
-  font-size: 17px;
-  font-weight: 800;
-  margin: 0;
-  color: #24362c;
+.uni-cal-event.is-expanded .uni-cal-event-main{min-height:64px}
+.uni-cal-event-icon{
+  width:42px;height:42px;
+  border:2px solid #fff;border-radius:50%;
+  background:#e3efff;color:#287ceb;
+  box-shadow:0 4px 10px #3277d32b;
 }
-
-.calendar-toolbar > div {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+.uni-cal-event-copy strong{font-weight:500}
+.uni-cal-event-meta em{border-radius:999px}
+.uni-cal-upcoming{
+  gap:8px;
+  border-radius:20px;
+  background:linear-gradient(135deg,#ffffffeb,#f9fbffdf);
+  box-shadow:0 10px 23px #33445a1a,inset 0 1px #fff;
+  backdrop-filter:blur(25px);
 }
-
-.today-button {
-  padding: 7px 11px;
-  margin-right: 5px;
+.uni-cal-upcoming-date{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  align-self:stretch;flex:none;width:48px;min-width:48px;padding:5px 2px;
+  border:1px solid #fff;border-radius:23px;
+  background:linear-gradient(#ebfff2,#f6fffa);
+  box-shadow:0 4px 12px #24b7631c;
+  color:#198b44;
 }
-
-.calendar-grid {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  border-top: 1px solid #edf0ed;
-  border-left: 1px solid #edf0ed;
+.uni-cal-upcoming-date svg{width:20px;height:20px;margin-bottom:5px;color:#14b94c}
+.uni-cal-upcoming-date small{color:#198b44;font-size:9px}
+.uni-cal-upcoming-date strong{color:#171e28;font-size:20px;line-height:1.1}
+.uni-cal-upcoming.uni-cal-exam .uni-cal-upcoming-date{
+  background:linear-gradient(#e7f1ff,#f5f9ff);
+  box-shadow:0 4px 12px #3177d42a;
+  color:#2678e4;
 }
-
-.weekday {
-  text-align: center;
-  color: #a0ada4;
-  font-size: 11px;
-  font-weight: 800;
-  padding: 12px 0;
-  border-right: 1px solid #edf0ed;
-}
-
-.calendar-cell {
-  height: 93px;
-  border: 0;
-  border-right: 1px solid #edf0ed;
-  border-top: 1px solid #edf0ed;
-  background: #fff;
-  text-align: left;
-  padding: 8px;
-  color: #5e7164;
-  position: relative;
-  overflow: hidden;
-}
-
-.calendar-cell:hover {
-  background: #f8fbf7;
-}
-
-.calendar-cell.selected {
-  background: #f1f7ef;
-  box-shadow: inset 0 0 0 1px #78a882;
-}
-
-.calendar-cell.blank {
-  background: #fbfcfa;
-  cursor: default;
-}
-
-.calendar-cell > span {
-  display: grid;
-  place-items: center;
-  width: 22px;
-  height: 22px;
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.calendar-cell.today > span {
-  background: #286c4e;
-  color: #fff;
-  border-radius: 50%;
-}
-
-.calendar-dots {
-  display: flex;
-  gap: 3px;
-  margin: 8px 0 4px;
-}
-
-.calendar-dots i,
-.calendar-legend i {
-  display: block;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #e0b069;
-}
-
-.calendar-dots i.added,
-.calendar-legend i.added {
-  background: #3d9569;
-}
-
-.calendar-cell small {
-  font-size: 10px;
-  line-height: 1.2;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  color: #6c836f;
-}
-
-.calendar-legend {
-  display: flex;
-  gap: 20px;
-  margin-top: 16px;
-  font-size: 11px;
-  color: #91a296;
-}
-
-.calendar-legend span {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.day-panel .eyebrow {
-  margin-bottom: 7px;
-}
-
-.day-panel h2 {
-  line-height: 1.4;
-}
-
-.day-events {
-  margin-top: 25px;
-}
-
-.day-event {
-  border-top: 1px solid #e9efe9;
-  padding: 20px 0;
-}
-
-.day-event:first-child {
-  border: 0;
-  padding-top: 0;
-}
-
-.day-event > div:first-child {
-  display: flex;
-  gap: 5px;
-}
-
-.day-event h3 {
-  font-size: 15px;
-  margin: 12px 0 4px;
-}
-
-.day-event p {
-  font-size: 12px;
-  color: #97a39a;
-}
-
-.day-event > div:last-child {
-  display: flex;
-  gap: 16px;
-  margin-top: 18px;
-}
-
-@media (max-width: 1200px) {
-  .calendar-layout {
-    grid-template-columns: minmax(0, 1fr) 300px;
+.uni-cal-upcoming.uni-cal-exam .uni-cal-upcoming-date svg,
+.uni-cal-upcoming.uni-cal-exam .uni-cal-upcoming-date small{color:#2678e4}
+.uni-cal-upcoming-copy small{width:max-content;padding:3px 7px;border-radius:999px;background:#e4f9e9}
+.uni-cal-exam .uni-cal-upcoming-copy small{background:#e8f2ff}
+@media(max-width:760px){
+  .uni-calendar{
+    margin:0;
+    padding:0 0 110px;
+    border:0;
+    border-radius:0;
+    background:none;
+    box-shadow:none;
   }
+  .uni-cal-upcoming-list{margin:0;padding:0 0 14px}
+  .uni-cal-upcoming{flex-basis:47%}
+  .uni-cal-event.is-compact .uni-cal-event-main{min-height:58px;padding:6px 8px;gap:8px}
+  .uni-cal-event-icon{width:40px;height:40px;border-radius:50%}
+  .uni-cal-event-icon svg{width:19px;height:19px}
+  .uni-cal-event.is-compact .uni-cal-event-copy strong{font-size:12px}
+  .uni-cal-upcoming{flex:0 0 47%;min-height:100px;padding:8px;gap:7px}
+  .uni-cal-upcoming-date{width:42px;min-width:42px;border-radius:21px}
+  .uni-cal-upcoming-date svg{width:17px;height:17px}
+  .uni-cal-upcoming-date strong{font-size:18px}
 }
-
-@media (max-width: 760px) {
-  .calendar-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .calendar-panel,
-  .day-panel {
-    padding: 17px;
-  }
+html[data-theme='dark'] .uni-cal-event.is-compact,
+html[data-theme='dark'] .uni-cal-event.is-expanded,
+html[data-theme='dark'] .uni-cal-upcoming{background:linear-gradient(135deg,#25394e,#1a2b3e);border-color:#ffffff28}
+html[data-theme='dark'] .uni-cal-upcoming-date{background:#1a4934;border-color:#ffffff25}
+html[data-theme='dark'] .uni-cal-upcoming.uni-cal-exam .uni-cal-upcoming-date{background:#20416b}
+html[data-theme='dark'] .uni-cal-upcoming-date strong{color:#f3f8ff}
+@media(max-width:760px){
+  html[data-theme='dark'] .uni-calendar{background:none}
 }
-
-@media (max-width: 520px) {
-  .calendar-cell {
-    height: 62px;
-    padding: 4px;
-  }
-
-  .calendar-cell small {
-    display: none;
-  }
-
-  .calendar-legend {
-    flex-wrap: wrap;
-  }
-
-  .weekday {
-    font-size: 9px;
-  }
+.uni-cal-dot.uni-cal-deadline{background:#e9a743}
+.uni-cal-deadline .uni-cal-event-icon{background:#fff1d9;color:#d6942e}
+.uni-cal-deadline .uni-cal-event-meta em{background:#fff1d9;color:#ad741c}
+.uni-cal-deadline .uni-cal-upcoming-date{
+  background:linear-gradient(#fff4df,#fffaf0);
+  box-shadow:0 4px 12px #d79a3025;
+}
+.uni-cal-deadline .uni-cal-upcoming-date svg,
+.uni-cal-deadline .uni-cal-upcoming-date small{color:#c28524}
+.uni-cal-deadline .uni-cal-upcoming-copy small{background:#fff3dd;color:#b27b27}
+html[data-theme='dark'] .uni-cal-deadline .uni-cal-upcoming-date{background:#554124}
+.uni-cal-dot.uni-cal-holiday{background:#9874da}
+.uni-cal-event .uni-cal-event-icon{background:#ffe8eb;color:#e26170}
+.uni-cal-event .uni-cal-event-meta em{background:#ffedf0;color:#bf5967}
+.uni-cal-event .uni-cal-upcoming-date{
+  background:linear-gradient(#fff0f2,#fff9fa);
+  box-shadow:0 4px 12px #db657527;
+}
+.uni-cal-event .uni-cal-upcoming-date svg,
+.uni-cal-event .uni-cal-upcoming-date small{color:#df6271}
+.uni-cal-event .uni-cal-upcoming-copy small{background:#ffedf0;color:#c45b69}
+.uni-cal-holiday .uni-cal-event-icon{background:#f0eaff;color:#8f6bcf}
+.uni-cal-holiday .uni-cal-event-meta em{background:#f2ebff;color:#825fc3}
+.uni-cal-holiday .uni-cal-upcoming-date{
+  background:linear-gradient(#f4eeff,#fbf8ff);
+  box-shadow:0 4px 12px #9470d325;
+}
+.uni-cal-holiday .uni-cal-upcoming-date svg,
+.uni-cal-holiday .uni-cal-upcoming-date small{color:#8b68ca}
+.uni-cal-holiday .uni-cal-upcoming-copy small{background:#f1ebff;color:#805ebd}
+html[data-theme='dark'] .uni-cal-event .uni-cal-upcoming-date{background:#563041}
+html[data-theme='dark'] .uni-cal-holiday .uni-cal-upcoming-date{background:#41345d}
+.uni-cal-filters{
+  display:flex;
+  width:100%;
+  margin:0 0 17px;
+  padding:8px 5px 12px;
+}
+.uni-cal-filters .jelly-radio__skin{border-radius:999px}
+@media(max-width:760px){
+  .uni-cal-filters{margin:0 0 11px;padding:5px 5px 11px}
+  .uni-cal-filters .jelly-radio__skin{min-height:32px;padding:0 12px;font-size:10px}
 }

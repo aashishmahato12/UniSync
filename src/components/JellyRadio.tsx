@@ -8,6 +8,7 @@ type JellyRadioProps = {
   onChange: (value: string, index: number) => void
   ariaLabel: string
   className?: string
+  toneForItem?: (item: string) => string
   swell?: number
   barge?: number
   shrink?: number
@@ -22,6 +23,7 @@ export default function JellyRadio({
   onChange,
   ariaLabel,
   className = '',
+  toneForItem,
   swell = 0.2,
   barge = 6,
   shrink = 0.05,
@@ -78,6 +80,7 @@ export default function JellyRadio({
         aria-checked={active}
         tabIndex={active ? 0 : -1}
         data-on={active}
+        data-tone={toneForItem?.(item)}
         className="jelly-radio__chip"
         initial={false}
         animate={reduceMotion ? { x: 0, scaleX: 1, scaleY: 1 } : {

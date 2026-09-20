@@ -37,6 +37,14 @@ const inboxEntryTransition = (index: number) => {
     opacity: { duration: .24, delay },
   }
 }
+const inboxFilterTones: Record<string, string> = {
+  All: 'all',
+  Payments: 'payment',
+  Exams: 'exam',
+  Academics: 'academic',
+  'Campus life': 'event',
+  General: 'general',
+}
 
 export default function Notices({
   notices,
@@ -72,7 +80,7 @@ export default function Notices({
   return (
     <div className="notices-page">
       <section className="figma-mobile-feed" aria-label="Latest college emails">
-        <JellyRadio items={categories} value={filter} onChange={changeFilter} ariaLabel="Filter college emails" className="mobile-inbox-filter" />
+        <JellyRadio items={categories} value={filter} onChange={changeFilter} toneForItem={item => inboxFilterTones[item]} ariaLabel="Filter college emails" className="mobile-inbox-filter" />
         <p className="mobile-inbox-hint">Tap an email to read its details</p>
         {filtered.map((notice, index) => {
           const card = <button
@@ -111,7 +119,7 @@ export default function Notices({
       />
 
       <div className="page-toolbar">
-        <JellyRadio items={categories} value={filter} onChange={changeFilter} ariaLabel="Filter college emails" className="inbox-category-filter" />
+        <JellyRadio items={categories} value={filter} onChange={changeFilter} toneForItem={item => inboxFilterTones[item]} ariaLabel="Filter college emails" className="inbox-category-filter" />
 
         <span className="result-count">{filtered.length} notices</span>
       </div>
@@ -128,7 +136,7 @@ export default function Notices({
             onClick={() => setSelectedId(notice.id)}
             aria-pressed={selected?.id === notice.id}
           >
-            <span className="notice-mail-item-top"><span>{notice.category}</span><time>{formatDate(notice.date)}</time></span>
+          <span className="notice-mail-item-top"><span className={`category-${notice.category.toLowerCase().replace(/\s+/g, '-')}`}>{notice.category}</span><time>{formatDate(notice.date)}</time></span>
             <strong>{notice.title}</strong>
             <span className="notice-mail-snippet">{notice.summary}</span>
             <span className="notice-mail-item-bottom">{notice.priority === 'High' && badge('High')}{notice.attachment && <span><Paperclip size={13} /> Attachment</span>}<ArrowUpRight size={15} /></span>

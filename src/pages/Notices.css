@@ -95,6 +95,25 @@
   }
 }
 
+/* Inbox category tags use the same palette as their filter pills. */
+.notices-page :is(.category-payments,.badge-payments){--notice-category:#248653}
+.notices-page :is(.category-exams,.badge-exams){--notice-category:#286fc7}
+.notices-page :is(.category-academics,.badge-academics){--notice-category:#5666b1}
+.notices-page :is(.category-campus-life,.badge-campus-life){--notice-category:#c45463}
+.notices-page :is(.category-general,.badge-general){--notice-category:#53697d}
+.notices-page .figma-mail-tags em[class^='category-'],
+.notices-page .notice-mail-item-top > span[class^='category-'],
+.notices-page .notice-reader-tags :is(.badge-payments,.badge-exams,.badge-academics,.badge-campus-life,.badge-general){
+  background:color-mix(in srgb,var(--notice-category) 13%,white);
+  color:var(--notice-category);
+}
+html[data-theme='dark'] .notices-page .figma-mail-tags em[class^='category-'],
+html[data-theme='dark'] .notices-page .notice-mail-item-top > span[class^='category-'],
+html[data-theme='dark'] .notices-page .notice-reader-tags :is(.badge-payments,.badge-exams,.badge-academics,.badge-campus-life,.badge-general){
+  background:color-mix(in srgb,var(--notice-category) 25%,#18283a);
+  color:color-mix(in srgb,var(--notice-category) 48%,white);
+}
+
 .notice-mail-layout {
   display: grid;
   grid-template-columns: minmax(260px, 350px) minmax(0, 1fr);

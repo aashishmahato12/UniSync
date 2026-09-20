@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowRight, Check, Copy, ExternalLink, Sparkles } from 'lucide-react'
+import { ArrowRight, ArrowUp, CalendarDays, Check, Copy, ExternalLink, FileText, Mic, Plus, Sparkles } from 'lucide-react'
 import { BorderBeam } from 'border-beam'
 
 import { studentService } from '../services/mockService'
@@ -41,6 +41,18 @@ function ReadableAnswer({ text }: { text: string }) {
   </div>
 }
 
+type VoiceRecognition = {
+  lang: string
+  onresult: ((event: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null
+  onerror: (() => void) | null
+  start: () => void
+}
+const quickPrompts = [
+  { label: 'Find my exam documents', icon: FileText },
+  { label: 'Summarize the latest email', icon: Sparkles },
+  { label: 'What deadlines are coming up?', icon: CalendarDays },
+]
+
 export default function AskAI({ payments, events, updateCalendar, theme }: {
   payments: Payment[]
   events: EventItem[]
@@ -55,15 +67,12 @@ export default function AskAI({ payments, events, updateCalendar, theme }: {
       actions?: { type: 'add_to_calendar'; eventId: string }[]
       mode?: 'ai' | 'search'
     }[]
-  >([
-    {
-      role: 'assistant',
-      text: 'Hi Aashish. Ask about your Herald College notices and events. I can suggest calendar actions for you to approve.',
-    },
-  ])
+  >([])
 
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
+  const [showQuickPrompts, setShowQuickPrompts] = useState(true)
+  const [voiceHint, setVoiceHint] = useState('')
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
   const [motionAllowed, setMotionAllowed] = useState(() =>
     !window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -72,8 +81,10 @@ export default function AskAI({ payments, events, updateCalendar, theme }: {
   const bottom = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    if (!messages.length && !busy) return
     bottom.current?.scrollIntoView({
       behavior: 'smooth',
+      block: 'nearest',
     })
   }, [messages, busy])
 
@@ -97,6 +108,8 @@ export default function AskAI({ payments, events, updateCalendar, theme }: {
     ])
 
     setInput('')
+    setShowQuickPrompts(false)
+    setVoiceHint('')
     setBusy(true)
 
     try {
@@ -118,26 +131,32 @@ export default function AskAI({ payments, events, updateCalendar, theme }: {
     }
   }
 
+  const startDictation = () => {
+    const browser = window as typeof window & {
+      SpeechRecognition?: new () => VoiceRecognition
+      webkitSpeechRecognition?: new () => VoiceRecognition
+    }
+    const Recognition = browser.SpeechRecognition || browser.webkitSpeechRecognition
+    if (!Recognition) {
+      setVoiceHint('Voice input is not available in this browser.')
+      return
+    }
+    setVoiceHint('')
+    const recognition = new Recognition()
+    recognition.lang = 'en-US'
+    recognition.onresult = event => setInput(value => [value, event.results[0][0].transcript].filter(Boolean).join(' '))
+    recognition.onerror = () => setVoiceHint('Microphone access was unavailable. You can type your question instead.')
+    recognition.start()
+  }
+
   return (
-    <>
+    <div className={`ask-ai-page ${messages.length ? 'has-conversation' : 'is-welcome'}`}>
       <PageIntro
         title="Ask AI"
         copy="Ask about saved notices and events, and approve suggested calendar actions."
       />
 
       <div className="chat-layout">
-        <BorderBeam
-          className="chat-beam"
-          size="md"
-          colorVariant="colorful"
-          strength={1}
-          brightness={1.85}
-          saturation={1.5}
-          duration={1.96}
-          borderRadius={15}
-          active={motionAllowed}
-          theme={theme}
-        >
         <section className="chat-panel">
           <div className="chat-header">
             <span className="chat-ai-icon">
@@ -153,6 +172,10 @@ export default function AskAI({ payments, events, updateCalendar, theme }: {
           </div>
 
           <div className="chat-messages">
+            {!messages.length && !busy && <div className="chat-welcome">
+              <Sparkles className="chat-welcome-mark" size={50} fill="currentColor" strokeWidth={1.3} />
+              <h2>Hi Aashish, What’s on<br />your mind?</h2>
+            </div>}
             {messages.map((message, index) => (
               <div
                 className={`chat-message ${message.role}`}
@@ -216,6 +239,17 @@ export default function AskAI({ payments, events, updateCalendar, theme }: {
             <div ref={bottom} />
           </div>
 
+          {showQuickPrompts && <div className="chat-mobile-prompts" aria-label="Suggested questions">
+            {quickPrompts.map(({ label, icon: Icon }) => <button type="button" key={label} onClick={() => void ask(label)} disabled={busy}><Icon size={13} fill={label === 'Find my exam documents' ? 'currentColor' : 'none'} />{label}</button>)}
+          </div>}
+          <BorderBeam
+            className="chat-composer-beam"
+            size="line"
+            colorVariant="ocean"
+            strength={0.35}
+            active={motionAllowed && !!input.trim()}
+            theme={theme}
+          >
           <form
             className="chat-composer"
             onSubmit={e => {
@@ -223,25 +257,28 @@ export default function AskAI({ payments, events, updateCalendar, theme }: {
               void ask(input)
             }}
           >
+            <button className="chat-composer-plus" type="button" onClick={() => setShowQuickPrompts(value => !value)} aria-label={showQuickPrompts ? 'Hide suggested questions' : 'Show suggested questions'}><Plus size={23} /></button>
             <input
-              placeholder="Ask about deadlines, notices, or events..."
+              placeholder="Ask UniSync"
               aria-label="Question about saved college records"
               maxLength={600}
               value={input}
               onChange={e => setInput(e.target.value)}
             />
-
+            <button className="chat-composer-mic" type="button" onClick={startDictation} aria-label="Dictate a question"><Mic size={20} /></button>
             <button
+              className="chat-send"
               type="submit"
               disabled={!input.trim() || busy}
               aria-label="Ask Herald Assistant"
             >
-              <ArrowRight size={19} />
+              <ArrowUp size={22} />
             </button>
           </form>
+          </BorderBeam>
+          {voiceHint && <p className="chat-voice-hint" role="status">{voiceHint}</p>}
           <p className="chat-disclaimer">Relevant notice, event, and extracted file text goes to Gemini through your n8n workflow. Your own fee-status marks stay local. Unread files still need to be opened manually.</p>
         </section>
-        </BorderBeam>
         <aside className="chat-suggestions">
           <h2>Try asking</h2>
           {['What deadlines are coming up?', 'Show recent notices', 'Which fees have I marked paid?', 'Find my exam documents'].map(prompt => (
@@ -251,6 +288,6 @@ export default function AskAI({ payments, events, updateCalendar, theme }: {
           ))}
         </aside>
       </div>
-    </>
+    </div>
   )
 }
