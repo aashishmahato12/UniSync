@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -236,6 +237,32 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
   ] = useState<Notice | null>(
     null
   )
+  const [noticeClosing, setNoticeClosing] = useState(false)
+  const [noticeReturning, setNoticeReturning] = useState(false)
+  const noticeListScroll = useRef(0)
+
+  useLayoutEffect(() => {
+    if (selectedNotice) window.scrollTo(0, 0)
+  }, [selectedNotice])
+
+  const openNotice = (notice: Notice) => {
+    noticeListScroll.current = window.scrollY
+    setNoticeClosing(false)
+    setNoticeReturning(false)
+    setSelectedNotice(notice)
+  }
+
+  const finishCloseNotice = () => {
+    setSelectedNotice(null)
+    setNoticeClosing(false)
+    setNoticeReturning(!reduceMotion)
+    window.requestAnimationFrame(() => window.scrollTo(0, noticeListScroll.current))
+  }
+
+  const closeNotice = () => {
+    if (reduceMotion) finishCloseNotice()
+    else setNoticeClosing(true)
+  }
 
   const [
     searchOpen,
@@ -345,6 +372,8 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
     target: Page
   ) => {
     setSelectedNotice(null)
+    setNoticeClosing(false)
+    setNoticeReturning(false)
     setPage(target)
     setMenuOpen(false)
     setSearchOpen(false)
@@ -603,8 +632,14 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
             <div className="t-skel-skeleton is-pulsing"><WorkspaceSkeleton /></div>
             <div className="t-skel-content">
 {selectedNotice && (
-  <section className="notice-detail-page">
-<button className="secondary-button" onClick={() => setSelectedNotice(null)}>← Back to Inbox</button>
+  <motion.section
+    className="notice-detail-page"
+    initial={reduceMotion ? false : { opacity: 0, y: 18, scale: .985 }}
+    animate={noticeClosing ? { opacity: 0, y: 10, scale: .99 } : { opacity: 1, y: 0, scale: 1 }}
+    transition={reduceMotion ? { duration: 0 } : noticeClosing ? { duration: .22, ease: 'easeIn' } : { duration: .36, ease: [.22, 1, .36, 1] }}
+    onAnimationComplete={() => { if (noticeClosing) finishCloseNotice() }}
+  >
+<button className="secondary-button" onClick={closeNotice} disabled={noticeClosing}>← Back to Inbox</button>
     <article className="notice-detail-view">
       <header className="notice-detail-header">
         <div className="notice-detail-sender">
@@ -687,9 +722,9 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
         )}
       </div>
     </article>
-  </section>
+  </motion.section>
 )}
-<div hidden={!!selectedNotice}>
+<div hidden={!!selectedNotice} className={noticeReturning ? 'notice-returning' : undefined} onAnimationEnd={event => { if (event.target === event.currentTarget) setNoticeReturning(false) }}>
               {page ===
                 'Dashboard' && (
                 <Dashboard
@@ -704,7 +739,7 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
                     navigate
                   }
                   onNotice={
-                    setSelectedNotice
+                    openNotice
                   }
                   updateCalendar={updateCalendar}
                   onPaymentStatus={updatePaymentStatus}
@@ -718,7 +753,7 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
                     notices
                   }
                   onNotice={
-                    setSelectedNotice
+                    openNotice
                   }
                 />
               )}

@@ -566,6 +566,12 @@
 }
 
 /* Full-page skeleton and cross-fade reveal. */
+.notice-returning { animation: notice-return-in 340ms cubic-bezier(.22, 1, .36, 1) both; }
+@keyframes notice-return-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .workspace-reveal {
   position: relative;
   min-height: calc(100vh - 190px);
@@ -639,6 +645,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .notice-returning { animation: none !important; }
   .workspace-reveal > .t-skel-skeleton,
   .workspace-reveal > .t-skel-content { transition: none !important; filter: none !important; }
   .t-skel-skeleton.is-pulsing > .workspace-skeleton { animation: none !important; }

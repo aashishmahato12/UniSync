@@ -143,7 +143,12 @@ h3,
   .workspace-reveal > .t-skel-content { min-height: 0; }
   .workspace-skeleton { padding-top: 10px; }
 
-  .figma-mobile-feed { display: grid; gap: 10px; padding: 0 0 10px; }
+  .figma-mobile-feed { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; padding: 0 0 10px; }
+  .mobile-inbox-filter { width: 100%; margin-top: -4px; padding: 7px 0 10px; }
+  .mobile-inbox-filter .jelly-radio__skin { min-height: 33px; border-radius: 999px; }
+  .mobile-inbox-hint { margin: 0 2px 4px; color: #647589; font-size: 11px; }
+  .figma-mobile-entry { min-width: 0; width: 100%; }
+  html[data-theme='dark'] .mobile-inbox-hint { color: #a9bbd0; }
   .figma-mail-card {
     position: relative;
     display: grid;

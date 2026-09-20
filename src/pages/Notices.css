@@ -121,6 +121,18 @@
 .notice-mail-item-bottom > span:not(.badge) { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; }
 .notice-mail-item-bottom > svg { margin-left: auto; }
 .notice-reader { min-width: 0; background: #fff; }
+.notice-reader-empty { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; min-width: 0; min-height: 520px; padding: clamp(24px, 4vw, 60px); background: transparent; }
+.notice-reader-empty-icon { display: grid; place-items: center; width: 64px; height: 64px; margin-bottom: 30px; border: 1px solid #c7dfff; border-radius: 22px; background: linear-gradient(145deg, #eaf4ff, #d9eafe); color: #3979cd; box-shadow: 0 14px 28px #2e70ba14, inset 0 1px #fff; }
+.notice-reader-empty-kicker { color: #5483ba; font-size: 10px; font-weight: 700; letter-spacing: .16em; }
+.notice-reader-empty h2 { max-width: 470px; margin: 15px 0 12px; color: #253348; font-size: clamp(28px, 3vw, 40px); line-height: 1.15; }
+.notice-reader-empty p { max-width: 430px; margin: 0; color: #68798f; font-size: 15px; line-height: 1.7; }
+.notice-reader-empty-hint { display: inline-flex; align-items: center; gap: 8px; margin-top: 30px; padding-top: 19px; border-top: 1px solid #dce8f6; color: #477bb5; font-size: 12px; font-weight: 600; }
+html[data-theme='dark'] .notice-reader-empty-icon { border-color: #52769f; background: linear-gradient(145deg, #294866, #213952); color: #acd2fb; box-shadow: 0 14px 28px #0003, inset 0 1px #ffffff12; }
+html[data-theme='dark'] .notice-reader-empty-kicker,
+html[data-theme='dark'] .notice-reader-empty-hint { color: #9ac6f1; }
+html[data-theme='dark'] .notice-reader-empty h2 { color: #eff6ff; }
+html[data-theme='dark'] .notice-reader-empty p { color: #b6c6d8; }
+html[data-theme='dark'] .notice-reader-empty-hint { border-color: #7797b633; }
 .notice-reader-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 62px; padding: 0 30px; border-bottom: 1px solid #edf0f6; color: #929eae; font-size: 10px; }
 .notice-reader-bar span:first-child { display: inline-flex; align-items: center; gap: 8px; color: #5f7da9; font-size: 9px; font-weight: 800; letter-spacing: .1em; }
 .notice-reader-body { max-width: 750px; padding: 36px clamp(24px, 4vw, 58px); }
@@ -146,6 +158,7 @@
 .notice-reader-actions { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 32px; }
 @media (max-width: 850px) {
   .notice-mail-layout { grid-template-columns: 1fr; }
+  .notice-reader-empty { min-height: 330px; }
   .notice-mail-list { display: flex; gap: 8px; padding: 12px; max-height: none; overflow-x: auto; border-right: 0; border-bottom: 1px solid #e9edf4; }
   .notice-mail-list-heading { display: none; }
   .notice-mail-item { flex: 0 0 min(255px, 75vw); border: 1px solid #e8ecf3; border-radius: 10px; padding: 13px; }

@@ -129,10 +129,10 @@
   .mobile-bottom-nav > button:not(.mobile-ai-action) > span { position: relative; z-index: 1; }
   .mobile-bottom-nav .mobile-nav-jelly { position: absolute; z-index: 0; top: -5px; left: 50%; width: 44px; height: 44px; border-radius: 17px; transform: translateX(-50%); background: #d4e8ff9c; box-shadow: inset 0 1px #fff, 0 4px 12px #39649d16; pointer-events: none; }
   html[data-theme='dark'] .mobile-bottom-nav .mobile-nav-jelly { background: #48668988; box-shadow: inset 0 1px #ffffff26; }
-  .figma-mobile-feed > .figma-mail-glass { width: 100%; border: 1px solid #ffffffb8; }
+  .figma-mobile-entry > .figma-mail-glass { width: 100%; border: 1px solid #ffffffb8; }
   .figma-mail-glass .figma-mail-card { min-height: 96px; margin: 0; border: 0; border-radius: inherit; background: transparent; box-shadow: none; }
   .figma-mail-glass .figma-mail-card:focus-visible { outline-offset: -3px; }
-  html[data-theme='dark'] .figma-mobile-feed > .figma-mail-glass { border-color: #ffffff24; }
+  html[data-theme='dark'] .figma-mobile-entry > .figma-mail-glass { border-color: #ffffff24; }
 }
 .notices-page .notice-summary-glass { width: 100%; border: 1px solid #ffffffb8; }
 .notices-page .notice-summary-glass .notice-reader-summary { margin: 0; border: 0; border-radius: inherit; background: transparent; box-shadow: none; }
