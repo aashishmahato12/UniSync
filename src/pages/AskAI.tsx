@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
-import { ArrowRight, ArrowUp, CalendarDays, Check, Copy, ExternalLink, FileText, Mic, Plus, Sparkles, Square, X } from 'lucide-react'
+import { ArrowRight, ArrowUp, CalendarDays, Check, Copy, ExternalLink, FileText, Mic, Plus, Sparkles, Square } from 'lucide-react'
 import { BorderBeam } from 'border-beam'
-import { VoiceBeam, useMicrophone } from 'voice-glow'
+import { VoiceBeam } from 'voice-glow'
 
 import { studentService } from '../services/mockService'
 import type { AssistantSource } from '../services/localAssistant'
@@ -48,8 +47,11 @@ type VoiceRecognition = {
   continuous: boolean
   interimResults: boolean
   onresult: ((event: { results: ArrayLike<{ isFinal: boolean; [index: number]: { transcript: string } }> }) => void) | null
-  onerror: (() => void) | null
+  onerror: ((event: { error?: string }) => void) | null
+  onstart: (() => void) | null
   onend: (() => void) | null
+  onspeechstart: (() => void) | null
+  onspeechend: (() => void) | null
   start: () => void
   stop: () => void
 }
@@ -79,8 +81,6 @@ export default function AskAI({ payments, events, updateCalendar, theme }: {
   const [busy, setBusy] = useState(false)
   const [showQuickPrompts, setShowQuickPrompts] = useState(true)
   const [voiceHint, setVoiceHint] = useState('')
-  const [voiceError, setVoiceError] = useState('')
-  const [voiceOpen, setVoiceOpen] = useState(false)
   const [voiceFinal, setVoiceFinal] = useState('')
   const [voiceInterim, setVoiceInterim] = useState('')
   const [listening, setListening] = useState(false)
@@ -93,27 +93,21 @@ export default function AskAI({ payments, events, updateCalendar, theme }: {
   const bottom = useRef<HTMLDivElement>(null)
   const recognitionRef = useRef<VoiceRecognition | null>(null)
   const voiceBaseRef = useRef('')
-  const voicePrefixRef = useRef('')
-  const voiceTranscriptRef = useRef('')
-  const mic = useMicrophone()
+  const voiceLevelRef = useRef(0)
+  const noSpeechTimerRef = useRef<number | null>(null)
 
   const stopDictation = () => {
     const recognition = recognitionRef.current
     recognitionRef.current = null
+    if (noSpeechTimerRef.current !== null) window.clearTimeout(noSpeechTimerRef.current)
+    noSpeechTimerRef.current = null
     try { recognition?.stop() } catch { /* Recognition may have ended already. */ }
-    mic.stop()
+    voiceLevelRef.current = 0
     setListening(false)
   }
 
-  const closeVoice = () => {
-    const transcript = voiceTranscriptRef.current.trim()
-    setInput([voiceBaseRef.current, transcript].filter(Boolean).join(' ').slice(0, 600))
-    setVoiceCaptured(Boolean(transcript))
-    stopDictation()
-    setVoiceOpen(false)
-  }
-
   useEffect(() => () => {
+    if (noSpeechTimerRef.current !== null) window.clearTimeout(noSpeechTimerRef.current)
     recognitionRef.current?.stop()
     recognitionRef.current = null
   }, [])
@@ -133,20 +127,6 @@ export default function AskAI({ payments, events, updateCalendar, theme }: {
     media.addEventListener('change', updateMotion)
     return () => media.removeEventListener('change', updateMotion)
   }, [])
-
-  useEffect(() => {
-    if (!voiceOpen) return
-    const previousOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') closeVoice()
-    }
-    window.addEventListener('keydown', onKeyDown)
-    return () => {
-      document.body.style.overflow = previousOverflow
-      window.removeEventListener('keydown', onKeyDown)
-    }
-  }, [voiceOpen])
 
   const ask = async (question: string) => {
     if (!question.trim() || busy) return
@@ -195,26 +175,31 @@ export default function AskAI({ payments, events, updateCalendar, theme }: {
       webkitSpeechRecognition?: new () => VoiceRecognition
     }
     const Recognition = browser.SpeechRecognition || browser.webkitSpeechRecognition
-    if (!Recognition || !mic.supported) {
-      const message = 'Voice input needs a supported browser with microphone access on HTTPS or localhost.'
-      if (voiceOpen) setVoiceError(message)
-      else setVoiceHint(message)
+    if (!Recognition) {
+      setVoiceHint(window.isSecureContext
+        ? 'This browser does not support live speech-to-text. Try Chrome or Edge.'
+        : 'Microphone input needs HTTPS or localhost. A phone opened through a local HTTP address cannot use it.')
       return
     }
     setVoiceHint('')
-    setVoiceError('')
-    if (!voiceOpen) {
-      voiceBaseRef.current = input.trim()
-      voiceTranscriptRef.current = ''
-      setVoiceFinal('')
-      setVoiceInterim('')
-      setVoiceOpen(true)
-    }
-    voicePrefixRef.current = voiceTranscriptRef.current.trim()
+    voiceBaseRef.current = input.trim()
+    setVoiceFinal('')
+    setVoiceInterim('')
     const recognition = new Recognition()
     recognition.lang = 'en-US'
     recognition.continuous = true
     recognition.interimResults = true
+    let hasResult = false
+    recognition.onstart = () => {
+      voiceLevelRef.current = 0.12
+      noSpeechTimerRef.current = window.setTimeout(() => {
+        if (recognitionRef.current === recognition && !hasResult) {
+          setVoiceHint('No words yet. Check this site’s microphone permission and speak again.')
+        }
+      }, 7000)
+    }
+    recognition.onspeechstart = () => { voiceLevelRef.current = 0.75 }
+    recognition.onspeechend = () => { voiceLevelRef.current = 0.12 }
     recognition.onresult = event => {
       if (recognitionRef.current !== recognition) return
       const final: string[] = []
@@ -224,37 +209,44 @@ export default function AskAI({ payments, events, updateCalendar, theme }: {
         const text = result[0]?.transcript.trim()
         if (text) (result.isFinal ? final : interim).push(text)
       }
-      const confirmed = [voicePrefixRef.current, ...final].filter(Boolean).join(' ').trim()
+      const confirmed = final.join(' ').trim()
       const inProgress = interim.join(' ').trim()
       setVoiceFinal(confirmed)
       setVoiceInterim(inProgress)
-      voiceTranscriptRef.current = [confirmed, inProgress].filter(Boolean).join(' ').trim()
+      const spoken = [confirmed, inProgress].filter(Boolean).join(' ').trim()
+      setInput([voiceBaseRef.current, spoken].filter(Boolean).join(' ').slice(0, 600))
+      setVoiceCaptured(Boolean(spoken))
+      voiceLevelRef.current = 0.7
+      if (spoken) {
+        hasResult = true
+        setVoiceHint('')
+        if (noSpeechTimerRef.current !== null) window.clearTimeout(noSpeechTimerRef.current)
+        noSpeechTimerRef.current = null
+      }
     }
-    recognition.onerror = () => {
+    recognition.onerror = event => {
       if (recognitionRef.current !== recognition) return
-      setVoiceError('Could not continue listening. Your words so far are saved; tap the mic to try again.')
+      const reason = event.error
+      setVoiceHint(reason === 'not-allowed' || reason === 'service-not-allowed'
+        ? 'Microphone access was blocked. Allow it in your browser’s site settings, then tap the mic again.'
+        : reason === 'network'
+          ? 'Speech recognition needs a network connection in this browser. Check your connection and try again.'
+          : reason === 'no-speech'
+            ? 'No speech was heard. Tap the mic and try again.'
+            : 'Speech recognition stopped. Your words so far are still in the input box.')
       stopDictation()
     }
     recognition.onend = () => {
-      if (recognitionRef.current === recognition) stopDictation()
+      if (recognitionRef.current !== recognition) return
+      if (!hasResult) setVoiceHint('No words were captured. Check this site’s microphone permission, then try again.')
+      stopDictation()
     }
     recognitionRef.current = recognition
-    setListening(true)
-    void mic.start().then(stream => {
-      if (recognitionRef.current !== recognition) {
-        stream?.getTracks().forEach(track => track.stop())
-        mic.stop()
-        return
-      }
-      if (!stream) {
-        setVoiceError('Microphone access was unavailable. You can close this screen and type instead.')
-        stopDictation()
-      }
-    })
     try {
       recognition.start()
+      setListening(true)
     } catch {
-      setVoiceError('Voice recognition could not start. You can close this screen and type instead.')
+      setVoiceHint('Voice recognition could not start. You can type your question instead.')
       stopDictation()
     }
   }
@@ -353,39 +345,49 @@ export default function AskAI({ payments, events, updateCalendar, theme }: {
             {quickPrompts.map(({ label, icon: Icon }) => <button type="button" key={label} onClick={() => void ask(label)} disabled={busy}><Icon size={13} fill={label === 'Find my exam documents' ? 'currentColor' : 'none'} />{label}</button>)}
           </div>}
           <VoiceBeam
-            className="chat-voice-beam"
+            className={`chat-voice-beam${listening ? ' is-dictating' : ''}`}
             type="default"
+            level={() => voiceLevelRef.current}
             processing={busy && voiceCaptured}
             colorVariant="colorful"
             theme={theme}
             strength={0.8}
-            borderRadius={999}
-            active={motionAllowed && busy && voiceCaptured}
+            borderRadius={listening ? 28 : 999}
+            active={motionAllowed && (listening || (busy && voiceCaptured))}
           >
           <BorderBeam
-            className="chat-composer-beam"
+            className={`chat-composer-beam${listening ? ' is-dictating' : ''}`}
             size="line"
             colorVariant="ocean"
             strength={0.35}
-            active={motionAllowed && !!input.trim()}
+            borderRadius={listening ? 28 : 999}
+            active={motionAllowed && !!input.trim() && !listening}
             theme={theme}
           >
           <form
-            className="chat-composer"
+            className={`chat-composer${listening ? ' is-dictating' : ''}`}
             onSubmit={e => {
               e.preventDefault()
               void ask(input)
             }}
           >
             <button className="chat-composer-plus" type="button" onClick={() => setShowQuickPrompts(value => !value)} aria-label={showQuickPrompts ? 'Hide suggested questions' : 'Show suggested questions'}><Plus size={23} /></button>
-            <input
+            {listening ? <div className="chat-live-transcript" role="status" aria-live="polite" aria-atomic="true">
+              {voiceBaseRef.current && <span>{voiceBaseRef.current} </span>}
+              <span>{voiceFinal}</span>{voiceFinal && voiceInterim ? ' ' : ''}
+              <span className="chat-live-interim">{voiceInterim}</span>
+              {!voiceFinal && !voiceInterim && <span className="chat-live-placeholder">{voiceHint || 'Listening… speak now'}</span>}
+            </div> : <input
               placeholder="Ask UniSync"
               aria-label="Question about saved college records"
               maxLength={600}
               value={input}
               onChange={e => setInput(e.target.value)}
-            />
-            <button className="chat-composer-mic" type="button" onClick={startDictation} aria-label="Open voice input"><Mic size={20} /></button>
+            />}
+            <button className={`chat-composer-mic${listening ? ' is-listening' : ''}`} type="button" onClick={startDictation}
+              aria-label={listening ? 'Stop recording' : 'Start voice input'} aria-pressed={listening}>
+              {listening ? <Square size={17} fill="currentColor" /> : <Mic size={20} />}
+            </button>
             <button
               className="chat-send"
               type="submit"
@@ -409,39 +411,6 @@ export default function AskAI({ payments, events, updateCalendar, theme }: {
           ))}
         </aside>
       </div>
-      {voiceOpen && createPortal(
-        <div className="voice-capture-overlay">
-          <VoiceBeam className="voice-capture-beam" type="mobile" stream={mic.stream}
-            colorVariant="colorful" theme="dark" strength={0.82} borderRadius={38}
-            scale={0.8} reach={1.2} spread={0.4} bend={18}
-            glowHeight={1} bloomHeight={1} rangeHeight={1} idle={0.09}
-            active={motionAllowed && listening}>
-            <section className="voice-capture-stage" role="dialog" aria-modal="true" aria-label="Voice input">
-              <div className="voice-capture-transcript" role="status" aria-live="polite" aria-atomic="true">
-                {voiceFinal || voiceInterim
-                  ? <p><span>{voiceFinal}</span>{voiceFinal && voiceInterim ? ' ' : ''}<span className="voice-capture-interim">{voiceInterim}</span></p>
-                  : <p className="voice-capture-placeholder">{listening ? 'Listening… speak now' : 'Tap the mic to speak'}</p>}
-              </div>
-              <div className="voice-capture-bottom">
-                {voiceError && <p className="voice-capture-error" role="alert">{voiceError}</p>}
-                <div className="voice-capture-controls">
-                  <button type="button" className="voice-capture-use" onClick={closeVoice} disabled={!voiceTranscriptRef.current.trim()}>
-                    {voiceTranscriptRef.current.trim() ? 'Use text' : 'Ask UniSync'}
-                  </button>
-                  <div className="voice-capture-actions">
-                    <button type="button" className={`voice-capture-mic${listening ? ' is-live' : ''}`} onClick={startDictation}
-                      aria-label={listening ? 'Stop recording' : 'Resume recording'} aria-pressed={listening}
-                      disabled={mic.state === 'requesting'}>
-                      {listening ? <Square size={17} fill="currentColor" /> : <Mic size={19} />}
-                    </button>
-                    <button type="button" className="voice-capture-close" onClick={closeVoice} aria-label="Close voice input and keep transcript" autoFocus><X size={19} /></button>
-                  </div>
-                </div>
-              </div>
-            </section>
-          </VoiceBeam>
-        </div>, document.body
-      )}
     </div>
   )
 }
