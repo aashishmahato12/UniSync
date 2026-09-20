@@ -4,6 +4,7 @@ import { BorderBeam } from 'border-beam'
 import { VoiceBeam } from 'voice-glow'
 
 import { studentService } from '../services/mockService'
+import { readSpeechTranscript } from '../services/speechTranscript'
 import type { AssistantSource } from '../services/localAssistant'
 import type { EventItem, Payment } from '../data'
 import { PageIntro } from '../components/UI'
@@ -202,15 +203,7 @@ export default function AskAI({ payments, events, updateCalendar, theme }: {
     recognition.onspeechend = () => { voiceLevelRef.current = 0.12 }
     recognition.onresult = event => {
       if (recognitionRef.current !== recognition) return
-      const final: string[] = []
-      const interim: string[] = []
-      for (let index = 0; index < event.results.length; index++) {
-        const result = event.results[index]
-        const text = result[0]?.transcript.trim()
-        if (text) (result.isFinal ? final : interim).push(text)
-      }
-      const confirmed = final.join(' ').trim()
-      const inProgress = interim.join(' ').trim()
+      const { final: confirmed, interim: inProgress } = readSpeechTranscript(event.results)
       setVoiceFinal(confirmed)
       setVoiceInterim(inProgress)
       const spoken = [confirmed, inProgress].filter(Boolean).join(' ').trim()
