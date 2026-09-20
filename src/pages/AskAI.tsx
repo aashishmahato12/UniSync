@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowRight, ArrowUp, CalendarDays, Check, Copy, ExternalLink, FileText, Mic, Plus, Sparkles } from 'lucide-react'
+import { ArrowRight, ArrowUp, CalendarDays, Check, Copy, ExternalLink, FileText, Mic, Plus, Sparkles, Square } from 'lucide-react'
 import { BorderBeam } from 'border-beam'
+import { VoiceBeam, useMicrophone } from 'voice-glow'
 
 import { studentService } from '../services/mockService'
 import type { AssistantSource } from '../services/localAssistant'
@@ -45,7 +46,9 @@ type VoiceRecognition = {
   lang: string
   onresult: ((event: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null
   onerror: (() => void) | null
+  onend: (() => void) | null
   start: () => void
+  stop: () => void
 }
 const quickPrompts = [
   { label: 'Find my exam documents', icon: FileText },
@@ -73,12 +76,29 @@ export default function AskAI({ payments, events, updateCalendar, theme }: {
   const [busy, setBusy] = useState(false)
   const [showQuickPrompts, setShowQuickPrompts] = useState(true)
   const [voiceHint, setVoiceHint] = useState('')
+  const [listening, setListening] = useState(false)
+  const [voiceCaptured, setVoiceCaptured] = useState(false)
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
   const [motionAllowed, setMotionAllowed] = useState(() =>
     !window.matchMedia('(prefers-reduced-motion: reduce)').matches
   )
 
   const bottom = useRef<HTMLDivElement>(null)
+  const recognitionRef = useRef<VoiceRecognition | null>(null)
+  const mic = useMicrophone()
+
+  const stopDictation = () => {
+    const recognition = recognitionRef.current
+    recognitionRef.current = null
+    recognition?.stop()
+    mic.stop()
+    setListening(false)
+  }
+
+  useEffect(() => () => {
+    recognitionRef.current?.stop()
+    recognitionRef.current = null
+  }, [])
 
   useEffect(() => {
     if (!messages.length && !busy) return
@@ -98,6 +118,7 @@ export default function AskAI({ payments, events, updateCalendar, theme }: {
 
   const ask = async (question: string) => {
     if (!question.trim() || busy) return
+    if (listening) stopDictation()
 
     setMessages(previous => [
       ...previous,
@@ -128,25 +149,58 @@ export default function AskAI({ payments, events, updateCalendar, theme }: {
       }])
     } finally {
       setBusy(false)
+      setVoiceCaptured(false)
     }
   }
 
   const startDictation = () => {
+    if (listening) {
+      stopDictation()
+      return
+    }
     const browser = window as typeof window & {
       SpeechRecognition?: new () => VoiceRecognition
       webkitSpeechRecognition?: new () => VoiceRecognition
     }
     const Recognition = browser.SpeechRecognition || browser.webkitSpeechRecognition
-    if (!Recognition) {
-      setVoiceHint('Voice input is not available in this browser.')
+    if (!Recognition || !mic.supported) {
+      setVoiceHint('Voice input needs microphone access in a supported browser on HTTPS or localhost.')
       return
     }
     setVoiceHint('')
     const recognition = new Recognition()
     recognition.lang = 'en-US'
-    recognition.onresult = event => setInput(value => [value, event.results[0][0].transcript].filter(Boolean).join(' '))
-    recognition.onerror = () => setVoiceHint('Microphone access was unavailable. You can type your question instead.')
-    recognition.start()
+    recognition.onresult = event => {
+      setInput(value => [value, event.results[0][0].transcript].filter(Boolean).join(' '))
+      setVoiceCaptured(true)
+    }
+    recognition.onerror = () => {
+      if (recognitionRef.current !== recognition) return
+      setVoiceHint('Microphone access was unavailable. You can type your question instead.')
+      stopDictation()
+    }
+    recognition.onend = () => {
+      if (recognitionRef.current === recognition) stopDictation()
+    }
+    recognitionRef.current = recognition
+    setListening(true)
+    void mic.start().then(stream => {
+      if (recognitionRef.current !== recognition) {
+        stream?.getTracks().forEach(track => track.stop())
+        mic.stop()
+        return
+      }
+      if (!stream) {
+        setVoiceHint('Microphone access was unavailable. You can type your question instead.')
+        stopDictation()
+      }
+    })
+    try {
+      recognition.start()
+    } catch {
+      setVoiceHint('Voice recognition could not start. You can type your question instead.')
+      stopDictation()
+    }
   }
 
   return (
@@ -242,6 +296,17 @@ export default function AskAI({ payments, events, updateCalendar, theme }: {
           {showQuickPrompts && <div className="chat-mobile-prompts" aria-label="Suggested questions">
             {quickPrompts.map(({ label, icon: Icon }) => <button type="button" key={label} onClick={() => void ask(label)} disabled={busy}><Icon size={13} fill={label === 'Find my exam documents' ? 'currentColor' : 'none'} />{label}</button>)}
           </div>}
+          <VoiceBeam
+            className="chat-voice-beam"
+            type="default"
+            stream={mic.stream}
+            processing={busy && voiceCaptured}
+            colorVariant="colorful"
+            theme={theme}
+            strength={0.8}
+            borderRadius={999}
+            active={motionAllowed && (listening || (busy && voiceCaptured))}
+          >
           <BorderBeam
             className="chat-composer-beam"
             size="line"
@@ -265,7 +330,7 @@ export default function AskAI({ payments, events, updateCalendar, theme }: {
               value={input}
               onChange={e => setInput(e.target.value)}
             />
-            <button className="chat-composer-mic" type="button" onClick={startDictation} aria-label="Dictate a question"><Mic size={20} /></button>
+            <button className={`chat-composer-mic${listening ? ' is-listening' : ''}`} type="button" onClick={startDictation} aria-label={listening ? 'Stop listening' : 'Dictate a question'} aria-pressed={listening} disabled={mic.state === 'requesting'}>{listening ? <Square size={17} fill="currentColor" /> : <Mic size={20} />}</button>
             <button
               className="chat-send"
               type="submit"
@@ -276,6 +341,8 @@ export default function AskAI({ payments, events, updateCalendar, theme }: {
             </button>
           </form>
           </BorderBeam>
+          </VoiceBeam>
+          {listening && <span className="chat-listening-status" role="status">Listening… Tap the square to stop.</span>}
           {voiceHint && <p className="chat-voice-hint" role="status">{voiceHint}</p>}
           <p className="chat-disclaimer">Relevant notice, event, and extracted file text goes to Gemini through your n8n workflow. Your own fee-status marks stay local. Unread files still need to be opened manually.</p>
         </section>

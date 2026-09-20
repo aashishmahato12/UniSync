@@ -562,7 +562,8 @@
 .chat-welcome-mark{color:#2d69c0}
 .chat-welcome h2{margin:0;color:#3c444e;font-size:29px;font-weight:600;line-height:1.25;letter-spacing:-.035em}
 .chat-mobile-prompts{display:none}
-.chat-composer-beam{display:block;min-width:0;margin:0 17px;border-radius:999px}
+.chat-voice-beam{display:block;min-width:0;width:calc(100% - 34px);margin:0 17px;border-radius:999px}
+.chat-composer-beam{display:block;min-width:0;width:100%;margin:0;border-radius:999px}
 .chat-composer-beam .chat-composer{
   display:flex;align-items:center;gap:6px;width:100%;min-height:54px;
   margin:0;padding:6px;border:1px solid #fff;border-radius:999px;
@@ -580,6 +581,7 @@ body .ask-ai-page .chat-composer .chat-composer-mic{
 }
 body .ask-ai-page .chat-composer .chat-composer-plus:hover,
 body .ask-ai-page .chat-composer .chat-composer-mic:hover{background:#eaf3ff;color:#2769be}
+body .ask-ai-page .chat-composer .chat-composer-mic.is-listening{background:#e8f0ff;color:#2867b9}
 body .ask-ai-page .chat-composer .chat-send{
   display:grid;place-items:center;flex:none;width:40px;height:40px;padding:0;
   border:0;border-radius:50%;background:#fff;color:#101820;
@@ -588,6 +590,7 @@ body .ask-ai-page .chat-composer .chat-send{
 body .ask-ai-page .chat-composer .chat-send:disabled{opacity:1;cursor:default}
 body .ask-ai-page .chat-composer .chat-send:not(:disabled):hover{background:#dcecff;color:#225fa9}
 .chat-voice-hint{margin:7px 22px 0;color:#8a5a38;font-size:11px}
+.chat-listening-status{margin:7px 22px 0;color:#3a69a6;font-size:11px}
 html[data-theme='dark'] .chat-welcome h2{color:#f4f7fb}
 html[data-theme='dark'] .chat-composer-beam .chat-composer{
   border-color:#ffffff2a;background:#222324;color:#eef4fa;
@@ -596,6 +599,8 @@ html[data-theme='dark'] .chat-composer-beam .chat-composer{
 html[data-theme='dark'] .chat-composer-beam .chat-composer input{color:#f2f5fa}
 html[data-theme='dark'] .chat-composer-beam .chat-composer input::placeholder{color:#a5a7ad}
 html[data-theme='dark'] body .ask-ai-page .chat-composer :is(.chat-composer-plus,.chat-composer-mic){color:#f5f6f8}
+html[data-theme='dark'] body .ask-ai-page .chat-composer .chat-composer-mic.is-listening{background:#263d5e;color:#bad8ff}
+html[data-theme='dark'] .chat-listening-status{color:#a9caff}
 html[data-theme='dark'] body .ask-ai-page .chat-composer .chat-send{background:#4b4c4e;color:white}
 html[data-theme='dark'] body .ask-ai-page .chat-composer .chat-send:not(:disabled):hover{background:#5d7eb3}
 
@@ -630,7 +635,8 @@ html[data-theme='dark'] body .ask-ai-page .chat-composer .chat-send:not(:disable
   }
   .ask-ai-page .chat-mobile-prompts button svg{flex:none;color:#49658d}
   .ask-ai-page .chat-mobile-prompts button:hover{background:#e9f3ff}
-  .ask-ai-page .chat-composer-beam{flex:none;width:calc(100% - 44px);margin:0 22px}
+  .ask-ai-page .chat-voice-beam{flex:none;width:calc(100% - 44px);margin:0 22px}
+  .ask-ai-page .chat-composer-beam{width:100%;margin:0}
   .ask-ai-page .chat-composer-beam .chat-composer{height:63px;padding:6px 7px;gap:7px}
   .ask-ai-page .chat-composer-beam .chat-composer input{font-size:16px}
   body .ask-ai-page .chat-composer .chat-composer-plus{width:37px;height:42px}
