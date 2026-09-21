@@ -102,13 +102,13 @@
 .notices-page :is(.category-campus-life,.badge-campus-life){--notice-category:#c45463}
 .notices-page :is(.category-general,.badge-general){--notice-category:#53697d}
 .notices-page .figma-mail-tags em[class^='category-'],
-.notices-page .notice-mail-item-top > span[class^='category-'],
+.notices-page .notice-mail-item-tags > span[class^='category-'],
 .notices-page .notice-reader-tags :is(.badge-payments,.badge-exams,.badge-academics,.badge-campus-life,.badge-general){
   background:color-mix(in srgb,var(--notice-category) 13%,white);
   color:var(--notice-category);
 }
 html[data-theme='dark'] .notices-page .figma-mail-tags em[class^='category-'],
-html[data-theme='dark'] .notices-page .notice-mail-item-top > span[class^='category-'],
+html[data-theme='dark'] .notices-page .notice-mail-item-tags > span[class^='category-'],
 html[data-theme='dark'] .notices-page .notice-reader-tags :is(.badge-payments,.badge-exams,.badge-academics,.badge-campus-life,.badge-general){
   background:color-mix(in srgb,var(--notice-category) 25%,#18283a);
   color:color-mix(in srgb,var(--notice-category) 48%,white);
@@ -133,7 +133,8 @@ html[data-theme='dark'] .notices-page .notice-reader-tags :is(.badge-payments,.b
 .notice-mail-item.selected { background: #f0f5ff; box-shadow: inset 3px 0 #3f80e8; }
 .notice-mail-item-top, .notice-mail-item-bottom { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .notice-mail-item-top { color: #8b97a8; font-size: 10px; }
-.notice-mail-item-top > span { color: #4e76bd; font-weight: 800; }
+.notice-mail-item-tags { display: flex; align-items: center; gap: 5px; min-width: 0; }
+.notice-mail-item-tags > span[class^='category-'] { padding: 3px 9px; border-radius: 999px; font-size: 10px; font-weight: 500; }
 .notice-mail-item strong { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; color: #303745; font-size: 13px; line-height: 1.35; }
 .notice-mail-snippet { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; color: #8994a4; font-size: 11px; line-height: 1.5; }
 .notice-mail-item-bottom { min-height: 19px; justify-content: flex-start; color: #9ba6b6; }

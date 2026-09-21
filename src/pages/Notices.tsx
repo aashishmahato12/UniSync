@@ -136,10 +136,16 @@ export default function Notices({
             onClick={() => setSelectedId(notice.id)}
             aria-pressed={selected?.id === notice.id}
           >
-          <span className="notice-mail-item-top"><span className={`category-${notice.category.toLowerCase().replace(/\s+/g, '-')}`}>{notice.category}</span><time>{formatDate(notice.date)}</time></span>
+          <span className="notice-mail-item-top">
+            <span className="notice-mail-item-tags">
+              <span className={`category-${notice.category.toLowerCase().replace(/\s+/g, '-')}`}>{notice.category}</span>
+              {notice.priority === 'High' && badge('High')}
+            </span>
+            <time>{formatDate(notice.date)}</time>
+          </span>
             <strong>{notice.title}</strong>
             <span className="notice-mail-snippet">{notice.summary}</span>
-            <span className="notice-mail-item-bottom">{notice.priority === 'High' && badge('High')}{notice.attachment && <span><Paperclip size={13} /> Attachment</span>}<ArrowUpRight size={15} /></span>
+            <span className="notice-mail-item-bottom">{notice.attachment && <span><Paperclip size={13} /> Attachment</span>}<ArrowUpRight size={15} /></span>
           </motion.button>)}
         </div>
         {selected ? <motion.article

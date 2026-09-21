@@ -21,6 +21,7 @@ import {
   Inbox,
   Menu,
   MessageSquareMore,
+  MailPlus,
   MoreHorizontal,
   Moon,
   Plus,
@@ -58,6 +59,7 @@ import { gmailUrlForNotice } from './services/gmailLinks'
 import Documents from './pages/Documents'
 import AskAI from './pages/AskAI'
 import Profile from './pages/Profile'
+import CollegeEmail from './pages/CollegeEmail'
 import AuthGate from './components/AuthGate'
 import { cleanEmailForReading } from './services/emailText'
 
@@ -68,6 +70,7 @@ type Page =
   | 'Calendar'
   | 'Payments'
   | 'Documents'
+  | 'College Email'
   | 'Ask AI'
   | 'Profile'
 
@@ -105,6 +108,11 @@ const nav: {
     name: 'Documents',
     label: 'Files',
     icon: FolderOpen,
+  },
+  {
+    name: 'College Email',
+    label: 'Email college',
+    icon: MailPlus,
   },
   {
     name: 'Ask AI',
@@ -353,6 +361,14 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
     setToasts(current => [{ id, message, entering: true }, ...current.map(item => ({ ...item, entering: false }))])
     requestAnimationFrame(() => setToasts(current => current.map(item => item.id === id ? { ...item, entering: false } : item)))
     toastTimers.current.set(id, window.setTimeout(() => dismissToast(id), 4000))
+  }
+
+  const uploadDocument = async (file: File, category: string) => {
+    const uploaded = await studentService.uploadDocument(file, category)
+    setDocuments(current => [uploaded, ...current])
+    setDocumentsError(false)
+    notify(`${file.name} added to ${category}.`)
+    return uploaded
   }
 
   useEffect(() => {
@@ -807,7 +823,13 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
                   }
                   loadError={documentsError}
                   onOpen={openDocument}
+                  onUpload={uploadDocument}
+                  onPreview={studentService.openDocument}
                 />
+              )}
+
+              {page === 'College Email' && (
+                <CollegeEmail senderEmail={email} notify={notify} />
               )}
 
               {page ===

@@ -32,6 +32,12 @@ const documentCategory = (subject: string, fileName: string) => {
   return 'General'
 }
 
+const displayFileSize = (bytes: number | null) => bytes == null ? '—' : bytes >= 1024 * 1024
+  ? `${(bytes / 1024 / 1024).toFixed(1)} MB`
+  : `${Math.max(1, Math.round(bytes / 1024))} KB`
+
+const displayFileType = (mimeType: string) => mimeType === 'application/pdf' ? 'PDF' : 'Image'
+
 export const studentService = {
 
   async getNotices(): Promise<Notice[]> {
@@ -140,7 +146,7 @@ export const studentService = {
       .select('id,extracted_text,extraction_status')
     const extractedById = new Map((extracted ?? []).map(row => [row.id, row]))
     const byMessageId = new Map(notices.map(notice => [notice.gmailMessageId, notice]))
-    return (data ?? []).map(row => {
+    const collegeDocuments = (data ?? []).map(row => {
       const notice = byMessageId.get(row.gmail_message_id)
       const category = notice?.category === 'Payments' ? 'Finance'
         : notice?.category === 'Exams' || notice?.category === 'Academics' ? 'Academic'
@@ -151,12 +157,11 @@ export const studentService = {
         name: row.file_name,
         category,
         date: (row.received_at ?? row.created_at).split('T')[0],
-        size: row.size_bytes == null ? '—' : row.size_bytes >= 1024 * 1024
-          ? `${(row.size_bytes / 1024 / 1024).toFixed(1)} MB`
-          : `${Math.max(1, Math.round(row.size_bytes / 1024))} KB`,
-        type: row.mime_type === 'application/pdf' ? 'PDF' : 'Image',
+        size: displayFileSize(row.size_bytes),
+        type: displayFileType(row.mime_type),
         mimeType: row.mime_type,
         storagePath: row.storage_path,
+        storageBucket: 'college-attachments' as const,
         gmailMessageId: row.gmail_message_id,
         emailSubject: row.subject || '(No subject)',
         sender: row.sender || 'Herald College',
@@ -166,11 +171,85 @@ export const studentService = {
         sourceUrl: `https://mail.google.com/mail/u/0/#all/${encodeURIComponent(row.gmail_message_id)}`,
       }
     })
+
+    const { data: uploads, error: uploadError } = await supabase
+      .from('user_documents')
+      .select('id,file_name,mime_type,size_bytes,storage_path,category,created_at')
+      .order('created_at', { ascending: false })
+
+    // The college library remains usable before the optional user-upload
+    // migration is installed.
+    if (uploadError && !['42P01', 'PGRST205'].includes(uploadError.code ?? '')) throw uploadError
+    const userDocuments: DocumentItem[] = (uploads ?? []).map(row => ({
+      id: row.id,
+      name: row.file_name,
+      category: row.category,
+      date: row.created_at.split('T')[0],
+      size: displayFileSize(row.size_bytes),
+      type: displayFileType(row.mime_type),
+      mimeType: row.mime_type,
+      storagePath: row.storage_path,
+      storageBucket: 'user-documents',
+      gmailMessageId: '',
+      emailSubject: 'Personal upload',
+      sender: 'You',
+      extractionStatus: 'Pending',
+      sourceUrl: '',
+    }))
+
+    return [...userDocuments, ...collegeDocuments]
+  },
+
+  async uploadDocument(file: File, category: string): Promise<DocumentItem> {
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png']
+    if (!allowedTypes.includes(file.type)) throw new Error('Choose a PDF, JPG, or PNG file.')
+    if (file.size > 10 * 1024 * 1024) throw new Error('The file must be 10 MB or smaller.')
+    const { data: authData } = await supabase.auth.getUser()
+    if (!authData.user) throw new Error('Sign in again before uploading a document.')
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]+/g, '-').slice(-140)
+    const storagePath = `${authData.user.id}/${crypto.randomUUID()}-${safeName}`
+    const { error: storageError } = await supabase.storage
+      .from('user-documents')
+      .upload(storagePath, file, { contentType: file.type, upsert: false })
+    if (storageError) throw storageError
+
+    const { data: row, error: rowError } = await supabase
+      .from('user_documents')
+      .insert({
+        user_id: authData.user.id,
+        file_name: file.name,
+        mime_type: file.type,
+        size_bytes: file.size,
+        storage_path: storagePath,
+        category,
+      })
+      .select('id,file_name,mime_type,size_bytes,storage_path,category,created_at')
+      .single()
+    if (rowError || !row) {
+      await supabase.storage.from('user-documents').remove([storagePath])
+      throw rowError ?? new Error('Could not save this document.')
+    }
+    return {
+      id: row.id,
+      name: row.file_name,
+      category: row.category,
+      date: row.created_at.split('T')[0],
+      size: displayFileSize(row.size_bytes),
+      type: displayFileType(row.mime_type),
+      mimeType: row.mime_type,
+      storagePath: row.storage_path,
+      storageBucket: 'user-documents',
+      gmailMessageId: '',
+      emailSubject: 'Personal upload',
+      sender: 'You',
+      extractionStatus: 'Pending',
+      sourceUrl: '',
+    }
   },
 
   async openDocument(document: DocumentItem): Promise<string> {
     const { data, error } = await supabase.storage
-      .from('college-attachments')
+      .from(document.storageBucket ?? 'college-attachments')
       .createSignedUrl(document.storagePath, 60)
     if (error || !data?.signedUrl) throw error ?? new Error('Could not open this file.')
     return data.signedUrl

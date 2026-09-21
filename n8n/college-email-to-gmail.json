@@ -1,0 +1,85 @@
+{
+  "name": "UniSync — send college emails with Gmail",
+  "nodes": [
+    {
+      "id": "1",
+      "name": "Check Email Queue",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 0],
+      "parameters": { "rule": { "interval": [{ "field": "minutes", "minutesInterval": 1 }] } }
+    },
+    {
+      "id": "2",
+      "name": "Claim Email",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [220, 0],
+      "parameters": {
+        "method": "POST",
+        "url": "https://qozetqmklegcnjgxtgpd.supabase.co/rest/v1/rpc/claim_next_college_email",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "Content-Type", "value": "application/json" }] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{}"
+      }
+    },
+    {
+      "id": "3",
+      "name": "Validate College Email",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 0],
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const job = $json;\nif (job.status !== 'processing') throw new Error('Email was not claimed.');\nconst recipient = String(job.recipient || '').trim().toLowerCase();\nif (!/^[^\\s@]+@heraldcollege\\.edu\\.np$/.test(recipient)) throw new Error('Recipient is outside the Herald College domain.');\nconst subject = String(job.subject || '').trim().slice(0, 180);\nconst message = String(job.message || '').trim().slice(0, 10000);\nif (subject.length < 3 || message.length < 10) throw new Error('Subject or message is incomplete.');\nreturn { json: { jobId: job.id, recipient, subject, message } };"
+      }
+    },
+    {
+      "id": "4",
+      "name": "Send via Gmail",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [660, 0],
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "={{ $json.recipient }}",
+        "subject": "={{ $json.subject }}",
+        "emailType": "text",
+        "message": "={{ $json.message }}",
+        "options": { "appendAttribution": false }
+      }
+    },
+    {
+      "id": "5",
+      "name": "Mark Sent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [880, 0],
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ 'https://qozetqmklegcnjgxtgpd.supabase.co/rest/v1/college_email_jobs?id=eq.' + encodeURIComponent($('Validate College Email').first().json.jobId) + '&status=eq.processing' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "Content-Type", "value": "application/json" }] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { status: 'sent', gmail_message_id: String($json.id || ''), sent_at: new Date().toISOString(), updated_at: new Date().toISOString() } }}"
+      }
+    }
+  ],
+  "connections": {
+    "Check Email Queue": { "main": [[{ "node": "Claim Email", "type": "main", "index": 0 }]] },
+    "Claim Email": { "main": [[{ "node": "Validate College Email", "type": "main", "index": 0 }]] },
+    "Validate College Email": { "main": [[{ "node": "Send via Gmail", "type": "main", "index": 0 }]] },
+    "Send via Gmail": { "main": [[{ "node": "Mark Sent", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "active": false,
+  "versionId": "f843824b-b043-41a4-930d-73b6f9daf321"
+}

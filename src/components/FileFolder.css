@@ -1,0 +1,75 @@
+.rare-folder {
+  --folder-main: #57aaf2;
+  --folder-dark: #3789d5;
+  --folder-edge: #8bc9ff;
+  position: relative;
+  width: 156px;
+  height: 126px;
+  margin: 7px auto 0;
+  perspective: 560px;
+  transform-style: preserve-3d;
+  pointer-events: auto;
+}
+
+.rare-folder-violet { --folder-main: #8d83ea; --folder-dark: #6d61ce; --folder-edge: #b8b1ff; }
+.rare-folder-green { --folder-main: #61c796; --folder-dark: #3ca875; --folder-edge: #9ce5bf; }
+.rare-folder-rose { --folder-main: #ee8f9a; --folder-dark: #d46c79; --folder-edge: #ffc0c7; }
+.rare-folder-slate { --folder-main: #8093aa; --folder-dark: #60758e; --folder-edge: #b7c5d5; }
+
+.rare-folder-back {
+  position: absolute;
+  inset: 12px 3px 5px;
+  border-radius: 18px;
+  background: linear-gradient(145deg, var(--folder-main), var(--folder-dark));
+  box-shadow: inset 0 1px 5px #ffffff66, 0 13px 25px color-mix(in srgb, var(--folder-dark) 22%, transparent);
+}
+
+.rare-folder-back::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: -12px;
+  width: 72px;
+  height: 28px;
+  border-radius: 14px 16px 0 0;
+  background: var(--folder-main);
+}
+
+.rare-folder-paper {
+  position: absolute;
+  left: 38px;
+  top: 43px;
+  width: 82px;
+  height: 73px;
+  padding: 13px 10px;
+  border: 1px solid #dfe5ee;
+  border-radius: 12px;
+  background: #f9fbfe;
+  box-shadow: inset 0 -4px 8px #2b42620c, 0 4px 10px #243b5712;
+  transform-origin: 50% 100%;
+}
+
+.rare-folder-paper i { display: block; height: 4px; margin-bottom: 7px; border-radius: 99px; background: #d7e0eb; }
+.rare-folder-paper i:nth-child(2) { width: 72%; }
+.rare-folder-paper i:nth-child(3) { width: 88%; }
+
+.rare-folder-flap {
+  position: absolute;
+  inset: 27px 0 0;
+  border: 1px solid var(--folder-edge);
+  border-radius: 18px;
+  background: linear-gradient(155deg, color-mix(in srgb, var(--folder-main) 88%, white), color-mix(in srgb, var(--folder-dark) 86%, transparent));
+  box-shadow: inset 0 1px 7px #ffffff62, 0 5px 10px color-mix(in srgb, var(--folder-dark) 18%, transparent);
+  transform-origin: 50% 100%;
+  backdrop-filter: blur(5px);
+}
+
+.rare-folder.is-open { filter: saturate(1.08); }
+
+@media (max-width: 760px) {
+  .rare-folder { width: 128px; height: 105px; transform: scale(.84); transform-origin: 50% 100%; margin: -2px auto -1px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rare-folder * { transition: none !important; }
+}

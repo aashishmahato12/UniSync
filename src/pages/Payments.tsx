@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { AlertCircle, CheckCircle2, Clock3, CreditCard, ExternalLink, Mail, RefreshCw, Send, ShieldCheck, UploadCloud, X, XCircle } from 'lucide-react'
-import { badge, EmptyState, Modal, PageIntro, SectionHeading } from '../components/UI'
+import { AlertCircle, CalendarClock, CheckCircle2, CircleDollarSign, Clock3, ExternalLink, Mail, RefreshCw, Send, UploadCloud, WalletCards, X, XCircle } from 'lucide-react'
+import { EmptyState, Modal, PageIntro, SectionHeading } from '../components/UI'
 import { formatDate, money, paymentScheduleTotals, today, type Payment } from '../data'
 import {
   getReceiptJobs,
@@ -70,6 +70,7 @@ export default function Payments({
   const [receiptSetupError, setReceiptSetupError] = useState(false)
   const [sending, setSending] = useState(false)
   const [refreshingJobs, setRefreshingJobs] = useState(false)
+  const [showAllReceiptJobs, setShowAllReceiptJobs] = useState(false)
 
   useEffect(() => {
     let active = true
@@ -117,6 +118,10 @@ export default function Payments({
   const testRecipient = receiptSettings?.recipient_label?.toLowerCase() === 'aashishmahato8000@gmail.com'
   const sendLabel = testRecipient ? 'Send test receipt' : 'Send receipt'
   const trackedJob = receiptJobs.find(job => job.id === trackedJobId)
+  const sortedReceiptJobs = [...receiptJobs].sort((a, b) =>
+    new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  )
+  const visibleReceiptJobs = showAllReceiptJobs ? sortedReceiptJobs : sortedReceiptJobs.slice(0, 5)
 
   const choosePayment = (id: string) => {
     const payment = payments.find(p => p.id === id)
@@ -201,21 +206,21 @@ export default function Payments({
     .reduce((sum, p) => sum + p.amount, 0)
 
   return (
-    <>
+    <div className="payments-page">
       <PageIntro
         title="Payments"
-        copy="Your Autumn 2026 batch fee schedule, with a place to prepare payment receipts."
+        copy="Prepare and track payment receipts, with your fee plan kept nearby for reference."
       />
 
       <div className="payment-stats">
-        <div><span>FULL PROGRAM PLAN</span><strong>{money(paymentScheduleTotals.total)}</strong><small>Admission + six semesters</small></div>
-        <div><span>NEXT TENTATIVE DATE</span><strong>{nextPayment ? dateText(nextPayment) : 'Check with college'}</strong><small>{nextPayment?.title || 'No later date in this schedule'}</small></div>
-        <div><span>NOT MARKED PAID</span><strong>{money(remaining)}</strong><small>Based on your Due / Paid choices</small></div>
+        <div className="payment-stat-card total"><span className="payment-stat-icon"><WalletCards size={20} /></span><span>FULL PROGRAM PLAN</span><strong>{money(paymentScheduleTotals.total)}</strong><small>Admission + six semesters</small></div>
+        <div className="payment-stat-card next"><span className="payment-stat-icon"><CalendarClock size={20} /></span><span>NEXT TENTATIVE DATE</span><strong>{nextPayment ? dateText(nextPayment) : 'Check with college'}</strong><small>{nextPayment?.title || 'No later date in this schedule'}</small></div>
+        <div className="payment-stat-card remaining"><span className="payment-stat-icon"><CircleDollarSign size={20} /></span><span>NOT MARKED PAID</span><strong>{money(remaining)}</strong><small>Based on your Due / Paid choices</small></div>
       </div>
 
       <section className="panel schedule-panel">
-        <SectionHeading eyebrow="AUTUMN 2026 BATCH" title="Fee payment schedule" />
-        <div className="schedule-note"><AlertCircle size={18} /><span>These are tentative dates from your printed schedule, not confirmed deadlines. The college says changes will be communicated at least 15 days before a fee payment date. Check the latest college notice before paying.</span></div>
+        <SectionHeading eyebrow="AUTUMN 2026 BATCH" title="Fee plan" />
+        <div className="schedule-note"><AlertCircle size={18} /><span>Dates are tentative. Check the latest college notice before paying.</span></div>
         <div className="schedule-list">
           {payments.map(payment => (
             <div
@@ -255,7 +260,7 @@ export default function Payments({
           <span>College <strong>{money(paymentScheduleTotals.collegeFee)}</strong></span>
           <span>Grand total <strong>{money(paymentScheduleTotals.total)}</strong></span>
         </div>
-        <p className="schedule-footnote">The admission and registration fee is one-time and non-refundable. The printed plan says university and semester fees should be paid before the start of each semester.</p>
+        <p className="schedule-footnote">“Paid by me” is your private record until the college confirms the payment.</p>
       </section>
 
       <div className="payment-layout">
@@ -293,29 +298,38 @@ export default function Payments({
           </div>
         </section>
 
-        <aside className="panel payment-history">
-          <SectionHeading eyebrow="PAYMENT RECORD" title="Current status" />
-          <div className="history-list">
-            {payments.map(p => {
-              const latestEmail = receiptJobs.find(job => job.payment_id === p.id)
-              return <button className={`history-row ${selectedPayment === p.id ? 'selected' : ''}`} key={p.id} onClick={() => choosePayment(p.id)}>
-                <span className="history-icon"><CreditCard size={18} /></span>
-                <span><strong>{p.title}</strong><small>{dateText(p)} · {money(p.amount)}</small>{p.transactionId && <small>Txn: {p.transactionId}</small>}{latestEmail && <small>Receipt email: {deliveryLabel(latestEmail)}</small>}</span>
-                {badge(p.status)}
-              </button>
-            })}
-          </div>
-          <div className="history-help"><ShieldCheck size={19} /><p>You control Due and Paid statuses above. “Paid by me” is your own record, not a college confirmation. Keep your original receipts until the college confirms each payment.</p></div>
-        </aside>
       </div>
 
       <section className="panel receipt-delivery-panel">
         <div className="receipt-delivery-heading">
           <SectionHeading eyebrow="EMAIL DELIVERY" title="Receipt email status" />
-          <button className="secondary-button" onClick={() => void refreshDelivery()} disabled={refreshingJobs}><RefreshCw size={15} /> {refreshingJobs ? 'Checking…' : 'Check status'}</button>
+          <div className="receipt-delivery-actions">
+            {receiptJobs.length > 5 && <button className="receipt-list-toggle" type="button" onClick={() => setShowAllReceiptJobs(value => !value)}>
+              {showAllReceiptJobs ? 'Latest 5' : `Show all ${receiptJobs.length}`}
+            </button>}
+            <button className="secondary-button" onClick={() => void refreshDelivery()} disabled={refreshingJobs}><RefreshCw size={15} /> {refreshingJobs ? 'Checking…' : 'Check status'}</button>
+          </div>
         </div>
-        <p className="receipt-delivery-intro">This tracks the email sent through n8n and Gmail. Payment confirmation from the college is separate.</p>
-        {receiptJobs.length ? <div className="receipt-delivery-list">{receiptJobs.map(job => {
+        <p className="receipt-delivery-intro">Showing {showAllReceiptJobs ? 'all' : 'the latest five'} emails sent through n8n and Gmail. College payment confirmation is separate.</p>
+        {trackedJob && <div className="receipt-status-inline">
+          <section className="receipt-status-sheet" aria-labelledby="receipt-status-title" aria-live="polite">
+            <button className="receipt-status-close" aria-label="Close email status" onClick={() => setTrackedJobId(null)}><X size={18} /></button>
+            <span className={`receipt-status-symbol ${trackedJob.status === 'sent' && trackedJob.gmail_message_id ? 'sent' : trackedJob.status === 'failed' ? 'failed' : 'pending'}`}>
+              {trackedJob.status === 'sent' && trackedJob.gmail_message_id ? <CheckCircle2 size={36} /> : trackedJob.status === 'failed' ? <XCircle size={36} /> : trackedJob.status === 'processing' ? <Send size={34} /> : <Clock3 size={34} />}
+            </span>
+            <span className="receipt-status-eyebrow">PAYMENT RECEIPT EMAIL</span>
+            <h2 id="receipt-status-title">{deliveryTitle(trackedJob)}</h2>
+            <p>{deliveryCopy(trackedJob)}</p>
+            <div className="receipt-status-progress" aria-label={`Email status: ${deliveryLabel(trackedJob)}`}>
+              <span className="done" /><span className={trackedJob.status !== 'queued' ? 'done' : ''} /><span className={trackedJob.status === 'sent' && trackedJob.gmail_message_id ? 'done' : ''} />
+            </div>
+            <div className="receipt-status-steps"><span>Queued</span><span>Processing</span><span>Sent</span></div>
+            <div className="receipt-status-reference"><span>Transaction ID</span><strong>{trackedJob.transaction_id}</strong>{trackedJob.sent_at && <small>Sent {new Date(trackedJob.sent_at).toLocaleString()}</small>}</div>
+            {trackedJob.gmail_message_id && <a className="receipt-status-gmail" href={`https://mail.google.com/mail/u/0/#all/${encodeURIComponent(trackedJob.gmail_message_id)}`} target="_blank" rel="noopener noreferrer">Open in Gmail <ExternalLink size={15} /></a>}
+            <button className="receipt-status-done" onClick={() => setTrackedJobId(null)}>{trackedJob.status === 'queued' || trackedJob.status === 'processing' ? 'Continue while it sends' : 'Done'}</button>
+          </section>
+        </div>}
+        {receiptJobs.length ? <div className="receipt-delivery-list">{visibleReceiptJobs.map(job => {
           const payment = payments.find(item => item.id === job.payment_id)
           return <div className="receipt-delivery-row" key={job.id}>
             <span className={`receipt-delivery-icon ${job.status === 'sent' && job.gmail_message_id ? 'sent' : job.status === 'failed' ? 'failed' : 'pending'}`}>
@@ -349,25 +363,6 @@ export default function Payments({
         </Modal>
       )}
 
-      {trackedJob && <div className="receipt-status-backdrop" onMouseDown={event => { if (event.target === event.currentTarget) setTrackedJobId(null) }}>
-        <section className="receipt-status-sheet" role="dialog" aria-modal="true" aria-labelledby="receipt-status-title" aria-live="polite">
-          <div className="receipt-status-handle" />
-          <button className="receipt-status-close" aria-label="Close email status" onClick={() => setTrackedJobId(null)}><X size={18} /></button>
-          <span className={`receipt-status-symbol ${trackedJob.status === 'sent' && trackedJob.gmail_message_id ? 'sent' : trackedJob.status === 'failed' ? 'failed' : 'pending'}`}>
-            {trackedJob.status === 'sent' && trackedJob.gmail_message_id ? <CheckCircle2 size={36} /> : trackedJob.status === 'failed' ? <XCircle size={36} /> : trackedJob.status === 'processing' ? <Send size={34} /> : <Clock3 size={34} />}
-          </span>
-          <span className="receipt-status-eyebrow">PAYMENT RECEIPT EMAIL</span>
-          <h2 id="receipt-status-title">{deliveryTitle(trackedJob)}</h2>
-          <p>{deliveryCopy(trackedJob)}</p>
-          <div className="receipt-status-progress" aria-label={`Email status: ${deliveryLabel(trackedJob)}`}>
-            <span className="done" /><span className={trackedJob.status !== 'queued' ? 'done' : ''} /><span className={trackedJob.status === 'sent' && trackedJob.gmail_message_id ? 'done' : ''} />
-          </div>
-          <div className="receipt-status-steps"><span>Queued</span><span>Processing</span><span>Sent</span></div>
-          <div className="receipt-status-reference"><span>Transaction ID</span><strong>{trackedJob.transaction_id}</strong>{trackedJob.sent_at && <small>Sent {new Date(trackedJob.sent_at).toLocaleString()}</small>}</div>
-          {trackedJob.gmail_message_id && <a className="receipt-status-gmail" href={`https://mail.google.com/mail/u/0/#all/${encodeURIComponent(trackedJob.gmail_message_id)}`} target="_blank" rel="noopener noreferrer">Open in Gmail <ExternalLink size={15} /></a>}
-          <button className="receipt-status-done" onClick={() => setTrackedJobId(null)}>{trackedJob.status === 'queued' || trackedJob.status === 'processing' ? 'Continue while it sends' : 'Done'}</button>
-        </section>
-      </div>}
-    </>
+    </div>
   )
 }
