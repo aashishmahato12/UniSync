@@ -10,7 +10,7 @@ html[data-theme='dark'] {
   --mobile-liquid-border: rgba(255,255,255,.18);
   --mobile-liquid-shadow: rgba(0,0,0,.32);
   --mobile-nav-surface: rgba(11,20,32,.86);
-  --mobile-scrim-tint: rgba(2,7,13,.3);
+  --mobile-scrim-tint: rgba(2,7,13,.52);
 }
 
 .mobile-liquid-slot,
@@ -158,8 +158,17 @@ html[data-theme='dark'] {
     position: relative;
     width: 62px;
     height: 62px;
+    border-color: rgba(255,255,255,.92);
     border-radius: 50%;
     color: #152131;
+  }
+  .mobile-liquid-trigger::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border: 1.5px solid rgba(47,125,229,.78);
+    border-radius: inherit;
+    pointer-events: none;
   }
   .mobile-liquid-trigger svg {
     position: absolute;
@@ -181,13 +190,20 @@ html[data-theme='dark'] {
   html[data-theme='dark'] .mobile-liquid-page.active { color: #7db8ff; }
   html[data-theme='dark'] .mobile-liquid-trigger { color: #eef5ff; }
   html[data-theme='dark'] .mobile-liquid-progressive-blur {
-    backdrop-filter: blur(10.9px) saturate(.82) brightness(.72);
-    -webkit-backdrop-filter: blur(10.9px) saturate(.82) brightness(.72);
+    backdrop-filter: blur(10.9px) saturate(.64) brightness(.5) contrast(.94);
+    -webkit-backdrop-filter: blur(10.9px) saturate(.64) brightness(.5) contrast(.94);
   }
   html[data-theme='dark'] :is(.mobile-liquid-page,.mobile-liquid-trigger) {
     box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 9px 25px rgba(0,0,0,.24);
     backdrop-filter: blur(22px) saturate(1.12);
     -webkit-backdrop-filter: blur(22px) saturate(1.12);
+  }
+  html[data-theme='dark'] .mobile-liquid-trigger {
+    border-color: rgba(222,236,255,.72);
+  }
+  html[data-theme='dark'] .mobile-liquid-trigger::after {
+    border-color: rgba(74,151,255,.74);
+    box-shadow: 0 0 0 1px rgba(74,151,255,.1);
   }
   html[data-theme='dark'] .mobile-bottom-nav {
     background: linear-gradient(to bottom, transparent 0%, var(--mobile-nav-surface) 30%, var(--mobile-nav-surface) 100%);
