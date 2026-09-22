@@ -266,6 +266,7 @@ h3,
     font-size: 11px;
     font-weight: 400;
   }
+  .mobile-bottom-nav .mobile-unread-count{position:absolute;z-index:3;top:4px;left:calc(50% + 8px);display:grid;place-items:center;min-width:17px;height:17px;padding:0 4px;border:2px solid #eef3f8;border-radius:999px;background:#2f7de5;color:#fff;font-size:8px;font-style:normal;font-weight:800;line-height:1;box-shadow:0 3px 8px #285f9f35}
   .mobile-bottom-nav > button.active { color: var(--figma-blue); }
   .mobile-bottom-nav > button:nth-child(2).active { color: #05080a; font-weight: 600; }
   .mobile-bottom-nav .mobile-ai-action {

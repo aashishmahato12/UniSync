@@ -13,6 +13,8 @@ import {
 import {
   formatDate,
   type Notice,
+  type EventItem,
+  type CalendarState,
 } from '../data'
 
 import {
@@ -24,6 +26,7 @@ import { gmailUrlForNotice } from '../services/gmailLinks'
 import { cleanEmailForReading } from '../services/emailText'
 import GlassSurface from '../components/GlassSurface'
 import JellyRadio from '../components/JellyRadio'
+import InboxEventActions from '../components/InboxEventActions'
 
 // Match JellyRadio's default spring, with a smaller squash for full-size cards.
 const inboxJellyDamping = 2 * Math.sqrt(460 * .9) * (1 - .3)
@@ -49,9 +52,17 @@ const inboxFilterTones: Record<string, string> = {
 export default function Notices({
   notices,
   onNotice,
+  events,
+  updateCalendar,
+  readNoticeIds,
+  onRead,
 }: {
   notices: Notice[]
   onNotice: (notice: Notice) => void
+  events: EventItem[]
+  updateCalendar: (event: EventItem, state: CalendarState) => void | Promise<void>
+  readNoticeIds: ReadonlySet<string>
+  onRead: (notice: Notice) => void
 }) {
   const [filter, setFilter] = useState('All')
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -76,6 +87,10 @@ export default function Notices({
     setFilter(category)
     setSelectedId(null)
   }
+  const selectNotice = (notice: Notice) => {
+    setSelectedId(notice.id)
+    onRead(notice)
+  }
 
   return (
     <div className="notices-page">
@@ -83,14 +98,16 @@ export default function Notices({
         <JellyRadio items={categories} value={filter} onChange={changeFilter} toneForItem={item => inboxFilterTones[item]} ariaLabel="Filter college emails" className="mobile-inbox-filter" />
         <p className="mobile-inbox-hint">Tap an email to read its details</p>
         {filtered.map((notice, index) => {
+          const unread = !readNoticeIds.has(notice.id)
           const card = <button
-          className={`figma-mail-card depth-${Math.min(index, 2)} ${(index === 0 || index === 2) ? 'is-stacked' : ''}`}
+          className={`figma-mail-card depth-${Math.min(index, 2)} ${(index === 0 || index === 2) ? 'is-stacked' : ''} ${unread ? 'is-unread' : ''}`}
           onClick={() => onNotice(notice)}
+          aria-label={`${unread ? 'Unread: ' : ''}${notice.title}`}
         >
           <span className="figma-sender-avatar">{notice.source?.match(/[A-Za-z]/)?.[0].toUpperCase() || 'H'}</span>
           <span className="figma-mail-content">
             <span className="figma-mail-heading">
-              <strong>{notice.title}</strong>
+              <strong>{unread && <i className="notice-unread-dot" aria-hidden="true" />}{notice.title}</strong>
               <span className="figma-mail-tags"><em className={`category-${notice.category.toLowerCase().replace(/\s+/g, '-')}`}>{notice.category}</em>{notice.priority === 'High' && <em className="urgent">High</em>}</span>
               <time>{formatDate(notice.date, { month: 'short', day: 'numeric' })}</time>
             </span>
@@ -128,13 +145,14 @@ export default function Notices({
         <div className="notice-mail-list" aria-label="College notices" key={filter}>
           <div className="notice-mail-list-heading"><strong>Inbox</strong><span>{filtered.length} updates</span></div>
           {filtered.map((notice, index) => <motion.button
-            className={`notice-mail-item ${selected?.id === notice.id ? 'selected' : ''}`}
+            className={`notice-mail-item ${selected?.id === notice.id ? 'selected' : ''} ${!readNoticeIds.has(notice.id) ? 'is-unread' : ''}`}
             key={notice.id}
             initial={reduceMotion ? false : { opacity: .2, y: 11, scaleX: .93, scaleY: 1.07 }}
             animate={{ opacity: 1, y: 0, scaleX: 1, scaleY: 1 }}
             transition={reduceMotion ? { duration: 0 } : inboxEntryTransition(index)}
-            onClick={() => setSelectedId(notice.id)}
+            onClick={() => selectNotice(notice)}
             aria-pressed={selected?.id === notice.id}
+            aria-label={`${!readNoticeIds.has(notice.id) ? 'Unread: ' : ''}${notice.title}`}
           >
           <span className="notice-mail-item-top">
             <span className="notice-mail-item-tags">
@@ -143,7 +161,7 @@ export default function Notices({
             </span>
             <time>{formatDate(notice.date)}</time>
           </span>
-            <strong>{notice.title}</strong>
+            <strong>{!readNoticeIds.has(notice.id) && <i className="notice-unread-dot" aria-hidden="true" />}{notice.title}</strong>
             <span className="notice-mail-snippet">{notice.summary}</span>
             <span className="notice-mail-item-bottom">{notice.attachment && <span><Paperclip size={13} /> Attachment</span>}<ArrowUpRight size={15} /></span>
           </motion.button>)}
@@ -161,6 +179,7 @@ export default function Notices({
             <h2>{selected.title}</h2>
             <div className="notice-reader-sender"><span className="notice-reader-avatar">H</span><div><strong>{selected.source.replace(/ · Email$/, '')}</strong><small>Herald College email</small></div></div>
             <GlassSurface className="notice-summary-glass" borderRadius={23} backgroundOpacity={0.42}><section className="notice-reader-summary"><span><Sparkles size={17} /> AT A GLANCE</span><p>{selected.summary}</p></section></GlassSurface>
+            <InboxEventActions notice={selected} events={events} updateCalendar={updateCalendar} />
             <section className="notice-reader-original"><h3><FileText size={17} /> Original message</h3>{cleanEmailForReading(selected.bodyText)
               ? <div className="notice-reader-email-body">{cleanEmailForReading(selected.bodyText)}</div>
               : <p className="notice-reader-unavailable">{selected.attachment ? 'This email may contain the notice in an attachment. Open the saved files below.' : 'The full message has not been saved here yet. You can open the original in Gmail for now.'}</p>}

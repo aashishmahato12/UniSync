@@ -14,7 +14,7 @@ import {
 } from 'lucide-react'
 import { formatDate, money, today, type CalendarState, type EventItem, type Notice, type Payment } from '../data'
 
-type Page = 'Dashboard' | 'Notices' | 'Events' | 'Calendar' | 'Payments' | 'Documents' | 'Ask AI' | 'Profile'
+type Page = 'Dashboard' | 'Notices' | 'Calendar' | 'Payments' | 'Documents' | 'College Email' | 'Ask AI' | 'Profile'
 
 function NumberPop({ value }: { value: number }) {
   return <span className="t-digit-group is-animating" key={value} aria-label={String(value)}>
@@ -50,6 +50,11 @@ export default function Dashboard({
       setBusyEventId(null)
     }
   }
+  const openEventEmail = (event: EventItem) => {
+    const sourceNotice = notices.find(notice => notice.gmailMessageId && notice.gmailMessageId === event.gmailMessageId)
+    if (sourceNotice) onNotice(sourceNotice)
+    else navigate('Notices')
+  }
   const upcoming = events
     .filter(event => event.date >= today && event.calendarState !== 'Ignored')
     .sort((a, b) => a.date.localeCompare(b.date))
@@ -81,7 +86,7 @@ export default function Dashboard({
     : pending.length ? `${pending.length} calendar ${pending.length === 1 ? 'decision needs' : 'decisions need'} your review.` : ''
   const briefText = [briefLead, briefFollow].filter(Boolean).join(' ') || 'No new deadlines or important updates are saved for today.'
   const nextDates = [
-    ...upcoming.map(event => ({ date: event.date, title: event.title, page: 'Events' as Page })),
+    ...upcoming.map(event => ({ date: event.date, title: event.title, page: 'Calendar' as Page })),
     ...duePayments.filter(payment => payment.dueDate >= today).map(payment => ({ date: payment.dueDate, title: `${payment.title} · tentative fee date`, page: 'Payments' as Page })),
   ].sort((a, b) => a.date.localeCompare(b.date))
   const nextDate = nextDates[0]
@@ -112,7 +117,7 @@ export default function Dashboard({
     </div>
 
     <div className="desk-signal-row" aria-label="Workspace snapshot">
-      <button onClick={() => navigate('Events')}><span className="desk-signal-icon blue"><CalendarDays size={17} /></span><strong><NumberPop value={pending.length} /></strong><span>Calendar {pending.length === 1 ? 'decision' : 'decisions'}</span><ArrowUpRight size={15} /></button>
+      <button onClick={() => navigate('Notices')}><span className="desk-signal-icon blue"><CalendarDays size={17} /></span><strong><NumberPop value={pending.length} /></strong><span>Inbox calendar {pending.length === 1 ? 'action' : 'actions'}</span><ArrowUpRight size={15} /></button>
       <button onClick={() => navigate('Payments')}><span className="desk-signal-icon coral"><CreditCard size={17} /></span><strong><NumberPop value={allDuePayments.length} /></strong><span>Fees marked due</span><ArrowUpRight size={15} /></button>
       <button onClick={() => navigate('Notices')}><span className="desk-signal-icon violet"><Bell size={17} /></span><strong><NumberPop value={notices.length} /></strong><span>Saved notices</span><ArrowUpRight size={15} /></button>
     </div>
@@ -131,10 +136,10 @@ export default function Dashboard({
           {pending.slice(0, 2).map(event => <div className="desk-action" key={event.id}>
             <span className="desk-action-icon blue"><CalendarDays size={18} /></span>
             <div className="desk-action-body"><strong>{event.title}</strong><small>{formatDate(event.date)} · {event.category}</small>
-              <div className="desk-action-controls"><button className="primary" disabled={busyEventId === event.id} onClick={() => decideCalendar(event, 'Added')}>Approve for calendar</button><button disabled={busyEventId === event.id} onClick={() => decideCalendar(event, 'Ignored')}>Ignore</button><button onClick={() => navigate('Events')}>Details <ArrowUpRight size={13} /></button></div>
+              <div className="desk-action-controls"><button className="primary" disabled={busyEventId === event.id} onClick={() => decideCalendar(event, 'Added')}>Add to calendar</button><button disabled={busyEventId === event.id} onClick={() => decideCalendar(event, 'Ignored')}>Ignore</button><button onClick={() => openEventEmail(event)}>Open email <ArrowUpRight size={13} /></button></div>
             </div>
           </div>)}
-          {pending.length > 2 && <button className="desk-more" onClick={() => navigate('Events')}>Review {pending.length - 2} more calendar {pending.length - 2 === 1 ? 'approval' : 'approvals'} <ArrowRight size={14} /></button>}
+          {pending.length > 2 && <button className="desk-more" onClick={() => navigate('Notices')}>Review {pending.length - 2} more inbox calendar {pending.length - 2 === 1 ? 'action' : 'actions'} <ArrowRight size={14} /></button>}
         </div> : <div className="desk-clear"><CheckCircle2 size={22} /><strong>Nothing to approve right now</strong><span>New payment and calendar decisions will appear here.</span></div>}
       </section>
 
@@ -147,8 +152,8 @@ export default function Dashboard({
         </div>
       </section>
       <section className="desk-panel desk-upcoming">
-        <div className="desk-section-head"><div><span>YOUR SCHEDULE</span><h2>Coming up</h2></div><button onClick={() => navigate('Events')}>All events <ArrowRight size={14} /></button></div>
-        {upcoming.length ? <div className="desk-upcoming-list">{upcoming.slice(0, 4).map(event => <button className="desk-upcoming-row" key={event.id} onClick={() => navigate('Events')}>
+        <div className="desk-section-head"><div><span>YOUR SCHEDULE</span><h2>Coming up</h2></div><button onClick={() => navigate('Calendar')}>Open calendar <ArrowRight size={14} /></button></div>
+        {upcoming.length ? <div className="desk-upcoming-list">{upcoming.slice(0, 4).map(event => <button className="desk-upcoming-row" key={event.id} onClick={() => navigate('Calendar')}>
           <span className="desk-date-tile"><strong>{new Date(`${event.date}T12:00:00`).getDate()}</strong><small>{formatDate(event.date, { month: 'short' }).toUpperCase()}</small></span>
           <span><strong>{event.title}</strong><small>{event.time ? `${event.time} · ` : ''}{event.category}</small></span>
           <em className={event.calendarState.toLowerCase()}>{event.calendarState}</em><ChevronRight size={16} />

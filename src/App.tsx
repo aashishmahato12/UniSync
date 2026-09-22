@@ -34,6 +34,7 @@ import {
 import {
   payments as seedPayments,
   type CalendarState,
+  type CustomEventInput,
   type DocumentItem,
   type EventItem,
   type Notice,
@@ -51,10 +52,10 @@ import {
 
 import Dashboard from './pages/Dashboard'
 import Notices from './pages/Notices'
-import Events from './pages/Events'
 import Calendar from './pages/Calendar'
 import Payments from './pages/Payments'
 import { loadPaymentStatuses, savePaymentStatuses } from './services/paymentStatusStore'
+import { loadReadNoticeIds, saveReadNoticeIds } from './services/noticeReadStore'
 import { gmailUrlForNotice } from './services/gmailLinks'
 import Documents from './pages/Documents'
 import AskAI from './pages/AskAI'
@@ -62,11 +63,11 @@ import Profile from './pages/Profile'
 import CollegeEmail from './pages/CollegeEmail'
 import AuthGate from './components/AuthGate'
 import { cleanEmailForReading } from './services/emailText'
+import InboxEventActions from './components/InboxEventActions'
 
 type Page =
   | 'Dashboard'
   | 'Notices'
-  | 'Events'
   | 'Calendar'
   | 'Payments'
   | 'Documents'
@@ -88,11 +89,6 @@ const nav: {
     name: 'Notices',
     label: 'Inbox',
     icon: Bell,
-  },
-  {
-    name: 'Events',
-    label: 'Calendar decisions',
-    icon: CalendarDays,
   },
   {
     name: 'Calendar',
@@ -197,6 +193,25 @@ function WorkspaceSkeleton() {
 
 function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { email: string; theme: Theme; themeMode: ThemeMode; setThemeMode: (mode: ThemeMode) => void; toggleTheme: () => void }) {
   const reduceMotion = useReducedMotion()
+  useEffect(() => {
+    if (reduceMotion) return
+    const animateClick = (event: MouseEvent) => {
+      const source = event.target
+      if (!(source instanceof Element)) return
+      const clickable = source.closest<HTMLElement>('button, a, [role="button"]')
+      if (!clickable || !clickable.closest('.app-shell, .modal, .document-detail, .document-upload')) return
+      if (clickable.matches(':disabled, [aria-disabled="true"]')) return
+      if (clickable.closest('.sidebar, .topbar, .mobile-bottom-nav, .jelly-radio')) return
+      const bounds = clickable.getBoundingClientRect()
+      const animationClass = bounds.width > 300 || bounds.height > 96 ? 'unisync-click-soft' : 'unisync-click-jello'
+      clickable.classList.remove('unisync-click-jello', 'unisync-click-soft')
+      void clickable.offsetWidth
+      clickable.classList.add(animationClass)
+      clickable.addEventListener('animationend', () => clickable.classList.remove(animationClass), { once: true })
+    }
+    document.addEventListener('click', animateClick)
+    return () => document.removeEventListener('click', animateClick)
+  }, [reduceMotion])
   const [page, setPage] =
     useState<Page>('Dashboard')
   const [menuOpen, setMenuOpen] =
@@ -207,6 +222,7 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
 
   const [notices, setNotices] =
     useState<Notice[]>([])
+  const [readNoticeIds, setReadNoticeIds] = useState<Set<string>>(() => loadReadNoticeIds(email))
 
   const [loading, setLoading] =
     useState(true)
@@ -253,7 +269,17 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
     if (selectedNotice) window.scrollTo(0, 0)
   }, [selectedNotice])
 
+  const markNoticeRead = (notice: Notice) => {
+    setReadNoticeIds(current => {
+      if (current.has(notice.id)) return current
+      const next = new Set(current).add(notice.id)
+      saveReadNoticeIds(email, next)
+      return next
+    })
+  }
+
   const openNotice = (notice: Notice) => {
+    markNoticeRead(notice)
     noticeListScroll.current = window.scrollY
     setNoticeClosing(false)
     setNoticeReturning(false)
@@ -411,13 +437,21 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
         )
         setSelectedEvent(null)
         notify(state === 'Added'
-          ? 'Approved. Google Calendar will update after sync.'
+          ? 'Added. Google Calendar will update after sync.'
           : 'Calendar preference saved.')
       } catch (error) {
         console.error(error)
         notify('Could not save this event. Please try again.')
       }
     }
+
+  const createCalendarEvent = async (input: CustomEventInput) => {
+    const event = await studentService.createCalendarEvent(input)
+    setEvents(previous => [...previous, event]
+      .sort((a, b) => a.date.localeCompare(b.date) || (a.time || '').localeCompare(b.time || '')))
+    notify('Event added to your calendar.')
+    return event
+  }
 
   const updatePaymentStatus = (id: string, status: 'Due' | 'Paid') => {
     setPayments(current => current.map(payment =>
@@ -458,7 +492,7 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
           .map(event => ({
             label: event.title,
             page:
-              'Events' as Page,
+              'Notices' as Page,
           })),
       ]
     }, [
@@ -466,6 +500,8 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
       notices,
       events,
     ])
+
+  const unreadNoticeCount = notices.reduce((count, notice) => count + (readNoticeIds.has(notice.id) ? 0 : 1), 0)
 
   return (
     <div className="app-shell">
@@ -527,9 +563,9 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
 
                 <small className="nav-index">{String(index + 1).padStart(2, '0')}</small>
 
-                {name === 'Events' && events.filter(event => event.calendarState === 'Pending').length > 0 && (
+                {name === 'Notices' && unreadNoticeCount > 0 && (
                     <em>
-                      {events.filter(event => event.calendarState === 'Pending').length}
+                      {unreadNoticeCount}
                     </em>
                   )}
               </button>
@@ -692,6 +728,8 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
         <p>{selectedNotice.summary}</p>
       </section>
 
+      <InboxEventActions notice={selectedNotice} events={events} updateCalendar={updateCalendar} />
+
       <section className="notice-detail-original">
         <h3>
           <FileText size={16} />
@@ -740,7 +778,12 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
     </article>
   </motion.section>
 )}
-<div hidden={!!selectedNotice} className={noticeReturning ? 'notice-returning' : undefined} onAnimationEnd={event => { if (event.target === event.currentTarget) setNoticeReturning(false) }}>
+<div
+  key={page}
+  hidden={!!selectedNotice}
+  className={`${noticeReturning ? 'notice-returning ' : ''}${page === 'Notices' || page === 'Calendar' ? '' : 'page-scale-shell'}`.trim() || undefined}
+  onAnimationEnd={event => { if (event.target === event.currentTarget) setNoticeReturning(false) }}
+>
               {page ===
                 'Dashboard' && (
                 <Dashboard
@@ -771,19 +814,10 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
                   onNotice={
                     openNotice
                   }
-                />
-              )}
-
-              {page ===
-                'Events' && (
-                <Events
                   events={events}
-                  onEvent={
-                    setSelectedEvent
-                  }
-                  updateCalendar={
-                    updateCalendar
-                  }
+                  updateCalendar={updateCalendar}
+                  readNoticeIds={readNoticeIds}
+                  onRead={markNoticeRead}
                 />
               )}
 
@@ -797,6 +831,7 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
                   updateCalendar={
                     updateCalendar
                   }
+                  createEvent={createCalendarEvent}
                 />
               )}
 
@@ -856,9 +891,9 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
 
         <nav className="mobile-bottom-nav" aria-label="Primary navigation">
           <button className={page === 'Dashboard' ? 'active' : ''} onClick={() => navigate('Dashboard')}>{page === 'Dashboard' && <motion.i className="mobile-nav-jelly" layoutId="mobile-nav-jelly" initial={false} transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 460, damping: 23 }} aria-hidden="true" />}<Home size={23} /><span>Home</span></button>
-          <button className={page === 'Notices' ? 'active' : ''} onClick={() => navigate('Notices')}>{page === 'Notices' && <motion.i className="mobile-nav-jelly" layoutId="mobile-nav-jelly" initial={false} transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 460, damping: 23 }} aria-hidden="true" />}<Inbox size={23} /><span>Inbox</span></button>
+          <button className={page === 'Notices' ? 'active' : ''} onClick={() => navigate('Notices')}>{page === 'Notices' && <motion.i className="mobile-nav-jelly" layoutId="mobile-nav-jelly" initial={false} transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 460, damping: 23 }} aria-hidden="true" />}<Inbox size={23} /><span>Inbox</span>{unreadNoticeCount > 0 && <em className="mobile-unread-count">{unreadNoticeCount > 99 ? '99+' : unreadNoticeCount}</em>}</button>
           <button className={`mobile-ai-action ${page === 'Ask AI' ? 'active' : ''}`} onClick={() => navigate('Ask AI')} aria-label="Ask UniSync"><MessageSquareMore size={25} /></button>
-          <button className={page === 'Calendar' || page === 'Events' ? 'active' : ''} onClick={() => navigate('Calendar')}>{(page === 'Calendar' || page === 'Events') && <motion.i className="mobile-nav-jelly" layoutId="mobile-nav-jelly" initial={false} transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 460, damping: 23 }} aria-hidden="true" />}<CalendarDays size={23} /><span>Calendar</span></button>
+          <button className={page === 'Calendar' ? 'active' : ''} onClick={() => navigate('Calendar')}>{page === 'Calendar' && <motion.i className="mobile-nav-jelly" layoutId="mobile-nav-jelly" initial={false} transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 460, damping: 23 }} aria-hidden="true" />}<CalendarDays size={23} /><span>Calendar</span></button>
           <button className={page === 'Documents' ? 'active' : ''} onClick={() => navigate('Documents')}>{page === 'Documents' && <motion.i className="mobile-nav-jelly" layoutId="mobile-nav-jelly" initial={false} transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 460, damping: 23 }} aria-hidden="true" />}<FolderOpen size={23} /><span>Files</span></button>
         </nav>
       </div>
@@ -876,7 +911,9 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
             {badge(
               selectedEvent.category
             )}
-            {badge(selectedEvent.calendarState === 'Added'
+            {badge(selectedEvent.isCustom
+              ? 'Personal'
+              : selectedEvent.calendarState === 'Added'
               ? selectedEvent.googleCalendarEventId ? 'Synced' : 'Syncing'
               : selectedEvent.calendarState)}
           </div>

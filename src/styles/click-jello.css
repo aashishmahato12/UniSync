@@ -1,0 +1,33 @@
+/* Click feedback for page content. Navigation and JellyRadio filters are excluded in App.tsx. */
+.unisync-click-jello {
+  transform-origin: center;
+  animation: unisync-click-jello .5s cubic-bezier(.2,.9,.25,1) both;
+  will-change: scale;
+}
+
+.unisync-click-soft {
+  transform-origin: center;
+  animation: unisync-click-soft .36s cubic-bezier(.2,.9,.25,1) both;
+  will-change: scale;
+}
+
+@keyframes unisync-click-jello {
+  0% { scale: 1 1; }
+  22% { scale: .94 1.055; }
+  46% { scale: 1.025 .982; }
+  66% { scale: .988 1.012; }
+  82% { scale: 1.006 .996; }
+  100% { scale: 1 1; }
+}
+
+@keyframes unisync-click-soft {
+  0% { scale: 1; }
+  32% { scale: .985 1.012; }
+  65% { scale: 1.004 .997; }
+  100% { scale: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .unisync-click-jello,
+  .unisync-click-soft { animation: none; }
+}

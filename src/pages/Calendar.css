@@ -3,7 +3,7 @@
 .uni-cal-heading small{color:#6487ae;font-size:10px;font-weight:700;letter-spacing:.1em}
 .uni-cal-heading h1{margin:4px 0;color:var(--cal-ink);font-size:38px;font-weight:500;letter-spacing:-.05em}
 .uni-cal-heading p{margin:0;color:var(--cal-muted);font-size:13px}
-.uni-cal-heading>svg{box-sizing:content-box;padding:13px;border:1px solid var(--cal-edge);border-radius:17px;background:#fff9;color:#478fe6}
+.uni-cal-add,.uni-cal-add-mobile{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid #d5e6fb;border-radius:999px;background:#2f7ce5;color:#fff;font:inherit;font-size:11px;font-weight:700;box-shadow:0 8px 20px #2f7ce533;cursor:pointer}.uni-cal-add{min-height:39px;padding:0 16px}.uni-cal-add-mobile{display:none;width:34px;height:34px;padding:0}
 .uni-cal-layout{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(280px,.8fr);align-items:start;gap:22px}
 .uni-cal-main,.uni-cal-side{min-width:0;padding:25px;border:1px solid var(--cal-edge);border-radius:30px;background:var(--cal-glass);box-shadow:0 15px 35px #31527312,inset 0 1px #fff;backdrop-filter:blur(28px)}
 .uni-cal-toolbar,.uni-cal-title,.uni-cal-controls,.uni-cal-selected-head,.uni-cal-upcoming-head{display:flex;align-items:center;justify-content:space-between}
@@ -45,6 +45,7 @@
 .uni-cal-event-more>div{display:flex;flex-wrap:wrap;gap:7px}
 .uni-cal-event-more button,.uni-cal-event-more span{display:inline-flex;align-items:center;gap:4px;min-height:29px;padding:0 11px;border:1px solid #cee3fa;border-radius:999px;background:#eff6ff;color:#3576c3;font-size:10px;font-weight:600}
 .uni-cal-event-more button{cursor:pointer}
+.calendar-event-modal{width:min(520px,calc(100vw - 28px))}.calendar-event-form{display:grid;grid-template-columns:1fr 1fr;gap:14px}.calendar-event-form label{display:grid;gap:7px}.calendar-event-form label>span{color:#52677f;font-size:10px;font-weight:700}.calendar-event-form label em{color:#96a5b5;font-size:9px;font-style:normal;font-weight:500}.calendar-event-form input,.calendar-event-form select,.calendar-event-form textarea{box-sizing:border-box;width:100%;border:1px solid #dbe5f0;border-radius:13px;background:#f8fbff;color:#25364a;font:inherit;font-size:12px;outline:none}.calendar-event-form input,.calendar-event-form select{height:43px;padding:0 12px}.calendar-event-form textarea{padding:11px 12px;resize:vertical}.calendar-event-form input:focus,.calendar-event-form select:focus,.calendar-event-form textarea:focus{border-color:#69a4ef;box-shadow:0 0 0 3px #4b92ea18}.calendar-event-wide,.calendar-event-actions,.calendar-event-error{grid-column:1/-1}.calendar-event-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:2px}.calendar-event-actions button{min-width:116px}.calendar-event-error{margin:0;padding:9px 11px;border-radius:11px;background:#fff0f0;color:#ae4848;font-size:10px}
 .uni-cal-empty{display:flex;align-items:center;gap:9px;min-height:57px;padding:12px;border:1px solid #e8f1fb;border-radius:16px;background:#f4f9ffad;color:#8c9dae;font-size:11px}
 .uni-cal-empty svg{color:#629ce8}
 .uni-cal-upcoming-head{margin-bottom:16px}.uni-cal-upcoming-head h2{margin:0;font-size:19px;font-weight:600;letter-spacing:-.04em}
@@ -62,7 +63,7 @@
 .uni-cal-day-empty h3{margin:13px 0 4px;font-size:16px;font-weight:600}.uni-cal-day-empty p{margin:0;color:#8a99a9;font-size:11px}
 @media(max-width:900px){.uni-cal-layout{grid-template-columns:minmax(0,1fr) 260px;gap:14px}.uni-cal-main,.uni-cal-side{padding:17px}}
 @media(max-width:760px){
- .uni-cal-heading{display:none}.uni-cal-layout{display:flex;flex-direction:column;gap:14px}.uni-cal-main,.uni-cal-side{width:100%;padding:0;border:0;border-radius:0;background:none;box-shadow:none;backdrop-filter:none}
+ .uni-cal-heading{display:none}.uni-cal-add-mobile{display:inline-flex}.uni-cal-layout{display:flex;flex-direction:column;gap:14px}.uni-cal-main,.uni-cal-side{width:100%;padding:0;border:0;border-radius:0;background:none;box-shadow:none;backdrop-filter:none}
  .uni-cal-toolbar{margin:0 0 13px}.uni-cal-toolbar h2{font-size:16px}.uni-cal-controls{gap:5px}.uni-cal-today{min-height:26px;padding:0 9px;border:0;font-size:9px}.uni-cal-round{width:26px;height:26px;border:0!important}
  .uni-cal-grid{gap:0}.uni-cal-weekday{padding-bottom:6px;font-size:9px}.uni-cal-date{height:42px;border-radius:10px;font-size:10px}.uni-cal-date.is-today>span{width:25px;height:25px}
  .uni-cal-selected-head{margin:14px 0 9px;padding-top:0;border:0}.uni-cal-selected-head strong{font-size:11px}.uni-cal-selected-head button{font-size:9px}
@@ -153,13 +154,16 @@ html[data-theme='dark'] .uni-cal-empty{background:#1b3047;border-color:#ffffff1d
   .uni-cal-upcoming-date{width:42px;min-width:42px;border-radius:21px}
   .uni-cal-upcoming-date svg{width:17px;height:17px}
   .uni-cal-upcoming-date strong{font-size:18px}
-}
+  }
+@media(max-width:760px){.calendar-event-form{grid-template-columns:1fr;gap:11px}.calendar-event-wide,.calendar-event-actions,.calendar-event-error{grid-column:1}.calendar-event-actions{display:grid;grid-template-columns:1fr 1fr}.calendar-event-actions button{min-width:0}}
 html[data-theme='dark'] .uni-cal-event.is-compact,
 html[data-theme='dark'] .uni-cal-event.is-expanded,
 html[data-theme='dark'] .uni-cal-upcoming{background:linear-gradient(135deg,#25394e,#1a2b3e);border-color:#ffffff28}
 html[data-theme='dark'] .uni-cal-upcoming-date{background:#1a4934;border-color:#ffffff25}
 html[data-theme='dark'] .uni-cal-upcoming.uni-cal-exam .uni-cal-upcoming-date{background:#20416b}
 html[data-theme='dark'] .uni-cal-upcoming-date strong{color:#f3f8ff}
+html[data-theme='dark'] .calendar-event-form label>span{color:#b9c9db}
+html[data-theme='dark'] .calendar-event-form input,html[data-theme='dark'] .calendar-event-form select,html[data-theme='dark'] .calendar-event-form textarea{border-color:#ffffff20;background:#17283b;color:#edf5ff;color-scheme:dark}
 @media(max-width:760px){
   html[data-theme='dark'] .uni-calendar{background:none}
 }

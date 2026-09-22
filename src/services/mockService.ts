@@ -5,6 +5,7 @@ import { cleanEmailForReading } from './emailText'
 import {
   payments,
   normalizeEventCategory,
+  type CustomEventInput,
   type EventItem,
   type Notice,
   type Payment,
@@ -99,7 +100,7 @@ export const studentService = {
       throw error
     }
 
-    return (data ?? []).map(row => ({
+    const collegeEvents: EventItem[] = (data ?? []).map(row => ({
       id: row.id,
 
       title: row.title,
@@ -118,6 +119,7 @@ export const studentService = {
       description: cleanEmailForReading(row.description ?? ''),
 
       source: 'College Email',
+      gmailMessageId: row.gmail_message_id ?? undefined,
       sourceUrl: /^[a-zA-Z0-9_-]{8,100}$/.test(row.gmail_message_id ?? '')
         ? `https://mail.google.com/mail/u/0/#all/${encodeURIComponent(row.gmail_message_id)}`
         : undefined,
@@ -126,6 +128,72 @@ export const studentService = {
       calendarState: row.calendar_state,
       googleCalendarEventId: row.google_calendar_event_id ?? undefined,
     }))
+
+    const { data: customRows, error: customError } = await supabase
+      .from('user_calendar_events')
+      .select('id,title,event_date,start_time,location,category,description,created_at')
+      .order('event_date', { ascending: true })
+
+    // Keep the college calendar usable until the optional custom-event
+    // migration has been installed.
+    if (customError && !['42P01', 'PGRST205'].includes(customError?.code ?? '')) throw customError
+    const customEvents: EventItem[] = (customRows ?? []).map(row => ({
+      id: row.id,
+      title: row.title,
+      date: row.event_date,
+      time: row.start_time ? row.start_time.slice(0, 5) : undefined,
+      location: row.location ?? undefined,
+      category: row.category,
+      description: row.description ?? '',
+      source: 'Added by you',
+      isCustom: true,
+      calendarState: 'Added',
+    }))
+
+    return [...collegeEvents, ...customEvents]
+      .sort((a, b) => a.date.localeCompare(b.date) || (a.time || '').localeCompare(b.time || ''))
+  },
+
+  async createCalendarEvent(input: CustomEventInput): Promise<EventItem> {
+    const title = input.title.trim()
+    const location = input.location?.trim() || null
+    const description = input.description?.trim() || ''
+    if (!title || title.length > 160) throw new Error('Add an event title under 160 characters.')
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(input.date) || Number.isNaN(Date.parse(`${input.date}T00:00:00Z`))) throw new Error('Choose a valid date.')
+    if (input.time && !/^\d{2}:\d{2}$/.test(input.time)) throw new Error('Choose a valid time.')
+    if (!['Exam', 'Deadline', 'College event', 'Holiday'].includes(input.category)) throw new Error('Choose an event type.')
+
+    const { data: authData } = await supabase.auth.getUser()
+    if (!authData.user) throw new Error('Sign in again before adding an event.')
+    const { data: row, error } = await supabase
+      .from('user_calendar_events')
+      .insert({
+        owner_id: authData.user.id,
+        title,
+        event_date: input.date,
+        start_time: input.time || null,
+        location,
+        category: input.category,
+        description,
+      })
+      .select('id,title,event_date,start_time,location,category,description')
+      .single()
+    if (error || !row) {
+      if (['42P01', 'PGRST205'].includes(error?.code ?? '')) throw new Error('Custom events need the user calendar database setup first.')
+      throw error ?? new Error('Could not add this event.')
+    }
+    return {
+      id: row.id,
+      title: row.title,
+      date: row.event_date,
+      time: row.start_time ? row.start_time.slice(0, 5) : undefined,
+      location: row.location ?? undefined,
+      category: row.category,
+      description: row.description ?? '',
+      source: 'Added by you',
+      isCustom: true,
+      calendarState: 'Added',
+    }
   },
 
 

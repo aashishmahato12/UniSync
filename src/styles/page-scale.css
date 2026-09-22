@@ -1,0 +1,118 @@
+/* ScrollExpand-inspired scale reveals, played once on page open without scroll. */
+.page-scale-shell :is(
+  .desk-heading,
+  .desk-lead-grid > *,
+  .desk-signal-row > *,
+  .desk-main-grid > *,
+  .payments-page > .page-intro,
+  .payment-stats > *,
+  .schedule-panel,
+  .payment-layout > *,
+  .receipt-delivery-panel,
+  .documents-page > .page-intro,
+  .document-explorer-bar,
+  .document-explorer > *,
+  .college-email-page > .page-intro,
+  .college-email-layout > *,
+  .ask-ai-page > .page-intro,
+  .chat-layout > *,
+  .profile-layout > *,
+  .document-folders > *,
+  .document-gallery > *,
+  .schedule-list > *,
+  .college-email-history > article,
+  .chat-suggestions > button
+),
+.page-scale-shell > .page-intro {
+  --scale-delay: 0s;
+  opacity: 0;
+  transform-origin: 50% 18%;
+  animation: unisync-scale-open .68s cubic-bezier(.16,1,.3,1) var(--scale-delay) both;
+  will-change: opacity, transform, clip-path, filter;
+}
+
+.page-scale-shell .desk-lead-grid > :nth-child(1),
+.page-scale-shell .payment-stats > :nth-child(1),
+.page-scale-shell .college-email-layout > :nth-child(1),
+.page-scale-shell .chat-layout > :nth-child(1),
+.page-scale-shell .profile-layout > :nth-child(1),
+.page-scale-shell .document-explorer-bar { --scale-delay: .065s; }
+
+.page-scale-shell .desk-lead-grid > :nth-child(2),
+.page-scale-shell .payment-stats > :nth-child(2),
+.page-scale-shell .college-email-layout > :nth-child(2),
+.page-scale-shell .chat-layout > :nth-child(2),
+.page-scale-shell .profile-layout > :nth-child(2),
+.page-scale-shell .document-explorer > :nth-child(1) { --scale-delay: .13s; }
+
+.page-scale-shell .desk-signal-row > :nth-child(1),
+.page-scale-shell .payment-stats > :nth-child(3),
+.page-scale-shell .document-explorer > :nth-child(2) { --scale-delay: .195s; }
+.page-scale-shell .desk-signal-row > :nth-child(2),
+.page-scale-shell .schedule-panel { --scale-delay: .26s; }
+.page-scale-shell .desk-signal-row > :nth-child(3),
+.page-scale-shell .payment-layout > :nth-child(1) { --scale-delay: .325s; }
+.page-scale-shell .desk-main-grid > :nth-child(1),
+.page-scale-shell .receipt-delivery-panel { --scale-delay: .39s; }
+.page-scale-shell .desk-main-grid > :nth-child(2) { --scale-delay: .455s; }
+.page-scale-shell .desk-main-grid > :nth-child(3) { --scale-delay: .52s; }
+.page-scale-shell .desk-main-grid > :nth-child(4) { --scale-delay: .585s; }
+
+/* Repeating cards open in sequence after their containing section appears. */
+.page-scale-shell :is(.document-folders,.document-gallery,.schedule-list,.college-email-history,.chat-suggestions) > :nth-child(1) { --scale-delay: .22s; }
+.page-scale-shell :is(.document-folders,.document-gallery,.schedule-list,.college-email-history,.chat-suggestions) > :nth-child(2) { --scale-delay: .285s; }
+.page-scale-shell :is(.document-folders,.document-gallery,.schedule-list,.college-email-history,.chat-suggestions) > :nth-child(3) { --scale-delay: .35s; }
+.page-scale-shell :is(.document-folders,.document-gallery,.schedule-list,.college-email-history,.chat-suggestions) > :nth-child(4) { --scale-delay: .415s; }
+.page-scale-shell :is(.document-folders,.document-gallery,.schedule-list,.college-email-history,.chat-suggestions) > :nth-child(5) { --scale-delay: .48s; }
+.page-scale-shell :is(.document-folders,.document-gallery,.schedule-list,.college-email-history,.chat-suggestions) > :nth-child(6) { --scale-delay: .545s; }
+.page-scale-shell :is(.document-folders,.document-gallery,.schedule-list,.college-email-history,.chat-suggestions) > :nth-child(n+7) { --scale-delay: .61s; }
+
+@keyframes unisync-scale-open {
+  0% {
+    opacity: 0;
+    clip-path: inset(8% 7% 8% 7% round 28px);
+    filter: blur(3px);
+    transform: translateY(9px) scale(.88);
+  }
+  58% { opacity: 1; filter: blur(0); }
+  100% {
+    opacity: 1;
+    clip-path: inset(0 0 0 0 round 0);
+    filter: blur(0);
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-scale-shell :is(
+    .desk-heading,
+    .desk-lead-grid > *,
+    .desk-signal-row > *,
+    .desk-main-grid > *,
+    .payments-page > .page-intro,
+    .payment-stats > *,
+    .schedule-panel,
+    .payment-layout > *,
+    .receipt-delivery-panel,
+    .documents-page > .page-intro,
+    .document-explorer-bar,
+    .document-explorer > *,
+    .college-email-page > .page-intro,
+    .college-email-layout > *,
+    .ask-ai-page > .page-intro,
+    .chat-layout > *,
+    .profile-layout > *,
+    .document-folders > *,
+    .document-gallery > *,
+    .schedule-list > *,
+    .college-email-history > article,
+    .chat-suggestions > button
+  ),
+  .page-scale-shell > .page-intro {
+    opacity: 1;
+    animation: none;
+    clip-path: none;
+    filter: none;
+    transform: none;
+  }
+}
