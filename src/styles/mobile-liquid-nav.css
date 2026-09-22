@@ -36,8 +36,8 @@ html[data-theme='dark'] {
     display: block;
     pointer-events: none;
     background: linear-gradient(to bottom, transparent 18%, var(--mobile-scrim-tint) 100%);
-    backdrop-filter: blur(10.9px) saturate(1.14);
-    -webkit-backdrop-filter: blur(10.9px) saturate(1.14);
+    backdrop-filter: blur(10.9px) saturate(1.04) brightness(.98);
+    -webkit-backdrop-filter: blur(10.9px) saturate(1.04) brightness(.98);
     mask-image: linear-gradient(to bottom, transparent 14%, rgba(0,0,0,.16) 32%, rgba(0,0,0,.5) 56%, #000 88%);
     -webkit-mask-image: linear-gradient(to bottom, transparent 14%, rgba(0,0,0,.16) 32%, rgba(0,0,0,.5) 56%, #000 88%);
     animation: mobile-liquid-scrim-in .2s ease-out both;
@@ -172,14 +172,23 @@ html[data-theme='dark'] {
   }
   .mobile-liquid-trigger:focus { outline: none; }
   .mobile-liquid-trigger:focus-visible {
-    outline: 2px solid rgba(47,125,229,.72);
-    outline-offset: 3px;
+    outline: 1px solid rgba(47,125,229,.42);
+    outline-offset: 2px;
   }
   .liquid-open .mobile-liquid-trigger svg { transform: translate(-50%,-50%) rotate(45deg); }
 
   html[data-theme='dark'] .mobile-liquid-page { color: #b8c7d9; }
   html[data-theme='dark'] .mobile-liquid-page.active { color: #7db8ff; }
   html[data-theme='dark'] .mobile-liquid-trigger { color: #eef5ff; }
+  html[data-theme='dark'] .mobile-liquid-progressive-blur {
+    backdrop-filter: blur(10.9px) saturate(.82) brightness(.72);
+    -webkit-backdrop-filter: blur(10.9px) saturate(.82) brightness(.72);
+  }
+  html[data-theme='dark'] :is(.mobile-liquid-page,.mobile-liquid-trigger) {
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 9px 25px rgba(0,0,0,.24);
+    backdrop-filter: blur(22px) saturate(1.12);
+    -webkit-backdrop-filter: blur(22px) saturate(1.12);
+  }
   html[data-theme='dark'] .mobile-bottom-nav {
     background: linear-gradient(to bottom, transparent 0%, var(--mobile-nav-surface) 30%, var(--mobile-nav-surface) 100%);
   }
