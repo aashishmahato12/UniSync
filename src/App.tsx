@@ -128,10 +128,10 @@ const mobileLiquidNav: {
   x: number
   y: number
 }[] = [
-  { name: 'Payments', label: 'Payments', icon: CreditCard, x: -82, y: -54 },
-  { name: 'College Email', label: 'Email', icon: MailPlus, x: -29, y: -91 },
-  { name: 'Ask AI', label: 'Ask AI', icon: Sparkles, x: 29, y: -91 },
-  { name: 'Profile', label: 'Profile', icon: UserRound, x: 82, y: -54 },
+  { name: 'Payments', label: 'Payments', icon: CreditCard, x: -94, y: -55 },
+  { name: 'College Email', label: 'Email', icon: MailPlus, x: -34, y: -104 },
+  { name: 'Ask AI', label: 'Ask AI', icon: Sparkles, x: 34, y: -104 },
+  { name: 'Profile', label: 'Profile', icon: UserRound, x: 94, y: -55 },
 ]
 
 const initials = 'AM'
@@ -959,7 +959,7 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
                   x={mobileNavOpen ? item.x : 0}
                   y={mobileNavOpen ? item.y : 0}
                   scale={mobileNavOpen ? 1 : .62}
-                  morph={{ bounce: .66, advanced: { bridgeGrow: 5 } }}
+                  morph={{ bounce: .66, advanced: { bridgeGrow: 3 } }}
                   transition={{ duration: 550, ease: 'cubic-bezier(0.34, 1.56, 0.64, 1)' }}
                   delay={mobileNavOpen ? index * 22 : (mobileLiquidNav.length - index) * 12}
                   className="mobile-liquid-item"
