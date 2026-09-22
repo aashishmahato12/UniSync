@@ -20,7 +20,7 @@ html[data-theme='dark'] {
     display: block;
     overflow: hidden;
     border: 0;
-    background: linear-gradient(to bottom, rgba(225,233,242,0) 35%, rgba(225,233,242,.11) 100%);
+    background: linear-gradient(to bottom, rgba(225,233,242,0) 24%, rgba(225,233,242,.16) 100%);
     animation: mobile-liquid-scrim-in .2s ease-out both;
   }
   .mobile-liquid-scrim::before {
@@ -28,10 +28,10 @@ html[data-theme='dark'] {
     position: absolute;
     inset: 0;
     pointer-events: none;
-    backdrop-filter: blur(11px) saturate(1.16);
-    -webkit-backdrop-filter: blur(11px) saturate(1.16);
-    mask-image: linear-gradient(to bottom, transparent 18%, rgba(0,0,0,.3) 34%, rgba(0,0,0,.78) 52%, #000 68%);
-    -webkit-mask-image: linear-gradient(to bottom, transparent 18%, rgba(0,0,0,.3) 34%, rgba(0,0,0,.78) 52%, #000 68%);
+    backdrop-filter: blur(13px) saturate(1.18);
+    -webkit-backdrop-filter: blur(13px) saturate(1.18);
+    mask-image: linear-gradient(to bottom, transparent 24%, rgba(0,0,0,.55) 36%, #000 52%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 24%, rgba(0,0,0,.55) 36%, #000 52%);
   }
 
   .mobile-bottom-nav { overflow: visible; }
@@ -117,7 +117,7 @@ html[data-theme='dark'] {
   }
   .liquid-open .mobile-liquid-trigger svg { transform: translate(-50%,-50%) rotate(45deg); }
 
-  html[data-theme='dark'] .mobile-liquid-scrim { background: linear-gradient(to bottom, rgba(2,7,13,0) 35%, rgba(2,7,13,.34) 100%); }
+  html[data-theme='dark'] .mobile-liquid-scrim { background: linear-gradient(to bottom, rgba(2,7,13,0) 24%, rgba(2,7,13,.38) 100%); }
   html[data-theme='dark'] .mobile-liquid-page { color: #b8c7d9; }
   html[data-theme='dark'] .mobile-liquid-page.active { color: #7db8ff; }
   html[data-theme='dark'] .mobile-liquid-trigger { color: #eef5ff; }
