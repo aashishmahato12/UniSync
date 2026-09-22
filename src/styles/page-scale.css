@@ -160,12 +160,12 @@
 @keyframes unisync-scale-open-mobile {
   0% {
     opacity: 0;
-    transform: translate3d(0, 6px, 0) scale(.95);
+    transform: scale(.94);
   }
   72% { opacity: 1; }
   100% {
     opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1);
+    transform: scale(1);
   }
 }
 
