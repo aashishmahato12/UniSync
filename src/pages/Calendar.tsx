@@ -24,13 +24,10 @@ const filterTone: Record<string, string> = {
   Events: 'event',
   Holidays: 'holiday',
 }
-const calendarJellyDamping = 2 * Math.sqrt(460 * .9) * (1 - .3)
-const calendarJellySpring = { type: 'spring' as const, stiffness: 460, damping: calendarJellyDamping, mass: .9 }
 const calendarEntry = (index = 0) => {
   const delay = Math.min(index, 8) * .055
   return {
-    scaleX: { ...calendarJellySpring, stiffness: 460 * 1.24, damping: calendarJellyDamping * .75, delay },
-    scaleY: { ...calendarJellySpring, stiffness: 460 * .86, damping: calendarJellyDamping * .85, delay: delay + .05 },
+    scale: { duration: .5, ease: [.2, .8, .2, 1] as const, delay },
     opacity: { duration: .24, delay },
   }
 }
@@ -91,8 +88,8 @@ export default function Calendar({ events, onEvent, updateCalendar, createEvent 
   const eventCard = (event: EventItem, compact = false, index = 0) => <motion.article
     className={`uni-cal-event uni-cal-${tone(event)} ${compact ? 'is-compact' : 'is-expanded'}`}
     key={`${filter}-${view}-${event.id}`}
-    initial={reduceMotion ? false : { opacity: .2, scaleX: .93, scaleY: 1.07 }}
-    animate={{ opacity: 1, scaleX: 1, scaleY: 1 }}
+    initial={reduceMotion ? false : { opacity: .2, scale: .94 }}
+    animate={{ opacity: 1, scale: 1 }}
     transition={reduceMotion ? { duration: 0 } : calendarEntry(index + 3)}
   >
     <button className="uni-cal-event-main" onClick={() => compact ? choose(event.date) : onEvent(event)} aria-label={`View ${event.title}`}>
@@ -116,10 +113,10 @@ export default function Calendar({ events, onEvent, updateCalendar, createEvent 
   </motion.article>
 
   return <div className={`uni-calendar uni-calendar-${view}`}>
-    <motion.header className="uni-cal-heading" initial={reduceMotion ? false : { opacity: 0, scaleX: .96, scaleY: 1.04 }} animate={{ opacity: 1, scaleX: 1, scaleY: 1 }} transition={reduceMotion ? { duration: 0 } : calendarEntry(0)}><div><small>YOUR SCHEDULE</small><h1>Calendar</h1><p>Classes, college events and deadlines in one place.</p></div><button className="uni-cal-add" onClick={openComposer}><Plus size={16} /> Add event</button></motion.header>
-    <motion.div initial={reduceMotion ? false : { opacity: 0, scaleX: .96, scaleY: 1.04 }} animate={{ opacity: 1, scaleX: 1, scaleY: 1 }} transition={reduceMotion ? { duration: 0 } : calendarEntry(1)}><JellyRadio items={calendarFilters} value={filter} onChange={changeFilter} toneForItem={item => filterTone[item] || 'all'} ariaLabel="Filter calendar dates" className="uni-cal-filters" /></motion.div>
+    <motion.header className="uni-cal-heading" initial={reduceMotion ? false : { opacity: 0, scale: .94 }} animate={{ opacity: 1, scale: 1 }} transition={reduceMotion ? { duration: 0 } : calendarEntry(0)}><div><small>YOUR SCHEDULE</small><h1>Calendar</h1><p>Classes, college events and deadlines in one place.</p></div><button className="uni-cal-add" onClick={openComposer}><Plus size={16} /> Add event</button></motion.header>
+    <motion.div initial={reduceMotion ? false : { opacity: 0, scale: .94 }} animate={{ opacity: 1, scale: 1 }} transition={reduceMotion ? { duration: 0 } : calendarEntry(1)}><JellyRadio items={calendarFilters} value={filter} onChange={changeFilter} toneForItem={item => filterTone[item] || 'all'} ariaLabel="Filter calendar dates" className="uni-cal-filters" /></motion.div>
     <div className="uni-cal-layout">
-      <motion.section className="uni-cal-main" initial={reduceMotion ? false : { opacity: 0, scaleX: .96, scaleY: 1.04 }} animate={{ opacity: 1, scaleX: 1, scaleY: 1 }} transition={reduceMotion ? { duration: 0 } : calendarEntry(2)}>
+      <motion.section className="uni-cal-main" initial={reduceMotion ? false : { opacity: 0, scale: .94 }} animate={{ opacity: 1, scale: 1 }} transition={reduceMotion ? { duration: 0 } : calendarEntry(2)}>
         <div className="uni-cal-toolbar">
           <div className="uni-cal-title">{view === 'day' && <button className="uni-cal-round" onClick={() => setView('month')} aria-label="Back to month"><ArrowLeft size={17} /></button>}<h2>{view === 'day' ? formatDate(selected, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) : month.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</h2></div>
           <div className="uni-cal-controls"><button className="uni-cal-add-mobile" onClick={openComposer} aria-label="Add event"><Plus size={15} /></button><button className="uni-cal-today" onClick={() => setSelected(today)}>Today</button><button className="uni-cal-round" onClick={() => shift(-1)} aria-label={view === 'day' ? 'Previous day' : 'Previous month'}><ChevronLeft size={15} /></button><button className="uni-cal-round" onClick={() => shift(1)} aria-label={view === 'day' ? 'Next day' : 'Next month'}><ChevronRight size={15} /></button></div>
@@ -138,11 +135,11 @@ export default function Calendar({ events, onEvent, updateCalendar, createEvent 
           {selectedEvents.length ? <div className="uni-cal-events">{selectedEvents.map((event, index) => eventCard(event, true, index))}</div> : <div className="uni-cal-empty"><Sparkles size={16} /> {filter === 'All' ? 'No events scheduled. Your day is clear.' : `No ${filter.toLowerCase()} on this day.`}</div>}
         </> : <div className="uni-cal-day-content">{selectedEvents.length ? <div className="uni-cal-events">{selectedEvents.map((event, index) => eventCard(event, false, index))}</div> : <div className="uni-cal-day-empty"><CalendarDays size={25} /><h3>{filter === 'All' ? 'Nothing on your schedule' : `No ${filter.toLowerCase()} on this day`}</h3><p>Choose another day or see what’s coming up below.</p></div>}</div>}
       </motion.section>
-      <motion.aside className="uni-cal-side" initial={reduceMotion ? false : { opacity: 0, scaleX: .96, scaleY: 1.04 }} animate={{ opacity: 1, scaleX: 1, scaleY: 1 }} transition={reduceMotion ? { duration: 0 } : calendarEntry(3)}>
+      <motion.aside className="uni-cal-side" initial={reduceMotion ? false : { opacity: 0, scale: .94 }} animate={{ opacity: 1, scale: 1 }} transition={reduceMotion ? { duration: 0 } : calendarEntry(3)}>
         <div className="uni-cal-upcoming-head"><h2>Upcoming</h2><button onClick={() => setShowAll(value => !value)}>{showAll ? 'Show less' : 'View all'} <ChevronRight size={13} /></button></div>
         {upcoming.length ? <div className="uni-cal-upcoming-list">{upcoming.slice(0, showAll ? undefined : 5).map((event, index) => {
           const distance = Math.round((parsed(event.date).getTime() - date.getTime()) / 86400000)
-          return <motion.button className={`uni-cal-upcoming uni-cal-${tone(event)}`} key={`${filter}-${event.id}`} onClick={() => choose(event.date)} initial={reduceMotion ? false : { opacity: .2, scaleX: .93, scaleY: 1.07 }} animate={{ opacity: 1, scaleX: 1, scaleY: 1 }} transition={reduceMotion ? { duration: 0 } : calendarEntry(index + 4)}>
+          return <motion.button className={`uni-cal-upcoming uni-cal-${tone(event)}`} key={`${filter}-${event.id}`} onClick={() => choose(event.date)} initial={reduceMotion ? false : { opacity: .2, scale: .94 }} animate={{ opacity: 1, scale: 1 }} transition={reduceMotion ? { duration: 0 } : calendarEntry(index + 4)}>
             <span className="uni-cal-upcoming-date"><EventIcon event={event} /><small>{formatDate(event.date, { month:'short' }).toUpperCase()}</small><strong>{formatDate(event.date, { day:'2-digit' })}</strong></span>
             <span className="uni-cal-upcoming-copy"><small>{distance === 1 ? 'Tomorrow' : `In ${distance} days`}</small><strong>{event.title}</strong><em>{event.category}</em></span>
           </motion.button>
