@@ -951,7 +951,7 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
           <button className={page === 'Dashboard' ? 'active' : ''} onClick={() => navigate('Dashboard')}>{page === 'Dashboard' && <motion.i className="mobile-nav-jelly" layoutId="mobile-nav-jelly" initial={false} transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 460, damping: 23 }} aria-hidden="true" />}<Home size={23} /><span>Home</span></button>
           <button className={page === 'Notices' ? 'active' : ''} onClick={() => navigate('Notices')}>{page === 'Notices' && <motion.i className="mobile-nav-jelly" layoutId="mobile-nav-jelly" initial={false} transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 460, damping: 23 }} aria-hidden="true" />}<Inbox size={23} /><span>Inbox</span>{unreadNoticeCount > 0 && <em className="mobile-unread-count">{unreadNoticeCount > 99 ? '99+' : unreadNoticeCount}</em>}</button>
           <div className="mobile-liquid-slot">
-            <Liquid className="mobile-liquid-menu" blur={9} contrast={20} fill="var(--mobile-liquid-surface)" shadow="0 10px 24px rgba(31,48,68,.18)" filterPadding={34}>
+            <Liquid className="mobile-liquid-menu" blur={12} contrast={18} fill="var(--mobile-liquid-surface)" shadow="inset 0 1px 0 rgba(255,255,255,.45), 0 10px 24px rgba(31,48,68,.18)" filterPadding={38} waviness={0.7}>
               {mobileLiquidNav.map((item, index) => {
                 const Icon = item.icon
                 return <Liquid.Item
@@ -959,6 +959,7 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
                   x={mobileNavOpen ? item.x : 0}
                   y={mobileNavOpen ? item.y : 0}
                   scale={mobileNavOpen ? 1 : .62}
+                  morph={{ bounce: .58, advanced: { bridgeGrow: 9 } }}
                   transition={{ duration: 550, ease: 'cubic-bezier(0.34, 1.56, 0.64, 1)' }}
                   delay={mobileNavOpen ? index * 22 : (mobileLiquidNav.length - index) * 12}
                   className="mobile-liquid-item"
