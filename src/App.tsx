@@ -975,7 +975,7 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
               })}
               <Liquid.Item className="mobile-liquid-trigger-item" style={{ position: 'absolute', left: '50%', bottom: 0, marginLeft: -31 }}>
                 <button className="mobile-liquid-trigger" onClick={() => setMobileNavOpen(open => !open)} aria-label={mobileNavOpen ? 'Close all pages menu' : 'Open all pages menu'} aria-expanded={mobileNavOpen}>
-                  {mobileNavOpen ? <X size={25} /> : <Plus size={27} />}
+                  <Plus size={27} strokeWidth={1.8} />
                 </button>
               </Liquid.Item>
             </Liquid>
