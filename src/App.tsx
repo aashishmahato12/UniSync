@@ -128,14 +128,10 @@ const mobileLiquidNav: {
   x: number
   y: number
 }[] = [
-  { name: 'Dashboard', label: 'Today', icon: Home, x: -145, y: -12 },
-  { name: 'Notices', label: 'Inbox', icon: Inbox, x: -131, y: -66 },
-  { name: 'Calendar', label: 'Calendar', icon: CalendarDays, x: -92, y: -114 },
-  { name: 'Payments', label: 'Payments', icon: CreditCard, x: -34, y: -143 },
-  { name: 'Documents', label: 'Files', icon: FolderOpen, x: 34, y: -143 },
-  { name: 'College Email', label: 'Email', icon: MailPlus, x: 92, y: -114 },
-  { name: 'Ask AI', label: 'Ask AI', icon: Sparkles, x: 131, y: -66 },
-  { name: 'Profile', label: 'Profile', icon: UserRound, x: 145, y: -12 },
+  { name: 'Payments', label: 'Payments', icon: CreditCard, x: -104, y: -80 },
+  { name: 'College Email', label: 'Email', icon: MailPlus, x: -36, y: -132 },
+  { name: 'Ask AI', label: 'Ask AI', icon: Sparkles, x: 36, y: -132 },
+  { name: 'Profile', label: 'Profile', icon: UserRound, x: 104, y: -80 },
 ]
 
 const initials = 'AM'
