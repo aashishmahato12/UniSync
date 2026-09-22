@@ -22,14 +22,16 @@ html[data-theme='dark'] { --mobile-liquid-surface: #18283b; }
     position: relative;
     z-index: 32;
     display: block;
-    align-self: stretch;
+    align-self: center;
+    width: 100%;
+    height: 62px;
     min-width: 0;
     pointer-events: none;
   }
   .mobile-liquid-menu {
     position: absolute !important;
     left: 50%;
-    bottom: 1px;
+    bottom: 0;
     width: min(350px,100vw);
     height: 220px;
     transform: translateX(-50%);
@@ -74,6 +76,7 @@ html[data-theme='dark'] { --mobile-liquid-surface: #18283b; }
     transform: rotate(0deg);
     transition: transform .42s cubic-bezier(.34,1.56,.64,1);
   }
+  .mobile-liquid-trigger svg { display: block; }
   .liquid-open .mobile-liquid-trigger { transform: rotate(90deg); }
 
   html[data-theme='dark'] .mobile-liquid-scrim { background: #02070da3; }
