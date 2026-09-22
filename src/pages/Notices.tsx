@@ -34,7 +34,6 @@ const inboxJellySpring = { type: 'spring' as const, stiffness: 460, damping: inb
 const inboxEntryTransition = (index: number) => {
   const delay = Math.min(index, 8) * .055
   return {
-    y: { ...inboxJellySpring, delay },
     scaleX: { ...inboxJellySpring, stiffness: 460 * (1 + .24 * 1.3), damping: inboxJellyDamping * .75, delay },
     scaleY: { ...inboxJellySpring, stiffness: 460 * (1 - .14 * 1.3), damping: inboxJellyDamping * .85, delay: delay + .05 * 1.3 },
     opacity: { duration: .24, delay },
@@ -118,8 +117,8 @@ export default function Notices({
           return <motion.div
             className="figma-mobile-entry"
             key={`${filter}-${notice.id}`}
-            initial={reduceMotion ? false : { opacity: .2, y: 11, scaleX: .93, scaleY: 1.07 }}
-            animate={{ opacity: 1, y: 0, scaleX: 1, scaleY: 1 }}
+            initial={reduceMotion ? false : { opacity: .2, scaleX: .93, scaleY: 1.07 }}
+            animate={{ opacity: 1, scaleX: 1, scaleY: 1 }}
             transition={reduceMotion ? { duration: 0 } : inboxEntryTransition(index)}
           >
             {index === 0
@@ -147,8 +146,8 @@ export default function Notices({
           {filtered.map((notice, index) => <motion.button
             className={`notice-mail-item ${selected?.id === notice.id ? 'selected' : ''} ${!readNoticeIds.has(notice.id) ? 'is-unread' : ''}`}
             key={notice.id}
-            initial={reduceMotion ? false : { opacity: .2, y: 11, scaleX: .93, scaleY: 1.07 }}
-            animate={{ opacity: 1, y: 0, scaleX: 1, scaleY: 1 }}
+            initial={reduceMotion ? false : { opacity: .2, scaleX: .93, scaleY: 1.07 }}
+            animate={{ opacity: 1, scaleX: 1, scaleY: 1 }}
             transition={reduceMotion ? { duration: 0 } : inboxEntryTransition(index)}
             onClick={() => selectNotice(notice)}
             aria-pressed={selected?.id === notice.id}

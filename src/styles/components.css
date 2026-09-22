@@ -568,8 +568,8 @@
 /* Full-page skeleton and cross-fade reveal. */
 .notice-returning { animation: notice-return-in 340ms cubic-bezier(.22, 1, .36, 1) both; }
 @keyframes notice-return-in {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: scale(.96); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 .workspace-reveal {
