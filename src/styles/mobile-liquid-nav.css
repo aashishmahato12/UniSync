@@ -1,12 +1,12 @@
 :root {
-  --mobile-liquid-surface: rgba(246,250,255,.76);
+  --mobile-liquid-surface: rgba(246,250,255,.62);
   --mobile-liquid-border: rgba(255,255,255,.88);
   --mobile-liquid-shadow: rgba(35,54,75,.16);
   --mobile-nav-surface: rgba(242,246,250,.84);
   --mobile-scrim-tint: rgba(225,233,242,.15);
 }
 html[data-theme='dark'] {
-  --mobile-liquid-surface: rgba(21,32,47,.74);
+  --mobile-liquid-surface: rgba(21,32,47,.64);
   --mobile-liquid-border: rgba(255,255,255,.18);
   --mobile-liquid-shadow: rgba(0,0,0,.32);
   --mobile-nav-surface: rgba(11,20,32,.86);
@@ -125,12 +125,12 @@ html[data-theme='dark'] {
     display: grid;
     place-items: center;
     padding: 0;
-    border: 0;
-    background: transparent;
+    border: 1px solid var(--mobile-liquid-border);
+    background: var(--mobile-liquid-surface);
     color: #617082;
-    box-shadow: none;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.94), inset 0 -1px 0 rgba(255,255,255,.2), 0 12px 34px var(--mobile-liquid-shadow);
+    backdrop-filter: blur(28px) saturate(1.65) brightness(1.06);
+    -webkit-backdrop-filter: blur(28px) saturate(1.65) brightness(1.06);
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
   }
@@ -158,7 +158,7 @@ html[data-theme='dark'] {
     position: relative;
     width: 62px;
     height: 62px;
-    border: 1px solid rgba(255,255,255,.92);
+    border-color: rgba(255,255,255,.92);
     border-radius: 50%;
     color: #152131;
   }
@@ -192,6 +192,11 @@ html[data-theme='dark'] {
   html[data-theme='dark'] .mobile-liquid-progressive-blur {
     backdrop-filter: blur(10.9px) saturate(.64) brightness(.5) contrast(.94);
     -webkit-backdrop-filter: blur(10.9px) saturate(.64) brightness(.5) contrast(.94);
+  }
+  html[data-theme='dark'] :is(.mobile-liquid-page,.mobile-liquid-trigger) {
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 9px 25px rgba(0,0,0,.24);
+    backdrop-filter: blur(22px) saturate(1.12);
+    -webkit-backdrop-filter: blur(22px) saturate(1.12);
   }
   html[data-theme='dark'] .mobile-liquid-trigger {
     border-color: rgba(222,236,255,.72);
