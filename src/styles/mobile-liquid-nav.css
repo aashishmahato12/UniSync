@@ -39,7 +39,7 @@ html[data-theme='dark'] {
   .mobile-liquid-menu {
     position: absolute !important;
     left: 50%;
-    bottom: 0;
+    bottom: 10px;
     width: min(350px,100vw);
     height: 220px;
     transform: translateX(-50%);
@@ -88,6 +88,11 @@ html[data-theme='dark'] {
     transition: transform .42s cubic-bezier(.34,1.56,.64,1);
   }
   .mobile-liquid-trigger svg { display: block; }
+  .mobile-liquid-trigger:focus { outline: none; }
+  .mobile-liquid-trigger:focus-visible {
+    outline: 2px solid rgba(47,125,229,.72);
+    outline-offset: 3px;
+  }
   .liquid-open .mobile-liquid-trigger { transform: rotate(45deg); }
 
   html[data-theme='dark'] .mobile-liquid-scrim { background: #02070da3; }
