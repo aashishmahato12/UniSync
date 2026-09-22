@@ -77,20 +77,12 @@ html[data-theme='dark'] {
     pointer-events: none;
   }
   .liquid-open .mobile-liquid-page { opacity: 1; transform: scale(1); pointer-events: auto; }
-  .mobile-liquid-page > svg { display: block; }
-  .mobile-liquid-page small {
+  .mobile-liquid-page > svg {
     position: absolute;
-    top: calc(100% + 5px);
+    top: 50%;
     left: 50%;
-    max-width: 58px;
-    overflow: hidden;
-    color: #536173;
-    font-size: 8px;
-    font-weight: 750;
-    line-height: 1;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    transform: translateX(-50%);
+    display: block;
+    transform: translate(-50%,-50%);
   }
   .mobile-liquid-page.active { color: #2f7de5; }
   .mobile-liquid-trigger {
@@ -118,7 +110,6 @@ html[data-theme='dark'] {
 
   html[data-theme='dark'] .mobile-liquid-scrim { background: #02070da3; }
   html[data-theme='dark'] .mobile-liquid-page { color: #b8c7d9; }
-  html[data-theme='dark'] .mobile-liquid-page small { color: #c5d1df; }
   html[data-theme='dark'] .mobile-liquid-page.active { color: #7db8ff; }
   html[data-theme='dark'] .mobile-liquid-trigger { color: #eef5ff; }
 }

@@ -968,8 +968,7 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
                     tabIndex={mobileNavOpen ? 0 : -1}
                     aria-hidden={!mobileNavOpen}
                   >
-                    <Icon size={18} />
-                    <small>{item.label}</small>
+                    <Icon size={21} strokeWidth={1.7} />
                   </button>
                 </Liquid.Item>
               })}
