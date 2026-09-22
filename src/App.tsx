@@ -6,6 +6,7 @@ import {
   useState,
 } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
+import { Liquid } from 'liquid-gooey'
 
 import {
   ArrowRight,
@@ -20,7 +21,6 @@ import {
   Home,
   Inbox,
   Menu,
-  MessageSquareMore,
   MailPlus,
   MoreHorizontal,
   Moon,
@@ -28,6 +28,7 @@ import {
   Search,
   Sparkles,
   Sun,
+  UserRound,
   X,
 } from 'lucide-react'
 
@@ -119,6 +120,23 @@ const nav: {
 ]
 
 const pageLabel = (page: Page) => nav.find(item => item.name === page)?.label || page
+
+const mobileLiquidNav: {
+  name: Page
+  label: string
+  icon: typeof Home
+  x: number
+  y: number
+}[] = [
+  { name: 'Dashboard', label: 'Today', icon: Home, x: -145, y: -12 },
+  { name: 'Notices', label: 'Inbox', icon: Inbox, x: -131, y: -66 },
+  { name: 'Calendar', label: 'Calendar', icon: CalendarDays, x: -92, y: -114 },
+  { name: 'Payments', label: 'Payments', icon: CreditCard, x: -34, y: -143 },
+  { name: 'Documents', label: 'Files', icon: FolderOpen, x: 34, y: -143 },
+  { name: 'College Email', label: 'Email', icon: MailPlus, x: 92, y: -114 },
+  { name: 'Ask AI', label: 'Ask AI', icon: Sparkles, x: 131, y: -66 },
+  { name: 'Profile', label: 'Profile', icon: UserRound, x: 145, y: -12 },
+]
 
 const initials = 'AM'
 
@@ -224,6 +242,7 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
     useState<Page>('Dashboard')
   const [menuOpen, setMenuOpen] =
     useState(false)
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
 
   const [events, setEvents] =
     useState<EventItem[]>([])
@@ -430,6 +449,7 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
     setMenuOpen(false)
     setSearchOpen(false)
     setNotificationOpen(false)
+    setMobileNavOpen(false)
   }
 
   const updateCalendar =
@@ -927,10 +947,43 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
           </div>
         </main>
 
-        <nav className="mobile-bottom-nav" aria-label="Primary navigation">
+        {mobileNavOpen && <button className="mobile-liquid-scrim" onClick={() => setMobileNavOpen(false)} aria-label="Close all pages menu" />}
+        <nav className={`mobile-bottom-nav${mobileNavOpen ? ' liquid-open' : ''}`} aria-label="Primary navigation">
           <button className={page === 'Dashboard' ? 'active' : ''} onClick={() => navigate('Dashboard')}>{page === 'Dashboard' && <motion.i className="mobile-nav-jelly" layoutId="mobile-nav-jelly" initial={false} transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 460, damping: 23 }} aria-hidden="true" />}<Home size={23} /><span>Home</span></button>
           <button className={page === 'Notices' ? 'active' : ''} onClick={() => navigate('Notices')}>{page === 'Notices' && <motion.i className="mobile-nav-jelly" layoutId="mobile-nav-jelly" initial={false} transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 460, damping: 23 }} aria-hidden="true" />}<Inbox size={23} /><span>Inbox</span>{unreadNoticeCount > 0 && <em className="mobile-unread-count">{unreadNoticeCount > 99 ? '99+' : unreadNoticeCount}</em>}</button>
-          <button className={`mobile-ai-action ${page === 'Ask AI' ? 'active' : ''}`} onClick={() => navigate('Ask AI')} aria-label="Ask UniSync"><MessageSquareMore size={25} /></button>
+          <div className="mobile-liquid-slot">
+            <Liquid className="mobile-liquid-menu" blur={9} contrast={20} fill="var(--mobile-liquid-surface)" shadow="0 10px 24px rgba(31,48,68,.18)" filterPadding={34}>
+              {mobileLiquidNav.map((item, index) => {
+                const Icon = item.icon
+                return <Liquid.Item
+                  key={item.name}
+                  x={mobileNavOpen ? item.x : 0}
+                  y={mobileNavOpen ? item.y : 0}
+                  scale={mobileNavOpen ? 1 : .62}
+                  transition={{ duration: 550, ease: 'cubic-bezier(0.34, 1.56, 0.64, 1)' }}
+                  delay={mobileNavOpen ? index * 22 : (mobileLiquidNav.length - index) * 12}
+                  className="mobile-liquid-item"
+                  style={{ position: 'absolute', left: '50%', bottom: 0, marginLeft: -25 }}
+                >
+                  <button
+                    className={`mobile-liquid-page${page === item.name ? ' active' : ''}`}
+                    onClick={() => navigate(item.name)}
+                    aria-label={`Open ${item.label}`}
+                    tabIndex={mobileNavOpen ? 0 : -1}
+                    aria-hidden={!mobileNavOpen}
+                  >
+                    <Icon size={18} />
+                    <small>{item.label}</small>
+                  </button>
+                </Liquid.Item>
+              })}
+              <Liquid.Item className="mobile-liquid-trigger-item" style={{ position: 'absolute', left: '50%', bottom: 0, marginLeft: -31 }}>
+                <button className="mobile-liquid-trigger" onClick={() => setMobileNavOpen(open => !open)} aria-label={mobileNavOpen ? 'Close all pages menu' : 'Open all pages menu'} aria-expanded={mobileNavOpen}>
+                  {mobileNavOpen ? <X size={25} /> : <Plus size={27} />}
+                </button>
+              </Liquid.Item>
+            </Liquid>
+          </div>
           <button className={page === 'Calendar' ? 'active' : ''} onClick={() => navigate('Calendar')}>{page === 'Calendar' && <motion.i className="mobile-nav-jelly" layoutId="mobile-nav-jelly" initial={false} transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 460, damping: 23 }} aria-hidden="true" />}<CalendarDays size={23} /><span>Calendar</span></button>
           <button className={page === 'Documents' ? 'active' : ''} onClick={() => navigate('Documents')}>{page === 'Documents' && <motion.i className="mobile-nav-jelly" layoutId="mobile-nav-jelly" initial={false} transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 460, damping: 23 }} aria-hidden="true" />}<FolderOpen size={23} /><span>Files</span></button>
         </nav>
