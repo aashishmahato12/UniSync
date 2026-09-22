@@ -32,6 +32,7 @@ import {
 } from 'lucide-react'
 
 import {
+  formatDate,
   payments as seedPayments,
   type CalendarState,
   type CustomEventInput,
@@ -287,6 +288,7 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
 
   const openNotice = (notice: Notice) => {
     markNoticeRead(notice)
+    setNotificationOpen(false)
     noticeListScroll.current = window.scrollY
     setNoticeClosing(false)
     setNoticeReturning(false)
@@ -309,6 +311,7 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
     searchOpen,
     setSearchOpen,
   ] = useState(false)
+  const [notificationOpen, setNotificationOpen] = useState(false)
 
   const [
     globalSearch,
@@ -426,6 +429,7 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
     setPage(target)
     setMenuOpen(false)
     setSearchOpen(false)
+    setNotificationOpen(false)
   }
 
   const updateCalendar =
@@ -509,6 +513,9 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
     ])
 
   const unreadNoticeCount = notices.reduce((count, notice) => count + (readNoticeIds.has(notice.id) ? 0 : 1), 0)
+  const latestNotices = [...notices]
+    .sort((first, second) => second.date.localeCompare(first.date))
+    .slice(0, 5)
 
   return (
     <div className="app-shell">
@@ -645,9 +652,10 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
           <div className="topbar-actions">
             <button
               className="search-trigger"
-              onClick={() =>
+              onClick={() => {
+                setNotificationOpen(false)
                 setSearchOpen(true)
-              }
+              }}
             >
               <Search
                 size={17}
@@ -665,16 +673,39 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
               {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
             </button>
 
-            <button
-              className="icon-button desktop-notice-button"
-              onClick={() =>
-                navigate(
-                  'Notices'
-                )
-              }
-            >
-              <Bell size={19} />
-            </button>
+            <div className="notification-popover-wrap">
+              <button
+                className="icon-button desktop-notice-button"
+                onClick={() => {
+                  setSearchOpen(false)
+                  setNotificationOpen(open => !open)
+                }}
+                aria-label="Show latest inbox messages"
+                aria-expanded={notificationOpen}
+                aria-controls="latest-inbox-popover"
+              >
+                <Bell size={19} />
+                <span className="t-badge" data-open={unreadNoticeCount > 0 ? 'true' : 'false'} aria-hidden="true">
+                  <span className="t-badge-dot">{unreadNoticeCount > 99 ? '99+' : unreadNoticeCount}</span>
+                </span>
+              </button>
+              {notificationOpen && <>
+                <button className="notification-popover-scrim" onClick={() => setNotificationOpen(false)} aria-label="Close latest inbox" />
+                <section className="notification-popover" id="latest-inbox-popover" aria-label="Latest inbox messages">
+                  <header><div><small>NOTIFICATIONS</small><h2>Latest inbox</h2></div><span>{unreadNoticeCount} unread</span></header>
+                  <div className="notification-popover-list">
+                    {latestNotices.length ? latestNotices.map(notice => {
+                      const unread = !readNoticeIds.has(notice.id)
+                      return <button key={notice.id} className={unread ? 'is-unread' : ''} onClick={() => openNotice(notice)}>
+                        <span className="notification-avatar">{notice.source?.match(/[A-Za-z]/)?.[0].toUpperCase() || 'H'}</span>
+                        <span className="notification-copy"><strong>{notice.title}</strong><small>{notice.category} · {formatDate(notice.date)}</small></span>
+                        {unread && <i aria-label="Unread" />}
+                      </button>
+                    }) : <p className="notification-empty">New college messages will appear here.</p>}
+                  </div>
+                </section>
+              </>}
+            </div>
 
             <button
               className="icon-button figma-mobile-menu"
@@ -698,7 +729,7 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
     transition={reduceMotion ? { duration: 0 } : noticeClosing ? { duration: .22, ease: 'easeIn' } : { duration: .36, ease: [.22, 1, .36, 1] }}
     onAnimationComplete={() => { if (noticeClosing) finishCloseNotice() }}
   >
-<button className="secondary-button" onClick={closeNotice} disabled={noticeClosing}>← Back to Inbox</button>
+<button className="secondary-button" onClick={closeNotice} disabled={noticeClosing}>← Back</button>
     <article className="notice-detail-view">
       <header className="notice-detail-header">
         <div className="notice-detail-sender">

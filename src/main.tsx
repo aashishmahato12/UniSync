@@ -12,6 +12,7 @@ import './styles/figma-mobile.css'
 import './styles/desktop-theme.css'
 import './styles/page-scale.css'
 import './styles/click-jello.css'
+import './styles/notification-popover.css'
 
 ReactDOM.createRoot(
   document.getElementById('root')!
