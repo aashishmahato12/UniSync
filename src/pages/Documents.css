@@ -532,6 +532,31 @@ html[data-theme='dark'] .documents-page .document-card-file { border-color: #304
   text-align: left;
 }
 
+@media (hover: hover) and (pointer: fine) {
+  .documents-page .document-folder::before {
+    position: absolute;
+    z-index: 0;
+    inset: -1px;
+    border-radius: inherit;
+    background: radial-gradient(circle at var(--folder-shine-x, 50%) var(--folder-shine-y, 50%), rgba(255,255,255,.58), rgba(127,177,239,.08) 34%, transparent 66%);
+    opacity: 0;
+    transition: opacity .24s ease;
+    pointer-events: none;
+    content: '';
+  }
+  .documents-page .document-folder:hover::before { opacity: .65; }
+  .documents-page .document-folder .rare-folder {
+    position: relative;
+    z-index: 2;
+    transform: translate3d(var(--folder-follow-x, 0),var(--folder-follow-y, 0),0) rotateX(var(--folder-tilt-x, 0deg)) rotateY(var(--folder-tilt-y, 0deg));
+    transition: transform .26s cubic-bezier(.22,1,.36,1), filter .26s ease;
+  }
+  .documents-page .document-folder:hover { transform: translateY(-1px); }
+  .documents-page .document-folder:hover .rare-folder { filter: saturate(1.04) drop-shadow(0 8px 10px rgba(51,88,137,.1)); }
+  .documents-page .document-folder .document-folder-label { transition: transform .22s cubic-bezier(.22,1,.36,1); }
+  .documents-page .document-folder:hover .document-folder-label { transform: translateY(-2px); }
+}
+
 .documents-page .document-folder:hover {
   border-color: rgba(102, 132, 174, .24);
   background: linear-gradient(155deg, rgba(255,255,255,.92), rgba(235,239,245,.95));

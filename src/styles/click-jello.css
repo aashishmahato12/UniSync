@@ -27,6 +27,18 @@
   100% { scale: 1; }
 }
 
+@media (max-width: 760px) {
+  .unisync-click-jello {
+    animation-duration: .4s;
+    will-change: scale;
+  }
+
+  .unisync-click-soft {
+    animation-duration: .3s;
+    will-change: scale;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .unisync-click-jello,
   .unisync-click-soft { animation: none; }

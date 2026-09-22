@@ -83,6 +83,92 @@
   }
 }
 
+/* Keep iPhone entrances on compositor-friendly properties. Blur and clip-path
+   can skip frames in mobile Safari, especially inside frosted surfaces. */
+@media (max-width: 760px) {
+  .page-scale-shell :is(
+    .desk-heading,
+    .desk-lead-grid > *,
+    .desk-signal-row > *,
+    .desk-main-grid > *,
+    .payments-page > .page-intro,
+    .payment-stats > *,
+    .schedule-panel,
+    .payment-layout > *,
+    .receipt-delivery-panel,
+    .documents-page > .page-intro,
+    .document-explorer-bar,
+    .document-explorer > *,
+    .college-email-page > .page-intro,
+    .college-email-layout > *,
+    .ask-ai-page > .page-intro,
+    .chat-layout > *,
+    .profile-layout > *,
+    .document-folders > *,
+    .document-gallery > *,
+    .schedule-list > *,
+    .college-email-history > article,
+    .chat-suggestions > button
+  ),
+  .page-scale-shell > .page-intro {
+    animation-name: unisync-scale-open-mobile;
+    animation-duration: .5s;
+    animation-timing-function: cubic-bezier(.2,.8,.2,1);
+    clip-path: none;
+    filter: none;
+    transform-origin: 50% 28%;
+    will-change: opacity, transform;
+    backface-visibility: hidden;
+  }
+
+  .page-scale-shell .desk-lead-grid > :nth-child(1),
+  .page-scale-shell .payment-stats > :nth-child(1),
+  .page-scale-shell .college-email-layout > :nth-child(1),
+  .page-scale-shell .chat-layout > :nth-child(1),
+  .page-scale-shell .profile-layout > :nth-child(1),
+  .page-scale-shell .document-explorer-bar { --scale-delay: .04s; }
+
+  .page-scale-shell .desk-lead-grid > :nth-child(2),
+  .page-scale-shell .payment-stats > :nth-child(2),
+  .page-scale-shell .college-email-layout > :nth-child(2),
+  .page-scale-shell .chat-layout > :nth-child(2),
+  .page-scale-shell .profile-layout > :nth-child(2),
+  .page-scale-shell .document-explorer > :nth-child(1) { --scale-delay: .08s; }
+
+  .page-scale-shell .desk-signal-row > :nth-child(1),
+  .page-scale-shell .payment-stats > :nth-child(3),
+  .page-scale-shell .document-explorer > :nth-child(2) { --scale-delay: .12s; }
+  .page-scale-shell .desk-signal-row > :nth-child(2),
+  .page-scale-shell .schedule-panel { --scale-delay: .16s; }
+  .page-scale-shell .desk-signal-row > :nth-child(3),
+  .page-scale-shell .payment-layout > :nth-child(1) { --scale-delay: .2s; }
+  .page-scale-shell .desk-main-grid > :nth-child(1),
+  .page-scale-shell .receipt-delivery-panel { --scale-delay: .24s; }
+  .page-scale-shell .desk-main-grid > :nth-child(2) { --scale-delay: .28s; }
+  .page-scale-shell .desk-main-grid > :nth-child(3) { --scale-delay: .32s; }
+  .page-scale-shell .desk-main-grid > :nth-child(4) { --scale-delay: .36s; }
+
+  .page-scale-shell :is(.document-folders,.document-gallery,.schedule-list,.college-email-history,.chat-suggestions) > :nth-child(1) { --scale-delay: .1s; }
+  .page-scale-shell :is(.document-folders,.document-gallery,.schedule-list,.college-email-history,.chat-suggestions) > :nth-child(2) { --scale-delay: .145s; }
+  .page-scale-shell :is(.document-folders,.document-gallery,.schedule-list,.college-email-history,.chat-suggestions) > :nth-child(3) { --scale-delay: .19s; }
+  .page-scale-shell :is(.document-folders,.document-gallery,.schedule-list,.college-email-history,.chat-suggestions) > :nth-child(4) { --scale-delay: .235s; }
+  .page-scale-shell :is(.document-folders,.document-gallery,.schedule-list,.college-email-history,.chat-suggestions) > :nth-child(5) { --scale-delay: .28s; }
+  .page-scale-shell :is(.document-folders,.document-gallery,.schedule-list,.college-email-history,.chat-suggestions) > :nth-child(6) { --scale-delay: .325s; }
+  .page-scale-shell :is(.document-folders,.document-gallery,.schedule-list,.college-email-history,.chat-suggestions) > :nth-child(n+7) { --scale-delay: .37s; }
+}
+
+@keyframes unisync-scale-open-mobile {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 6px, 0) scale(.95);
+  }
+  72% { opacity: 1; }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .page-scale-shell :is(
     .desk-heading,

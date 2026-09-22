@@ -195,8 +195,7 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
   const reduceMotion = useReducedMotion()
   useEffect(() => {
     if (reduceMotion) return
-    const animateClick = (event: MouseEvent) => {
-      const source = event.target
+    const animateTarget = (source: EventTarget | null) => {
       if (!(source instanceof Element)) return
       const clickable = source.closest<HTMLElement>('button, a, [role="button"]')
       if (!clickable || !clickable.closest('.app-shell, .modal, .document-detail, .document-upload')) return
@@ -209,8 +208,16 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
       clickable.classList.add(animationClass)
       clickable.addEventListener('animationend', () => clickable.classList.remove(animationClass), { once: true })
     }
-    document.addEventListener('click', animateClick)
-    return () => document.removeEventListener('click', animateClick)
+    const animatePointer = (event: PointerEvent) => animateTarget(event.target)
+    const animateKeyboardClick = (event: MouseEvent) => {
+      if (event.detail === 0) animateTarget(event.target)
+    }
+    document.addEventListener('pointerdown', animatePointer)
+    document.addEventListener('click', animateKeyboardClick)
+    return () => {
+      document.removeEventListener('pointerdown', animatePointer)
+      document.removeEventListener('click', animateKeyboardClick)
+    }
   }, [reduceMotion])
   const [page, setPage] =
     useState<Page>('Dashboard')

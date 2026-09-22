@@ -1,5 +1,5 @@
 import './Documents.css'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
 import { createPortal } from 'react-dom'
 import { ExternalLink, FileText, Mail, Search, UploadCloud, X } from 'lucide-react'
 import { formatDate, type DocumentItem } from '../data'
@@ -64,6 +64,7 @@ export default function Documents({
   const [uploadBusy, setUploadBusy] = useState(false)
   const [uploadError, setUploadError] = useState('')
   const [dragActive, setDragActive] = useState(false)
+  const [hoveredFolder, setHoveredFolder] = useState<string | null>(null)
   const uploadInput = useRef<HTMLInputElement>(null)
   useEffect(() => {
     if (!selected) return
@@ -116,6 +117,24 @@ export default function Documents({
       setUploadBusy(false)
     }
   }
+  const moveFolder = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    if (event.pointerType !== 'mouse') return
+    const bounds = event.currentTarget.getBoundingClientRect()
+    const x = Math.max(-1, Math.min(1, ((event.clientX - bounds.left) / bounds.width - .5) * 2))
+    const y = Math.max(-1, Math.min(1, ((event.clientY - bounds.top) / bounds.height - .5) * 2))
+    event.currentTarget.style.setProperty('--folder-follow-x', `${x * 4}px`)
+    event.currentTarget.style.setProperty('--folder-follow-y', `${y * 2}px`)
+    event.currentTarget.style.setProperty('--folder-tilt-x', `${y * -2}deg`)
+    event.currentTarget.style.setProperty('--folder-tilt-y', `${x * 3}deg`)
+    event.currentTarget.style.setProperty('--folder-shine-x', `${(x + 1) * 50}%`)
+    event.currentTarget.style.setProperty('--folder-shine-y', `${(y + 1) * 50}%`)
+  }
+  const leaveFolder = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    setHoveredFolder(null)
+    for (const property of ['--folder-follow-x', '--folder-follow-y', '--folder-tilt-x', '--folder-tilt-y', '--folder-shine-x', '--folder-shine-y']) {
+      event.currentTarget.style.removeProperty(property)
+    }
+  }
 
   return (
     <div className="documents-page">
@@ -154,8 +173,11 @@ export default function Documents({
                 className={`document-folder${active ? ' selected' : ''}`}
                 aria-pressed={active}
                 onClick={() => setCategory(folder.category)}
+                onPointerEnter={() => setHoveredFolder(folder.category)}
+                onPointerMove={moveFolder}
+                onPointerLeave={leaveFolder}
               >
-                <FileFolder active={active} tone={folder.tone} />
+                <FileFolder active={active} tone={folder.tone} hovered={hoveredFolder === folder.category} />
                 <span className="document-folder-label">
                   <strong>{folder.label}</strong>
                   <small>{count} {count === 1 ? 'file' : 'files'}</small>
