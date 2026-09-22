@@ -22,10 +22,11 @@ export default function FileFolder({ active = false, tone = 'blue', hovered: con
     aria-hidden="true"
   >
     <span className="rare-folder-back" />
-    <motion.span className="rare-folder-paper paper-one" animate={{ y: open ? -21 : fan ? -10 : -7, x: open ? 21 : fan ? 11 : 9, rotate: open ? 11 : fan ? 6 : 5 }} transition={spring}><i /><i /><i /></motion.span>
-    <motion.span className="rare-folder-paper paper-two" animate={{ y: open ? -25 : fan ? -12 : -10, x: 0, rotate: open ? -1 : fan ? .5 : 1 }} transition={spring}><i /><i /><i /></motion.span>
-    <motion.span className="rare-folder-paper paper-three" animate={{ y: open ? -22 : fan ? -10 : -8, x: open ? -21 : fan ? -11 : -9, rotate: open ? -11 : fan ? -6 : -4 }} transition={spring}><i /><i /><i /></motion.span>
+    <motion.span initial={false} className="rare-folder-paper paper-one" animate={{ y: open ? -21 : fan ? -10 : -7, x: open ? 21 : fan ? 11 : 9, rotate: open ? 11 : fan ? 6 : 5 }} transition={spring}><i /><i /><i /></motion.span>
+    <motion.span initial={false} className="rare-folder-paper paper-two" animate={{ y: open ? -25 : fan ? -12 : -10, x: 0, rotate: open ? -1 : fan ? .5 : 1 }} transition={spring}><i /><i /><i /></motion.span>
+    <motion.span initial={false} className="rare-folder-paper paper-three" animate={{ y: open ? -22 : fan ? -10 : -8, x: open ? -21 : fan ? -11 : -9, rotate: open ? -11 : fan ? -6 : -4 }} transition={spring}><i /><i /><i /></motion.span>
     <motion.span
+      initial={false}
       className="rare-folder-flap"
       animate={{ rotateX: open ? -52 : fan ? -25 : -13, y: open ? 5 : 0 }}
       transition={spring}
