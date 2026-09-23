@@ -39,6 +39,10 @@ html[data-theme='dark'] {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
+  .topbar .mobile-account-copy :is(small, strong),
+  .topbar .topbar-actions :is(.search-trigger, .icon-button) {
+    transition: color .18s ease, background-color .18s ease, border-color .18s ease;
+  }
   .mobile-liquid-scrim {
     position: fixed;
     z-index: 28;
@@ -179,12 +183,26 @@ html[data-theme='dark'] {
   .mobile-bottom-nav > button > span { z-index: 2; }
   .mobile-bottom-nav > button.active,
   .mobile-bottom-nav > button:nth-child(2).active { color: #2878e5; font-weight: 600; }
-  html:not([data-theme='dark']) .mobile-bottom-nav > button.over-dark:not(.active) {
+  html:not([data-theme='dark']) .mobile-bottom-nav.over-dark > button:not(.active) {
     color: #f8fbff;
     text-shadow: 0 1px 3px rgba(8, 23, 45, .55);
   }
-  html:not([data-theme='dark']) .mobile-bottom-nav > button.over-dark:not(.active) > svg {
+  html:not([data-theme='dark']) .mobile-bottom-nav.over-dark > button:not(.active) > svg {
     filter: drop-shadow(0 1px 2px rgba(8, 23, 45, .55));
+  }
+  html:not([data-theme='dark']) .topbar.over-dark .mobile-account-copy small,
+  html:not([data-theme='dark']) .topbar.over-dark .mobile-account-copy strong {
+    color: #f8fbff;
+    text-shadow: 0 1px 3px rgba(8, 23, 45, .55);
+  }
+  html:not([data-theme='dark']) .topbar.over-dark .mobile-account-copy strong::after {
+    background: rgba(16, 39, 67, .62);
+    color: #f8fbff;
+  }
+  html:not([data-theme='dark']) .topbar.over-dark .topbar-actions :is(.search-trigger, .icon-button) {
+    border-color: rgba(255, 255, 255, .32);
+    background: rgba(19, 42, 71, .66);
+    color: #f8fbff;
   }
   html[data-theme='dark'] .mobile-bottom-nav > button { color: #c7d4e4; }
   html[data-theme='dark'] .mobile-bottom-nav > button.active { color: #7db8ff; }
@@ -303,5 +321,5 @@ html[data-theme='dark'] {
 }
 
 @media (prefers-reduced-motion:reduce) {
-  .mobile-liquid-scrim,.mobile-progressive-blur,.mobile-liquid-page,.mobile-liquid-trigger,.mobile-bottom-nav,.mobile-bottom-nav > button { animation: none !important; transition: none !important; }
+  .mobile-liquid-scrim,.mobile-progressive-blur,.mobile-liquid-page,.mobile-liquid-trigger,.mobile-bottom-nav,.mobile-bottom-nav > button,.topbar .mobile-account-copy :is(small, strong),.topbar .topbar-actions :is(.search-trigger, .icon-button) { animation: none !important; transition: none !important; }
 }
