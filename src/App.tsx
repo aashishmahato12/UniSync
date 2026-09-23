@@ -641,6 +641,9 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
       {menuOpen && <button className="mobile-scrim" onClick={() => setMenuOpen(false)} aria-label="Close navigation" />}
 
       <div className="main-column">
+        <div className="mobile-progressive-blur mobile-top-progressive-blur" aria-hidden="true">
+          {Array.from({ length: 6 }, (_, index) => <div key={index} />)}
+        </div>
         <header className="topbar">
           <div className="mobile-account">
             <button className="mobile-account-avatar" onClick={() => navigate('Profile')} aria-label="Open profile">{initials}</button>
@@ -954,17 +957,10 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
             exit={{ opacity: 0 }}
             transition={{ duration: reduceMotion ? 0 : .55 }}
           />}
-          {mobileNavOpen && <motion.div
-            key="mobile-liquid-progressive-blur"
-            className="mobile-liquid-progressive-blur"
-            aria-hidden="true"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1, transition: { duration: reduceMotion ? 0 : .5, ease: [0.22, 1, 0.36, 1] } }}
-            exit={{ opacity: 0, transition: { duration: reduceMotion ? 0 : .55, ease: [0.4, 0, 0.2, 1] } }}
-          >
-            {Array.from({ length: 6 }, (_, index) => <div key={index} />)}
-          </motion.div>}
         </AnimatePresence>
+        <div className={`mobile-progressive-blur mobile-liquid-progressive-blur${mobileNavOpen ? ' is-open' : ''}`} aria-hidden="true">
+          {Array.from({ length: 6 }, (_, index) => <div key={index} />)}
+        </div>
         <nav className={`mobile-bottom-nav${mobileNavOpen ? ' liquid-open' : ''}`} aria-label="Primary navigation">
           <button className={page === 'Dashboard' ? 'active' : ''} onClick={() => navigate('Dashboard')}>{page === 'Dashboard' && <motion.i className="mobile-nav-jelly" layoutId="mobile-nav-jelly" initial={false} transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 460, damping: 23 }} aria-hidden="true" />}<Home size={23} /><span>Home</span></button>
           <button className={page === 'Notices' ? 'active' : ''} onClick={() => navigate('Notices')}>{page === 'Notices' && <motion.i className="mobile-nav-jelly" layoutId="mobile-nav-jelly" initial={false} transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 460, damping: 23 }} aria-hidden="true" />}<Inbox size={23} /><span>Inbox</span>{unreadNoticeCount > 0 && <em className="mobile-unread-count">{unreadNoticeCount > 99 ? '99+' : unreadNoticeCount}</em>}</button>
