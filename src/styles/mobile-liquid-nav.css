@@ -40,6 +40,13 @@ html[data-theme='dark'] {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
+  html[data-theme='dark'] .topbar {
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
   .topbar .mobile-account-copy :is(small, strong),
   .topbar .topbar-actions :is(.search-trigger, .icon-button) {
     transition: color .18s ease, background-color .18s ease, border-color .18s ease;
@@ -62,7 +69,7 @@ html[data-theme='dark'] {
   .mobile-top-progressive-blur {
     z-index: 26;
     inset: 0 0 auto;
-    height: 225px;
+    height: 152px;
     background: linear-gradient(to bottom, var(--mobile-top-wash) 0%, var(--mobile-top-wash-soft) 58%, transparent 100%);
     --mobile-menu-blur: var(--mobile-top-blur, 8px);
     --blur-direction: to top;
