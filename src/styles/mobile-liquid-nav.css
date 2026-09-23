@@ -32,31 +32,63 @@ html[data-theme='dark'] {
   .mobile-liquid-progressive-blur {
     position: fixed;
     z-index: 29;
-    right: 0;
-    bottom: 0;
-    left: 0;
+    inset: auto 0 0;
     display: block;
-    width: 100%;
-    height: 50%;
+    height: 65%;
     pointer-events: none;
   }
-  .mobile-liquid-progressive-blur > .blur-filter,
-  .mobile-liquid-progressive-blur > .progressive-gradient {
+  .mobile-liquid-progressive-blur > div,
+  .mobile-liquid-progressive-blur::before,
+  .mobile-liquid-progressive-blur::after {
     position: absolute;
     inset: 0;
-    display: block;
     pointer-events: none;
-  }
-  .mobile-liquid-progressive-blur > .blur-filter {
-    top: var(--band-top);
-    bottom: auto;
-    height: calc(5% + 1px);
-    background: rgba(255,255,255,.015);
     backdrop-filter: blur(var(--blur));
     -webkit-backdrop-filter: blur(var(--blur));
+    mask: var(--blur-mask);
+    -webkit-mask: var(--blur-mask);
   }
-  .mobile-liquid-progressive-blur > .progressive-gradient {
-    background: linear-gradient(to bottom, transparent, var(--mobile-scrim-tint));
+  .mobile-liquid-progressive-blur::before {
+    content: '';
+    z-index: 1;
+    --blur: .5px;
+    --blur-mask: linear-gradient(to bottom, transparent 0%, #000 12.5%, #000 25%, transparent 37.5%);
+  }
+  .mobile-liquid-progressive-blur > div:nth-of-type(1) {
+    z-index: 2;
+    --blur: 1px;
+    --blur-mask: linear-gradient(to bottom, transparent 12.5%, #000 25%, #000 37.5%, transparent 50%);
+  }
+  .mobile-liquid-progressive-blur > div:nth-of-type(2) {
+    z-index: 3;
+    --blur: 2px;
+    --blur-mask: linear-gradient(to bottom, transparent 25%, #000 37.5%, #000 50%, transparent 62.5%);
+  }
+  .mobile-liquid-progressive-blur > div:nth-of-type(3) {
+    z-index: 4;
+    --blur: 4px;
+    --blur-mask: linear-gradient(to bottom, transparent 37.5%, #000 50%, #000 62.5%, transparent 75%);
+  }
+  .mobile-liquid-progressive-blur > div:nth-of-type(4) {
+    z-index: 5;
+    --blur: 8px;
+    --blur-mask: linear-gradient(to bottom, transparent 50%, #000 62.5%, #000 75%, transparent 87.5%);
+  }
+  .mobile-liquid-progressive-blur > div:nth-of-type(5) {
+    z-index: 6;
+    --blur: 16px;
+    --blur-mask: linear-gradient(to bottom, transparent 62.5%, #000 75%, #000 87.5%, transparent 100%);
+  }
+  .mobile-liquid-progressive-blur > div:nth-of-type(6) {
+    z-index: 7;
+    --blur: 32px;
+    --blur-mask: linear-gradient(to bottom, transparent 75%, #000 87.5%, #000 100%);
+  }
+  .mobile-liquid-progressive-blur::after {
+    content: '';
+    z-index: 8;
+    --blur: 64px;
+    --blur-mask: linear-gradient(to bottom, transparent 87.5%, #000 100%);
   }
 
   .mobile-bottom-nav {

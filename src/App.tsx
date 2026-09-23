@@ -946,14 +946,7 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
         {mobileNavOpen && <>
           <button className="mobile-liquid-scrim" onClick={() => setMobileNavOpen(false)} aria-label="Close all pages menu" />
           <div className="mobile-liquid-progressive-blur" aria-hidden="true">
-            {Array.from({ length: 20 }, (_, index) => (
-              <span
-                className="blur-filter"
-                key={index}
-                style={{ '--band-top': `${index * 5}%`, '--blur': `${0.5 + 10.5 * ((index + 1) / 20) ** 1.5}px` } as React.CSSProperties}
-              />
-            ))}
-            <span className="progressive-gradient" />
+            {Array.from({ length: 6 }, (_, index) => <div key={index} />)}
           </div>
         </>}
         <nav className={`mobile-bottom-nav${mobileNavOpen ? ' liquid-open' : ''}`} aria-label="Primary navigation">
