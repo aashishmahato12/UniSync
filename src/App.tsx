@@ -237,6 +237,9 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
   }, [reduceMotion])
   const [page, setPage] =
     useState<Page>('Dashboard')
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0)
+  }, [page])
   const [menuOpen, setMenuOpen] =
     useState(false)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
@@ -471,6 +474,7 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
   const navigate = (
     target: Page
   ) => {
+    window.scrollTo(0, 0)
     setSelectedNotice(null)
     setNoticeClosing(false)
     setNoticeReturning(false)

@@ -633,11 +633,21 @@ html[data-theme='dark'] body .ask-ai-page .chat-composer .chat-send:not(:disable
 
 @media(max-width:760px){
   .app-shell:has(.ask-ai-page){background:linear-gradient(180deg,#f0f8ff 0%,#f5f6f7 54%,#ededee 100%)}
+  .app-shell:has(.ask-ai-page) .main-column{display:flex;flex-direction:column;min-height:100dvh;padding-bottom:0}
+  .app-shell:has(.ask-ai-page) .content{display:flex;flex:1;flex-direction:column;width:100%;min-width:0;min-height:0;padding-bottom:calc(94px + env(safe-area-inset-bottom))}
+  .app-shell:has(.ask-ai-page) .workspace-reveal,
+  .app-shell:has(.ask-ai-page) .workspace-reveal > .t-skel-content,
+  .app-shell:has(.ask-ai-page) .page-scale-shell,
+  .ask-ai-page,
+  .ask-ai-page .chat-layout{display:flex;flex:1;flex-direction:column;min-width:0;min-height:0}
+  .app-shell:has(.ask-ai-page) .workspace-reveal,
+  .app-shell:has(.ask-ai-page) .workspace-reveal > .t-skel-content,
+  .app-shell:has(.ask-ai-page) .page-scale-shell,
+  .ask-ai-page{width:100%;min-width:0}
   .ask-ai-page > .page-intro{display:none}
-  .ask-ai-page .chat-layout{display:block}
   .ask-ai-page .chat-panel{
     display:flex;flex-direction:column;width:100%;
-    height:calc(100dvh - 128px - 94px);min-height:440px;
+    flex:1;min-height:0;
     padding:0 0 5px;border:0;border-radius:0;background:transparent;
     box-shadow:none;backdrop-filter:none;overflow:hidden;
   }

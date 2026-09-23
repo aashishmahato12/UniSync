@@ -21,8 +21,9 @@ html[data-theme='dark'] {
   --mobile-liquid-shadow: rgba(0,0,0,.32);
   --mobile-nav-surface: rgba(11,20,32,.42);
   --mobile-nav-open-surface: rgba(11,20,32,.3);
-  --mobile-top-wash: rgba(11,20,32,.48);
-  --mobile-top-wash-soft: rgba(11,20,32,.14);
+  --mobile-top-wash: rgba(15,28,45,.58);
+  --mobile-top-wash-soft: rgba(15,28,45,.22);
+  --mobile-top-blur: 11px;
   --mobile-scrim-tint: rgba(2,7,13,.52);
 }
 
@@ -61,8 +62,9 @@ html[data-theme='dark'] {
   .mobile-top-progressive-blur {
     z-index: 26;
     inset: 0 0 auto;
-    height: 170px;
-    background: linear-gradient(to bottom, var(--mobile-top-wash), var(--mobile-top-wash-soft) 70%, transparent);
+    height: 225px;
+    background: linear-gradient(to bottom, var(--mobile-top-wash) 0%, var(--mobile-top-wash-soft) 58%, transparent 100%);
+    --mobile-menu-blur: var(--mobile-top-blur, 8px);
     --blur-direction: to top;
   }
   .mobile-liquid-progressive-blur {

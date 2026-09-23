@@ -81,7 +81,7 @@ h3,
     border-radius: 0 24px 24px 0;
     box-shadow: 24px 0 70px rgba(31, 52, 80, .18);
   }
-  .main-column { min-height: 100dvh; padding-bottom: 104px; }
+  .main-column { min-height: 100dvh; padding-bottom: 0; }
   .topbar {
     position: sticky;
     top: 0;
@@ -138,7 +138,7 @@ h3,
   .mobile-sort-icon { width: 22px; height: 22px; fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
   .mobile-sort-lines { stroke: #17202a; }
   .mobile-sort-arrow { stroke: #2771d8; }
-  .content { max-width: none; padding: 0 20px 28px; }
+  .content { max-width: none; padding: 0 20px calc(100px + env(safe-area-inset-bottom)); }
   .workspace-reveal,
   .workspace-reveal > .t-skel-content { min-height: 0; }
   .workspace-skeleton { padding-top: 10px; }
