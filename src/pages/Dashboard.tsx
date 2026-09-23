@@ -94,17 +94,20 @@ export default function Dashboard({
   return <div className="desk-dashboard">
     <header className="desk-heading">
       <div>
-        <span className="desk-date">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }).toUpperCase()}</span>
+        <span className="desk-date"><i aria-hidden="true" /> {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }).toUpperCase()}</span>
         <h1>Good to see you, Aashish.</h1>
-        <p>Here’s what needs attention across your Herald College space.</p>
+        <p>Your day, deadlines, and college updates in one place.</p>
       </div>
-      <button className="desk-calendar-button" onClick={() => navigate('Calendar')}><CalendarDays size={17} /> Open calendar <ArrowUpRight size={15} /></button>
+      <div className="desk-heading-actions">
+        <span className="desk-status-pill"><span aria-hidden="true" />{actionCount ? `${actionCount} ${actionCount === 1 ? 'item needs' : 'items need'} your attention` : 'You’re all caught up'}</span>
+        <button className="desk-calendar-button" onClick={() => navigate('Calendar')}><CalendarDays size={17} /> Open calendar <ArrowUpRight size={15} /></button>
+      </div>
     </header>
 
     <div className="desk-lead-grid">
       <section className="desk-brief" aria-labelledby="desk-brief-title">
-        <div className="desk-brief-top"><span className="desk-brief-icon"><Sparkles size={18} /></span><span>YOUR DAILY BRIEF · SAVED RECORDS</span></div>
-        <h2 id="desk-brief-title">Here’s your day.</h2>
+        <div className="desk-brief-top"><span className="desk-brief-icon"><Sparkles size={18} /></span><span>YOUR DAILY BRIEF</span><i aria-hidden="true" /><span>SAVED RECORDS</span></div>
+        <h2 id="desk-brief-title">Here’s your day, at a glance.</h2>
         <p>{briefText}</p>
         <button onClick={() => navigate('Ask AI')}>Explore with Ask AI <ArrowUpRight size={16} /></button>
       </section>
@@ -112,13 +115,13 @@ export default function Dashboard({
         <span className="desk-next-top"><span><Clock3 size={16} /> UP NEXT</span><ArrowUpRight size={17} /></span>
         <strong>{nextDate ? formatDate(nextDate.date, { weekday: 'short', month: 'short', day: 'numeric' }) : 'All clear'}</strong>
         <span className="desk-next-title">{nextDate?.title || 'No upcoming dates saved'}</span>
-        <span className="desk-next-footer">View your schedule <ArrowRight size={15} /></span>
+        <span className="desk-next-footer">{nextDate?.page === 'Payments' ? 'View payment details' : 'View your schedule'} <ArrowRight size={15} /></span>
       </button>
     </div>
 
     <div className="desk-signal-row" aria-label="Workspace snapshot">
-      <button onClick={() => navigate('Notices')}><span className="desk-signal-icon blue"><CalendarDays size={17} /></span><strong><NumberPop value={pending.length} /></strong><span>Inbox calendar {pending.length === 1 ? 'action' : 'actions'}</span><ArrowUpRight size={15} /></button>
-      <button onClick={() => navigate('Payments')}><span className="desk-signal-icon coral"><CreditCard size={17} /></span><strong><NumberPop value={allDuePayments.length} /></strong><span>Fees marked due</span><ArrowUpRight size={15} /></button>
+      <button onClick={() => navigate('Notices')}><span className="desk-signal-icon blue"><CalendarDays size={17} /></span><strong><NumberPop value={pending.length} /></strong><span>Calendar decisions</span><ArrowUpRight size={15} /></button>
+      <button onClick={() => navigate('Payments')}><span className="desk-signal-icon coral"><CreditCard size={17} /></span><strong><NumberPop value={allDuePayments.length} /></strong><span>Fees to track</span><ArrowUpRight size={15} /></button>
       <button onClick={() => navigate('Notices')}><span className="desk-signal-icon violet"><Bell size={17} /></span><strong><NumberPop value={notices.length} /></strong><span>Saved notices</span><ArrowUpRight size={15} /></button>
     </div>
 

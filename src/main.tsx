@@ -14,6 +14,7 @@ import './styles/page-scale.css'
 import './styles/click-jello.css'
 import './styles/notification-popover.css'
 import './styles/mobile-liquid-nav.css'
+import './styles/home-redesign.css'
 
 ReactDOM.createRoot(
   document.getElementById('root')!
