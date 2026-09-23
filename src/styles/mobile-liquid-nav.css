@@ -1,3 +1,9 @@
+@property --mobile-nav-glass {
+  syntax: '<color>';
+  inherits: false;
+  initial-value: rgba(242,246,250,.84);
+}
+
 :root {
   --mobile-liquid-surface: rgba(246,250,255,.62);
   --mobile-liquid-border: rgba(255,255,255,.88);
@@ -30,7 +36,6 @@ html[data-theme='dark'] {
     border: 0;
     padding: 0;
     background: transparent;
-    animation: mobile-liquid-scrim-in .2s ease-out both;
   }
   .mobile-liquid-progressive-blur {
     position: fixed;
@@ -95,6 +100,7 @@ html[data-theme='dark'] {
   }
 
   .mobile-bottom-nav {
+    --mobile-nav-glass: var(--mobile-nav-surface);
     box-sizing: border-box;
     z-index: 30;
     display: grid;
@@ -106,13 +112,14 @@ html[data-theme='dark'] {
     padding: 8px 14px max(10px,env(safe-area-inset-bottom));
     overflow: visible;
     border: 0;
-    background: linear-gradient(to bottom, transparent 0%, var(--mobile-nav-surface) 30%, var(--mobile-nav-surface) 100%);
+    background: linear-gradient(to bottom, transparent 0%, var(--mobile-nav-glass) 30%, var(--mobile-nav-glass) 100%);
     box-shadow: none;
     backdrop-filter: blur(18px) saturate(1.25);
     -webkit-backdrop-filter: blur(18px) saturate(1.25);
+    transition: --mobile-nav-glass .55s ease, backdrop-filter .55s ease, -webkit-backdrop-filter .55s ease;
   }
   .mobile-bottom-nav.liquid-open {
-    background: linear-gradient(to bottom, transparent 0%, var(--mobile-nav-open-surface) 30%, var(--mobile-nav-open-surface) 100%);
+    --mobile-nav-glass: var(--mobile-nav-open-surface);
     backdrop-filter: blur(var(--mobile-menu-blur));
     -webkit-backdrop-filter: blur(var(--mobile-menu-blur));
   }
@@ -259,8 +266,6 @@ html[data-theme='dark'] {
   }
 }
 
-@keyframes mobile-liquid-scrim-in { from { opacity: 0; } to { opacity: 1; } }
-
 @media (prefers-reduced-motion:reduce) {
-  .mobile-liquid-scrim,.mobile-liquid-progressive-blur,.mobile-liquid-page,.mobile-liquid-trigger { animation: none !important; transition: none !important; }
+  .mobile-liquid-scrim,.mobile-liquid-progressive-blur,.mobile-liquid-page,.mobile-liquid-trigger,.mobile-bottom-nav { animation: none !important; transition: none !important; }
 }
