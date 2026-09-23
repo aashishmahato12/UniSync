@@ -3,6 +3,8 @@
   --mobile-liquid-border: rgba(255,255,255,.88);
   --mobile-liquid-shadow: rgba(35,54,75,.16);
   --mobile-nav-surface: rgba(242,246,250,.84);
+  --mobile-nav-open-surface: rgba(242,246,250,.64);
+  --mobile-menu-blur: 8px;
   --mobile-scrim-tint: rgba(225,233,242,.15);
 }
 html[data-theme='dark'] {
@@ -10,6 +12,7 @@ html[data-theme='dark'] {
   --mobile-liquid-border: rgba(255,255,255,.18);
   --mobile-liquid-shadow: rgba(0,0,0,.32);
   --mobile-nav-surface: rgba(11,20,32,.86);
+  --mobile-nav-open-surface: rgba(11,20,32,.7);
   --mobile-scrim-tint: rgba(2,7,13,.52);
 }
 
@@ -34,7 +37,7 @@ html[data-theme='dark'] {
     z-index: 29;
     inset: auto 0 0;
     display: block;
-    height: 65%;
+    height: 50%;
     pointer-events: none;
   }
   .mobile-liquid-progressive-blur > div,
@@ -51,43 +54,43 @@ html[data-theme='dark'] {
   .mobile-liquid-progressive-blur::before {
     content: '';
     z-index: 1;
-    --blur: .5px;
+    --blur: .25px;
     --blur-mask: linear-gradient(to bottom, transparent 0%, #000 12.5%, #000 25%, transparent 37.5%);
   }
   .mobile-liquid-progressive-blur > div:nth-of-type(1) {
     z-index: 2;
-    --blur: 1px;
+    --blur: .5px;
     --blur-mask: linear-gradient(to bottom, transparent 12.5%, #000 25%, #000 37.5%, transparent 50%);
   }
   .mobile-liquid-progressive-blur > div:nth-of-type(2) {
     z-index: 3;
-    --blur: 2px;
+    --blur: 1px;
     --blur-mask: linear-gradient(to bottom, transparent 25%, #000 37.5%, #000 50%, transparent 62.5%);
   }
   .mobile-liquid-progressive-blur > div:nth-of-type(3) {
     z-index: 4;
-    --blur: 4px;
+    --blur: 1.5px;
     --blur-mask: linear-gradient(to bottom, transparent 37.5%, #000 50%, #000 62.5%, transparent 75%);
   }
   .mobile-liquid-progressive-blur > div:nth-of-type(4) {
     z-index: 5;
-    --blur: 8px;
+    --blur: 2.5px;
     --blur-mask: linear-gradient(to bottom, transparent 50%, #000 62.5%, #000 75%, transparent 87.5%);
   }
   .mobile-liquid-progressive-blur > div:nth-of-type(5) {
     z-index: 6;
-    --blur: 16px;
+    --blur: 4px;
     --blur-mask: linear-gradient(to bottom, transparent 62.5%, #000 75%, #000 87.5%, transparent 100%);
   }
   .mobile-liquid-progressive-blur > div:nth-of-type(6) {
     z-index: 7;
-    --blur: 32px;
+    --blur: 6px;
     --blur-mask: linear-gradient(to bottom, transparent 75%, #000 87.5%, #000 100%);
   }
   .mobile-liquid-progressive-blur::after {
     content: '';
     z-index: 8;
-    --blur: 64px;
+    --blur: var(--mobile-menu-blur);
     --blur-mask: linear-gradient(to bottom, transparent 87.5%, #000 100%);
   }
 
@@ -107,6 +110,11 @@ html[data-theme='dark'] {
     box-shadow: none;
     backdrop-filter: blur(18px) saturate(1.25);
     -webkit-backdrop-filter: blur(18px) saturate(1.25);
+  }
+  .mobile-bottom-nav.liquid-open {
+    background: linear-gradient(to bottom, transparent 0%, var(--mobile-nav-open-surface) 30%, var(--mobile-nav-open-surface) 100%);
+    backdrop-filter: blur(var(--mobile-menu-blur));
+    -webkit-backdrop-filter: blur(var(--mobile-menu-blur));
   }
   .mobile-bottom-nav > button {
     position: relative;
@@ -248,9 +256,6 @@ html[data-theme='dark'] {
   html[data-theme='dark'] .mobile-liquid-trigger::after {
     border-color: rgba(74,151,255,.74);
     box-shadow: 0 0 0 1px rgba(74,151,255,.1);
-  }
-  html[data-theme='dark'] .mobile-bottom-nav {
-    background: linear-gradient(to bottom, transparent 0%, var(--mobile-nav-surface) 30%, var(--mobile-nav-surface) 100%);
   }
 }
 
