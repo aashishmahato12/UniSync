@@ -7,6 +7,7 @@ import {
 } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { Liquid } from 'liquid-gooey'
+import { isDarkBehindNav } from './utils/navContrast'
 
 import {
   ArrowRight,
@@ -239,6 +240,33 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
   const [menuOpen, setMenuOpen] =
     useState(false)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
+  const [navOverDark, setNavOverDark] = useState<boolean[]>([false, false, false, false])
+
+  useEffect(() => {
+    if (theme === 'dark') return
+    let frame = 0
+    const update = () => {
+      frame = 0
+      if (window.innerWidth > 760) return
+      const buttons = document.querySelectorAll<HTMLButtonElement>('.mobile-bottom-nav > button')
+      const next = Array.from(buttons, button => {
+        const bounds = button.getBoundingClientRect()
+        return isDarkBehindNav(bounds.left + bounds.width / 2, bounds.top + 18)
+      })
+      setNavOverDark(previous => previous.length === next.length && previous.every((dark, index) => dark === next[index]) ? previous : next)
+    }
+    const schedule = () => {
+      if (!frame) frame = window.requestAnimationFrame(update)
+    }
+    schedule()
+    window.addEventListener('scroll', schedule, { passive: true })
+    window.addEventListener('resize', schedule)
+    return () => {
+      window.cancelAnimationFrame(frame)
+      window.removeEventListener('scroll', schedule)
+      window.removeEventListener('resize', schedule)
+    }
+  }, [page, theme, mobileNavOpen])
 
   const [events, setEvents] =
     useState<EventItem[]>([])
@@ -962,8 +990,8 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
           {Array.from({ length: 6 }, (_, index) => <div key={index} />)}
         </div>
         <nav className={`mobile-bottom-nav${mobileNavOpen ? ' liquid-open' : ''}`} aria-label="Primary navigation">
-          <button className={page === 'Dashboard' ? 'active' : ''} onClick={() => navigate('Dashboard')}>{page === 'Dashboard' && <motion.i className="mobile-nav-jelly" layoutId="mobile-nav-jelly" initial={false} transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 460, damping: 23 }} aria-hidden="true" />}<Home size={23} /><span>Home</span></button>
-          <button className={page === 'Notices' ? 'active' : ''} onClick={() => navigate('Notices')}>{page === 'Notices' && <motion.i className="mobile-nav-jelly" layoutId="mobile-nav-jelly" initial={false} transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 460, damping: 23 }} aria-hidden="true" />}<Inbox size={23} /><span>Inbox</span>{unreadNoticeCount > 0 && <em className="mobile-unread-count">{unreadNoticeCount > 99 ? '99+' : unreadNoticeCount}</em>}</button>
+          <button className={`${page === 'Dashboard' ? 'active' : ''}${navOverDark[0] ? ' over-dark' : ''}`} onClick={() => navigate('Dashboard')}>{page === 'Dashboard' && <motion.i className="mobile-nav-jelly" layoutId="mobile-nav-jelly" initial={false} transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 460, damping: 23 }} aria-hidden="true" />}<Home size={23} /><span>Home</span></button>
+          <button className={`${page === 'Notices' ? 'active' : ''}${navOverDark[1] ? ' over-dark' : ''}`} onClick={() => navigate('Notices')}>{page === 'Notices' && <motion.i className="mobile-nav-jelly" layoutId="mobile-nav-jelly" initial={false} transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 460, damping: 23 }} aria-hidden="true" />}<Inbox size={23} /><span>Inbox</span>{unreadNoticeCount > 0 && <em className="mobile-unread-count">{unreadNoticeCount > 99 ? '99+' : unreadNoticeCount}</em>}</button>
           <div className="mobile-liquid-slot">
             <Liquid className="mobile-liquid-menu" blur={9} contrast={20} fill="var(--mobile-liquid-surface)" shadow="0 10px 24px rgba(31,48,68,.18)" filterPadding={34}>
               {mobileLiquidNav.map((item, index) => {
@@ -996,8 +1024,8 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
               </Liquid.Item>
             </Liquid>
           </div>
-          <button className={page === 'Calendar' ? 'active' : ''} onClick={() => navigate('Calendar')}>{page === 'Calendar' && <motion.i className="mobile-nav-jelly" layoutId="mobile-nav-jelly" initial={false} transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 460, damping: 23 }} aria-hidden="true" />}<CalendarDays size={23} /><span>Calendar</span></button>
-          <button className={page === 'Documents' ? 'active' : ''} onClick={() => navigate('Documents')}>{page === 'Documents' && <motion.i className="mobile-nav-jelly" layoutId="mobile-nav-jelly" initial={false} transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 460, damping: 23 }} aria-hidden="true" />}<FolderOpen size={23} /><span>Files</span></button>
+          <button className={`${page === 'Calendar' ? 'active' : ''}${navOverDark[2] ? ' over-dark' : ''}`} onClick={() => navigate('Calendar')}>{page === 'Calendar' && <motion.i className="mobile-nav-jelly" layoutId="mobile-nav-jelly" initial={false} transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 460, damping: 23 }} aria-hidden="true" />}<CalendarDays size={23} /><span>Calendar</span></button>
+          <button className={`${page === 'Documents' ? 'active' : ''}${navOverDark[3] ? ' over-dark' : ''}`} onClick={() => navigate('Documents')}>{page === 'Documents' && <motion.i className="mobile-nav-jelly" layoutId="mobile-nav-jelly" initial={false} transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 460, damping: 23 }} aria-hidden="true" />}<FolderOpen size={23} /><span>Files</span></button>
         </nav>
       </div>
 
