@@ -945,10 +945,7 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
 
         {mobileNavOpen && <>
           <button className="mobile-liquid-scrim" onClick={() => setMobileNavOpen(false)} aria-label="Close all pages menu" />
-          <div className="mobile-liquid-progressive-blur" aria-hidden="true">
-            {Array.from({ length: 7 }, (_, index) => <span className="blur-filter" key={index} />)}
-            <span className="progressive-gradient" />
-          </div>
+          <div className="mobile-liquid-progressive-blur" aria-hidden="true" />
         </>}
         <nav className={`mobile-bottom-nav${mobileNavOpen ? ' liquid-open' : ''}`} aria-label="Primary navigation">
           <button className={page === 'Dashboard' ? 'active' : ''} onClick={() => navigate('Dashboard')}>{page === 'Dashboard' && <motion.i className="mobile-nav-jelly" layoutId="mobile-nav-jelly" initial={false} transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 460, damping: 23 }} aria-hidden="true" />}<Home size={23} /><span>Home</span></button>
