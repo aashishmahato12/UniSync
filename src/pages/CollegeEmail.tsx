@@ -2,12 +2,15 @@ import { useEffect, useState } from 'react'
 import { CheckCircle2, Clock3, Mail, RefreshCw, Send, XCircle } from 'lucide-react'
 import { getCollegeEmailJobs, queueCollegeEmail, type CollegeEmailJob } from '../services/collegeEmail'
 import { hasConnectedMailbox } from '../services/accountIdentity'
+import { getMailConnection, type MailConnection } from '../services/mailConnection'
 import './CollegeEmail.css'
 
 const statusLabel = (job: CollegeEmailJob) => job.status === 'sent' ? 'Sent' : job.status === 'failed' ? 'Failed' : job.status === 'processing' ? 'Sending' : 'Queued'
 
 export default function CollegeEmail({ senderEmail, notify }: { senderEmail: string; notify: (message: string) => void }) {
-  const canSend = hasConnectedMailbox(senderEmail)
+  const [connection, setConnection] = useState<MailConnection | null>(null)
+  const canSend = connection?.status === 'connected' || connection?.status === 'legacy'
+    || (!connection && hasConnectedMailbox(senderEmail))
   const [recipient, setRecipient] = useState('')
   const [subject, setSubject] = useState('')
   const [message, setMessage] = useState('')
@@ -17,7 +20,10 @@ export default function CollegeEmail({ senderEmail, notify }: { senderEmail: str
   const refresh = async () => {
     try { setJobs(await getCollegeEmailJobs()) } catch { /* Migration may not be installed yet. */ }
   }
-  useEffect(() => { void refresh() }, [])
+  useEffect(() => {
+    void refresh()
+    void getMailConnection().then(setConnection).catch(() => { /* Connection setup may be pending. */ })
+  }, [senderEmail])
   const send = async () => {
     if (!canSend) {
       setError('Email delivery is not connected to this account yet.')
@@ -42,7 +48,7 @@ export default function CollegeEmail({ senderEmail, notify }: { senderEmail: str
     <div className="college-email-layout">
       <section className="college-email-compose">
         <div className="college-email-paper-head"><span><Mail size={20} /></span><div><small>NEW MESSAGE</small><strong>Compose email</strong></div></div>
-        <div className="college-email-line"><label>From</label><span>{senderEmail}</span></div>
+        <div className="college-email-line"><label>From</label><span>{connection?.email || senderEmail}</span></div>
         <div className="college-email-line"><label htmlFor="college-email-to">To</label><input id="college-email-to" type="email" value={recipient} onChange={event => setRecipient(event.target.value)} placeholder="name@heraldcollege.edu.np" /></div>
         <div className="college-email-line"><label htmlFor="college-email-subject">Subject</label><input id="college-email-subject" value={subject} maxLength={180} onChange={event => setSubject(event.target.value)} placeholder="What is this about?" /></div>
         <textarea aria-label="Email message" value={message} maxLength={10000} onChange={event => setMessage(event.target.value)} placeholder="Write your message…" />

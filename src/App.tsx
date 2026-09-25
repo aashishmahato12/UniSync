@@ -236,7 +236,7 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
     }
   }, [reduceMotion])
   const [page, setPage] =
-    useState<Page>('Dashboard')
+    useState<Page>(() => new URLSearchParams(window.location.search).has('mail') ? 'Profile' : 'Dashboard')
   useLayoutEffect(() => {
     window.scrollTo(0, 0)
   }, [page])

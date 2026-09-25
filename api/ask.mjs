@@ -36,7 +36,7 @@ export default { async fetch(request) {
   if (accountError || !account) return json({ error: 'Access denied.' }, 403)
 
   const [noticesResult, eventsResult, documentsResult] = await Promise.all([
-    client.from('college_notices').select('id,subject,summary,category,priority,received_at,source_url').order('received_at', { ascending: false }).limit(120),
+    client.from('college_notices').select('id,gmail_message_id,subject,summary,category,priority,received_at,source_url').order('received_at', { ascending: false }).limit(120),
     client.from('college_events').select('id,title,description,category,event_date,start_time,location,calendar_state,gmail_message_id').order('event_date', { ascending: true }).limit(120),
     client.from('college_attachments').select('id,file_name,subject,sender,extracted_text,received_at,gmail_message_id').eq('extraction_status', 'Ready').order('received_at', { ascending: false }).limit(120),
   ])
@@ -44,6 +44,7 @@ export default { async fetch(request) {
   const asksAboutFile = /\b(pdf|document|attachment|file|image|scan)\b/i.test(question)
   if (asksAboutFile && documentsResult.error) return json({ error: 'Could not load read documents. Check the attachment-text setup in Supabase.' }, 502)
   const terms = tokens(question)
+  const noticeLinks = new Map((noticesResult.data || []).map(row => [row.gmail_message_id, row.source_url]))
   const notices = (noticesResult.data || []).map(row => ({
     id: row.id, kind: 'Notice', title: row.subject, date: row.received_at?.slice(0, 10) || '',
     detail: row.summary?.slice(0, 900) || '', category: row.category, priority: row.priority,
@@ -54,16 +55,16 @@ export default { async fetch(request) {
     detail: row.description?.slice(0, 900) || '', category: row.category,
     time: row.start_time?.slice(0, 5) || '', location: row.location || '',
     calendarState: row.calendar_state,
-    url: /^[a-zA-Z0-9_-]{8,100}$/.test(row.gmail_message_id || '')
-      ? `https://mail.google.com/mail/u/0/#all/${encodeURIComponent(row.gmail_message_id)}` : undefined,
+    url: noticeLinks.get(row.gmail_message_id) || (/^[a-zA-Z0-9_-]{8,100}$/.test(row.gmail_message_id || '')
+      ? `https://mail.google.com/mail/u/0/#all/${encodeURIComponent(row.gmail_message_id)}` : undefined),
   }))
   // The optional migration can be applied after this code is deployed.
   const documents = (documentsResult.error ? [] : documentsResult.data || []).map(row => ({
     id: row.id, kind: 'Document', title: row.file_name, date: row.received_at?.slice(0, 10) || '',
     detail: `${row.subject || ''}\n${String(row.extracted_text || '').slice(0, 2400)}`,
     category: 'Attachment', sender: row.sender,
-    url: /^[a-zA-Z0-9_-]{8,100}$/.test(row.gmail_message_id || '')
-      ? `https://mail.google.com/mail/u/0/#all/${encodeURIComponent(row.gmail_message_id)}` : undefined,
+    url: noticeLinks.get(row.gmail_message_id) || (/^[a-zA-Z0-9_-]{8,100}$/.test(row.gmail_message_id || '')
+      ? `https://mail.google.com/mail/u/0/#all/${encodeURIComponent(row.gmail_message_id)}` : undefined),
   }))
   if (asksAboutFile && !documents.length) return json({
     answer: 'I can see that you asked about a file, but no PDF or image text is ready yet. Check the attachment reader and try again after a file shows as Ready.',

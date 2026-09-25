@@ -203,6 +203,21 @@
   color: #76a07d;
 }
 
+.connection-actions { margin-top: 12px; }
+.connection-actions button {
+  border: 1px solid #b9d2c2;
+  border-radius: 8px;
+  padding: 8px 12px;
+  background: #fff;
+  color: #365846;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.connection-actions button:disabled { opacity: .55; cursor: wait; }
+.connection-card .connection-error { color: #b14d4d; }
+
 @media (max-width: 760px) {
   .profile-layout {
     grid-template-columns: 1fr;

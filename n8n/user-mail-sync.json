@@ -1,0 +1,34 @@
+{
+  "name": "UniSync — Connected mail sync and send",
+  "nodes": [
+    {
+      "id": "49919a95-9dc6-416b-a904-c53953dc70ad",
+      "name": "Check Connected Mailboxes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 0],
+      "parameters": { "rule": { "interval": [{ "field": "minutes", "minutesInterval": 1 }] } }
+    },
+    {
+      "id": "1d202875-8f34-4e77-b410-e19b0c4db6c7",
+      "name": "Sync One Mailbox",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [260, 0],
+      "parameters": {
+        "method": "POST",
+        "url": "https://unisync-dun.vercel.app/api/mail-sync",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": { "timeout": 60000 }
+      }
+    }
+  ],
+  "connections": {
+    "Check Connected Mailboxes": { "main": [[{ "node": "Sync One Mailbox", "type": "main", "index": 0 }]] }
+  },
+  "pinData": {},
+  "settings": { "executionOrder": "v1", "timezone": "Asia/Kathmandu" },
+  "active": false,
+  "tags": []
+}

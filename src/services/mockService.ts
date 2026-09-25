@@ -101,6 +101,14 @@ export const studentService = {
       throw error
     }
 
+    const connectedIds = [...new Set((data ?? []).map(row => row.gmail_message_id as string)
+      .filter(id => id?.includes(':')))]
+    const { data: linkedNotices } = connectedIds.length
+      ? await supabase.from('college_notices').select('gmail_message_id,source_url')
+        .in('gmail_message_id', connectedIds.slice(0, 100))
+      : { data: [] as { gmail_message_id: string; source_url: string | null }[] }
+    const noticeLinks = new Map((linkedNotices ?? []).map(row => [row.gmail_message_id, row.source_url]))
+
     const collegeEvents: EventItem[] = (data ?? []).map(row => ({
       id: row.id,
 
@@ -121,9 +129,9 @@ export const studentService = {
 
       source: 'College Email',
       gmailMessageId: row.gmail_message_id ?? undefined,
-      sourceUrl: /^[a-zA-Z0-9_-]{8,100}$/.test(row.gmail_message_id ?? '')
+      sourceUrl: noticeLinks.get(row.gmail_message_id) || (/^[a-zA-Z0-9_-]{8,100}$/.test(row.gmail_message_id ?? '')
         ? `https://mail.google.com/mail/u/0/#all/${encodeURIComponent(row.gmail_message_id)}`
-        : undefined,
+        : undefined),
 
       // Supabase snake_case -> React camelCase
       calendarState: row.calendar_state,
@@ -238,7 +246,8 @@ export const studentService = {
         noticeSummary: notice?.summary,
         extractedText: extractedById.get(row.id)?.extracted_text ?? undefined,
         extractionStatus: extractedById.get(row.id)?.extraction_status as DocumentItem['extractionStatus'],
-        sourceUrl: `https://mail.google.com/mail/u/0/#all/${encodeURIComponent(row.gmail_message_id)}`,
+        sourceUrl: notice?.sourceUrl || (/^[a-zA-Z0-9_-]{8,100}$/.test(row.gmail_message_id)
+          ? `https://mail.google.com/mail/u/0/#all/${encodeURIComponent(row.gmail_message_id)}` : ''),
       }
     })
 
