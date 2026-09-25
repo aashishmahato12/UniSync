@@ -17,6 +17,13 @@
   .ask-ai-page > .page-intro,
   .chat-layout > *,
   .profile-layout > *,
+  .notices-page > .inbox-intro-reveal,
+  .notices-page > .page-toolbar,
+  .notices-page .figma-mobile-feed > .mobile-inbox-filter-reveal,
+  .notices-page .figma-mobile-feed > .mobile-inbox-hint,
+  .notices-page .figma-mobile-feed > .figma-mobile-entry,
+  .notices-page .notice-mail-list > .notice-mail-item,
+  .notices-page :is(.notice-reader,.notice-reader-empty),
   .document-folders > *,
   .document-gallery > *,
   .schedule-list > *,
@@ -57,6 +64,9 @@
 .page-scale-shell .desk-main-grid > :nth-child(2) { --scale-delay: .455s; }
 .page-scale-shell .desk-main-grid > :nth-child(3) { --scale-delay: .52s; }
 .page-scale-shell .desk-main-grid > :nth-child(4) { --scale-delay: .585s; }
+.page-scale-shell .notices-page > .page-toolbar,
+.page-scale-shell .notices-page .figma-mobile-feed > .mobile-inbox-hint { --scale-delay: .065s; }
+.page-scale-shell .notices-page :is(.notice-reader,.notice-reader-empty) { --scale-delay: .13s; }
 
 /* Repeating cards open in sequence after their containing section appears. */
 .page-scale-shell :is(.document-folders,.document-gallery,.schedule-list,.college-email-history,.chat-suggestions) > :nth-child(1) { --scale-delay: .22s; }
@@ -66,6 +76,20 @@
 .page-scale-shell :is(.document-folders,.document-gallery,.schedule-list,.college-email-history,.chat-suggestions) > :nth-child(5) { --scale-delay: .48s; }
 .page-scale-shell :is(.document-folders,.document-gallery,.schedule-list,.college-email-history,.chat-suggestions) > :nth-child(6) { --scale-delay: .545s; }
 .page-scale-shell :is(.document-folders,.document-gallery,.schedule-list,.college-email-history,.chat-suggestions) > :nth-child(n+7) { --scale-delay: .61s; }
+.page-scale-shell .notices-page .figma-mobile-feed > .figma-mobile-entry:nth-child(3),
+.page-scale-shell .notices-page .notice-mail-list > .notice-mail-item:nth-child(2) { --scale-delay: .22s; }
+.page-scale-shell .notices-page .figma-mobile-feed > .figma-mobile-entry:nth-child(4),
+.page-scale-shell .notices-page .notice-mail-list > .notice-mail-item:nth-child(3) { --scale-delay: .285s; }
+.page-scale-shell .notices-page .figma-mobile-feed > .figma-mobile-entry:nth-child(5),
+.page-scale-shell .notices-page .notice-mail-list > .notice-mail-item:nth-child(4) { --scale-delay: .35s; }
+.page-scale-shell .notices-page .figma-mobile-feed > .figma-mobile-entry:nth-child(6),
+.page-scale-shell .notices-page .notice-mail-list > .notice-mail-item:nth-child(5) { --scale-delay: .415s; }
+.page-scale-shell .notices-page .figma-mobile-feed > .figma-mobile-entry:nth-child(7),
+.page-scale-shell .notices-page .notice-mail-list > .notice-mail-item:nth-child(6) { --scale-delay: .48s; }
+.page-scale-shell .notices-page .figma-mobile-feed > .figma-mobile-entry:nth-child(8),
+.page-scale-shell .notices-page .notice-mail-list > .notice-mail-item:nth-child(7) { --scale-delay: .545s; }
+.page-scale-shell .notices-page .figma-mobile-feed > .figma-mobile-entry:nth-child(n+9),
+.page-scale-shell .notices-page .notice-mail-list > .notice-mail-item:nth-child(n+8) { --scale-delay: .61s; }
 
 @keyframes unisync-scale-open {
   0% {
@@ -104,6 +128,13 @@
     .ask-ai-page > .page-intro,
     .chat-layout > *,
     .profile-layout > *,
+    .notices-page > .inbox-intro-reveal,
+    .notices-page > .page-toolbar,
+    .notices-page .figma-mobile-feed > .mobile-inbox-filter-reveal,
+    .notices-page .figma-mobile-feed > .mobile-inbox-hint,
+    .notices-page .figma-mobile-feed > .figma-mobile-entry,
+    .notices-page .notice-mail-list > .notice-mail-item,
+    .notices-page :is(.notice-reader,.notice-reader-empty),
     .document-folders > *,
     .document-gallery > *,
     .schedule-list > *,
@@ -147,6 +178,9 @@
   .page-scale-shell .desk-main-grid > :nth-child(2) { --scale-delay: .28s; }
   .page-scale-shell .desk-main-grid > :nth-child(3) { --scale-delay: .32s; }
   .page-scale-shell .desk-main-grid > :nth-child(4) { --scale-delay: .36s; }
+  .page-scale-shell .notices-page .figma-mobile-feed > .mobile-inbox-hint { --scale-delay: .04s; }
+  .page-scale-shell .notices-page > .page-toolbar { --scale-delay: .04s; }
+  .page-scale-shell .notices-page :is(.notice-reader,.notice-reader-empty) { --scale-delay: .08s; }
 
   .page-scale-shell :is(.document-folders,.document-gallery,.schedule-list,.college-email-history,.chat-suggestions) > :nth-child(1) { --scale-delay: .1s; }
   .page-scale-shell :is(.document-folders,.document-gallery,.schedule-list,.college-email-history,.chat-suggestions) > :nth-child(2) { --scale-delay: .145s; }
@@ -155,6 +189,20 @@
   .page-scale-shell :is(.document-folders,.document-gallery,.schedule-list,.college-email-history,.chat-suggestions) > :nth-child(5) { --scale-delay: .28s; }
   .page-scale-shell :is(.document-folders,.document-gallery,.schedule-list,.college-email-history,.chat-suggestions) > :nth-child(6) { --scale-delay: .325s; }
   .page-scale-shell :is(.document-folders,.document-gallery,.schedule-list,.college-email-history,.chat-suggestions) > :nth-child(n+7) { --scale-delay: .37s; }
+  .page-scale-shell .notices-page .figma-mobile-feed > .figma-mobile-entry:nth-child(3),
+  .page-scale-shell .notices-page .notice-mail-list > .notice-mail-item:nth-child(2) { --scale-delay: .1s; }
+  .page-scale-shell .notices-page .figma-mobile-feed > .figma-mobile-entry:nth-child(4),
+  .page-scale-shell .notices-page .notice-mail-list > .notice-mail-item:nth-child(3) { --scale-delay: .145s; }
+  .page-scale-shell .notices-page .figma-mobile-feed > .figma-mobile-entry:nth-child(5),
+  .page-scale-shell .notices-page .notice-mail-list > .notice-mail-item:nth-child(4) { --scale-delay: .19s; }
+  .page-scale-shell .notices-page .figma-mobile-feed > .figma-mobile-entry:nth-child(6),
+  .page-scale-shell .notices-page .notice-mail-list > .notice-mail-item:nth-child(5) { --scale-delay: .235s; }
+  .page-scale-shell .notices-page .figma-mobile-feed > .figma-mobile-entry:nth-child(7),
+  .page-scale-shell .notices-page .notice-mail-list > .notice-mail-item:nth-child(6) { --scale-delay: .28s; }
+  .page-scale-shell .notices-page .figma-mobile-feed > .figma-mobile-entry:nth-child(8),
+  .page-scale-shell .notices-page .notice-mail-list > .notice-mail-item:nth-child(7) { --scale-delay: .325s; }
+  .page-scale-shell .notices-page .figma-mobile-feed > .figma-mobile-entry:nth-child(n+9),
+  .page-scale-shell .notices-page .notice-mail-list > .notice-mail-item:nth-child(n+8) { --scale-delay: .37s; }
 }
 
 @keyframes unisync-scale-open-mobile {
@@ -188,6 +236,13 @@
     .ask-ai-page > .page-intro,
     .chat-layout > *,
     .profile-layout > *,
+    .notices-page > .inbox-intro-reveal,
+    .notices-page > .page-toolbar,
+    .notices-page .figma-mobile-feed > .mobile-inbox-filter-reveal,
+    .notices-page .figma-mobile-feed > .mobile-inbox-hint,
+    .notices-page .figma-mobile-feed > .figma-mobile-entry,
+    .notices-page .notice-mail-list > .notice-mail-item,
+    .notices-page :is(.notice-reader,.notice-reader-empty),
     .document-folders > *,
     .document-gallery > *,
     .schedule-list > *,

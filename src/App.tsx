@@ -875,7 +875,7 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
 <div
   key={page}
   hidden={!!selectedNotice}
-  className={`${noticeReturning ? 'notice-returning ' : ''}${page === 'Notices' || page === 'Calendar' ? '' : 'page-scale-shell'}`.trim() || undefined}
+  className={`${noticeReturning ? 'notice-returning ' : ''}${page === 'Calendar' ? '' : 'page-scale-shell'}`.trim() || undefined}
   onAnimationEnd={event => { if (event.target === event.currentTarget) setNoticeReturning(false) }}
 >
               {page ===
