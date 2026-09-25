@@ -21,8 +21,6 @@ export default { async fetch(request) {
   }
 
   if (request.method === 'POST') {
-    if (user.email.toLowerCase() === legacyMailbox)
-      return json({ error: 'This account already uses the original Gmail workflow.' }, 409)
     await admin.from('mail_oauth_states').delete().lt('expires_at', new Date().toISOString())
     const state = randomBytes(32).toString('base64url')
     const { error } = await admin.from('mail_oauth_states').insert({

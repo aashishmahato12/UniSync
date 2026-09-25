@@ -12,6 +12,13 @@ function authorized(request) {
   return b.length >= 32 && a.length === b.length && timingSafeEqual(a, b)
 }
 
+export function messageKey(connection, id) {
+  // Original n8n imports used the raw Gmail ID. Reuse it when testing the
+  // original mailbox so the new importer does not duplicate saved notices.
+  return connection.mailbox_email === 'mahatoaashish5@gmail.com'
+    ? id : `${connection.owner_id}:${id}`
+}
+
 async function importMail(connection, accessToken, admin) {
   // Gmail lists newest first. Walk past already-imported pages so accounts can
   // gradually load their older college mail without a separate backfill flow.
@@ -23,12 +30,12 @@ async function importMail(connection, accessToken, admin) {
     const list = await gmailRequest(`messages?${query}`, accessToken)
     const ids = (list.messages || []).map(item => String(item.id || '')).filter(Boolean)
     if (!ids.length) break
-    const keys = ids.map(id => `${connection.owner_id}:${id}`)
+    const keys = ids.map(id => messageKey(connection, id))
     const { data: existing, error: readError } = await admin.from('college_notices')
       .select('gmail_message_id').in('gmail_message_id', keys)
     if (readError) throw readError
     const saved = new Set((existing || []).map(row => row.gmail_message_id))
-    pending.push(...ids.filter(id => !saved.has(`${connection.owner_id}:${id}`)).slice(0, 2 - pending.length))
+    pending.push(...ids.filter(id => !saved.has(messageKey(connection, id))).slice(0, 2 - pending.length))
     pageToken = list.nextPageToken
   } while (pending.length < 2 && pageToken)
   let imported = 0
@@ -37,7 +44,7 @@ async function importMail(connection, accessToken, admin) {
     const message = parseGmailMessage(full)
     if (!message || !message.id) continue
     const extracted = await extractNotice(message)
-    const gmailMessageId = `${connection.owner_id}:${message.id}`
+    const gmailMessageId = messageKey(connection, message.id)
     for (const [index, attachment] of message.attachments.entries()) {
       if (index >= 50 || !['application/pdf', 'image/jpeg', 'image/png'].includes(attachment.mimeType)
         || attachment.size <= 0 || attachment.size > 10 * 1024 * 1024
@@ -88,6 +95,9 @@ async function importMail(connection, accessToken, admin) {
 }
 
 async function sendOne(connection, accessToken, admin) {
+  // The original mailbox still has its own n8n sender. This connection is
+  // only for testing the new inbox/backfill path and must not compete to send.
+  if (connection.mailbox_email === 'mahatoaashish5@gmail.com') return 0
   const { data, error } = await admin.rpc('claim_next_connected_college_email', {
     p_owner: connection.owner_id,
   })

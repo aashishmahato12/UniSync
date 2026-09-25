@@ -27,8 +27,12 @@ export default { async fetch(request) {
     const mailboxEmail = String(profile.emailAddress || '').trim().toLowerCase()
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mailboxEmail))
       return finish(settings.origin, 'failed')
-    if (mailboxEmail === 'mahatoaashish5@gmail.com')
-      return finish(settings.origin, 'failed')
+    if (mailboxEmail === 'mahatoaashish5@gmail.com') {
+      // Only the original UniSync account may attach the legacy mailbox.
+      const { data: owner, error: ownerError } = await admin.auth.admin.getUserById(ownerId)
+      if (ownerError || owner?.user?.email?.trim().toLowerCase() !== mailboxEmail)
+        return finish(settings.origin, 'failed')
+    }
     const { error: saveError } = await admin.from('mail_connections').upsert({
       owner_id: ownerId, mailbox_email: mailboxEmail,
       refresh_token_encrypted: encryptToken(tokens.refresh_token, settings.key),

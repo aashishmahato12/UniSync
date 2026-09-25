@@ -73,7 +73,8 @@ export default function Profile({
   const removeMailConnection = async () => {
     setMailBusy(true); setMailError('')
     try {
-      setMailConnection(await disconnectMail())
+      await disconnectMail()
+      setMailConnection(await getMailConnection())
       notify('Gmail disconnected from your account.')
     } catch (error) {
       setMailError(error instanceof Error ? error.message : 'Could not disconnect Gmail.')
@@ -208,10 +209,10 @@ export default function Profile({
 
             <span>{mailConnection?.status === 'connected' || mailConnection?.status === 'legacy'
               || (!mailConnection && hasConnectedMailbox(email)) ? 'Connected' : 'Not connected'}</span>
-            {mailConnection?.status !== 'legacy' && !hasConnectedMailbox(email) && !mailUnavailable && <div className="connection-actions">
+            {!mailUnavailable && <div className="connection-actions">
               {mailConnection?.status === 'connected'
                 ? <button type="button" disabled={mailBusy} onClick={() => void removeMailConnection()}>Disconnect Gmail</button>
-                : <button type="button" disabled={mailBusy} onClick={() => void startMailConnection()}>{mailBusy ? 'Opening Google…' : 'Connect Gmail'}</button>}
+                : <button type="button" disabled={mailBusy} onClick={() => void startMailConnection()}>{mailBusy ? 'Opening Google…' : mailConnection?.status === 'legacy' ? 'Connect Gmail for older mail' : 'Connect Gmail'}</button>}
             </div>}
             {mailError && <p className="connection-error" role="alert">{mailError}</p>}
           </div>

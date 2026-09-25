@@ -1,6 +1,6 @@
 # Connect each student's own Gmail
 
-The app can now ask each signed-in student to connect Gmail from **Profile → Integrations**. A shared n8n schedule calls UniSync's server once per minute. The server refreshes that student's Google token, imports their Herald College messages, saves extracted events and supported attachments under their user ID, and sends their queued college emails from their own mailbox. Google refresh tokens stay encrypted on the server and are never returned to the browser or n8n. The original account keeps its existing Gmail workflows.
+The app can now ask each signed-in student to connect Gmail from **Profile → Integrations**. A shared n8n schedule calls UniSync's server once per minute. The server refreshes that student's Google token, imports their Herald College messages, saves extracted events and supported attachments under their user ID, and sends their queued college emails from their own mailbox. Google refresh tokens stay encrypted on the server and are never returned to the browser or n8n. The original account keeps its existing Gmail workflows. Its owner can also connect that same mailbox in Profile to test historical imports; the new importer reuses legacy Gmail IDs to avoid duplicate notices, while the old n8n sender remains responsible for that account's outgoing messages.
 
 ## Before enabling the Connect Gmail button
 
