@@ -33,6 +33,7 @@ export default function Calendar({ events, onEvent, updateCalendar, createEvent 
   const [view, setView] = useState<'month' | 'day'>('month')
   const [showAll, setShowAll] = useState(false)
   const [filter, setFilter] = useState('All')
+  const [hasInteracted, setHasInteracted] = useState(false)
   const [composerOpen, setComposerOpen] = useState(false)
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState('')
@@ -100,7 +101,7 @@ export default function Calendar({ events, onEvent, updateCalendar, createEvent 
     </div>}
   </article>
 
-  return <div className={`uni-calendar uni-calendar-${view}`}>
+  return <div className={`uni-calendar uni-calendar-${view}${hasInteracted ? ' uni-calendar-interacted' : ''}`} onClickCapture={() => setHasInteracted(true)}>
     <header className="uni-cal-heading"><div><small>YOUR SCHEDULE</small><h1>Calendar</h1><p>Classes, college events and deadlines in one place.</p></div><button className="uni-cal-add" onClick={openComposer}><Plus size={16} /> Add event</button></header>
     <div className="uni-cal-filter-wrap"><JellyRadio items={calendarFilters} value={filter} onChange={changeFilter} toneForItem={item => filterTone[item] || 'all'} ariaLabel="Filter calendar dates" className="uni-cal-filters" /></div>
     <div className="uni-cal-layout">

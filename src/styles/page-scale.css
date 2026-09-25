@@ -111,6 +111,23 @@
   animation-fill-mode: backwards;
 }
 
+/* Entry effects should never delay a view or filter change after a click. */
+.page-scale-shell .uni-calendar.uni-calendar-interacted :is(
+  .uni-cal-grid > .uni-cal-weekday,
+  .uni-cal-grid > .uni-cal-date,
+  .uni-cal-event,
+  .uni-cal-upcoming,
+  .uni-cal-empty,
+  .uni-cal-day-empty,
+  .uni-cal-no-upcoming
+) {
+  animation: none;
+  opacity: 1;
+  transform: none;
+  clip-path: none;
+  filter: none;
+}
+
 @keyframes unisync-scale-open {
   0% {
     opacity: 0;
