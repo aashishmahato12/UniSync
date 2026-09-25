@@ -17,6 +17,13 @@
   .ask-ai-page > .page-intro,
   .chat-layout > *,
   .profile-layout > *,
+  .uni-calendar .uni-cal-heading,
+  .uni-calendar .uni-cal-filter-wrap,
+  .uni-calendar .uni-cal-toolbar,
+  .uni-calendar .uni-cal-grid,
+  .uni-calendar .uni-cal-selected-head,
+  .uni-calendar :is(.uni-cal-empty,.uni-cal-day-empty,.uni-cal-event),
+  .uni-calendar :is(.uni-cal-upcoming-head,.uni-cal-upcoming,.uni-cal-no-upcoming),
   .notices-page > .inbox-intro-reveal,
   .notices-page > .page-toolbar,
   .notices-page .figma-mobile-feed > .mobile-inbox-filter-reveal,
@@ -31,10 +38,9 @@
   .chat-suggestions > button
 ),
 .page-scale-shell > .page-intro {
-  --scale-delay: 0s;
   opacity: 0;
   transform-origin: 50% 18%;
-  animation: unisync-scale-open .68s cubic-bezier(.16,1,.3,1) var(--scale-delay) both;
+  animation: unisync-scale-open .68s cubic-bezier(.16,1,.3,1) var(--scale-delay, 0s) both;
   will-change: opacity, transform, clip-path, filter;
 }
 
@@ -78,7 +84,20 @@
 .page-scale-shell :is(.document-folders,.document-gallery,.schedule-list,.college-email-history,.chat-suggestions) > :nth-child(n+7) { --scale-delay: .61s; }
 .page-scale-shell .notices-page .figma-mobile-feed > .figma-mobile-entry,
 .page-scale-shell .notices-page .notice-mail-list > .notice-mail-item {
-  --scale-delay: calc(.22s + var(--inbox-index) * .15s);
+  --scale-delay: var(--inbox-delay);
+}
+.page-scale-shell .uni-calendar .uni-cal-filter-wrap { --scale-delay: .1s; }
+.page-scale-shell .uni-calendar .uni-cal-toolbar { --scale-delay: .18s; }
+.page-scale-shell .uni-calendar .uni-cal-grid { --scale-delay: .27s; }
+.page-scale-shell .uni-calendar .uni-cal-selected-head { --scale-delay: .37s; }
+.page-scale-shell .uni-calendar :is(.uni-cal-empty,.uni-cal-day-empty) { --scale-delay: .45s; }
+.page-scale-shell .uni-calendar .uni-cal-upcoming-head { --scale-delay: .46s; }
+.page-scale-shell .uni-calendar .uni-cal-no-upcoming { --scale-delay: .56s; }
+.page-scale-shell .uni-calendar .uni-cal-event,
+.page-scale-shell .uni-calendar .uni-cal-upcoming { --scale-delay: var(--calendar-delay); }
+.page-scale-shell .uni-calendar .uni-cal-layout :is(.uni-cal-upcoming,.uni-cal-event) {
+  opacity: 1;
+  animation-fill-mode: backwards;
 }
 
 @keyframes unisync-scale-open {
@@ -118,6 +137,13 @@
     .ask-ai-page > .page-intro,
     .chat-layout > *,
     .profile-layout > *,
+    .uni-calendar .uni-cal-heading,
+    .uni-calendar .uni-cal-filter-wrap,
+    .uni-calendar .uni-cal-toolbar,
+    .uni-calendar .uni-cal-grid,
+    .uni-calendar .uni-cal-selected-head,
+    .uni-calendar :is(.uni-cal-empty,.uni-cal-day-empty,.uni-cal-event),
+    .uni-calendar :is(.uni-cal-upcoming-head,.uni-cal-upcoming,.uni-cal-no-upcoming),
     .notices-page > .inbox-intro-reveal,
     .notices-page > .page-toolbar,
     .notices-page .figma-mobile-feed > .mobile-inbox-filter-reveal,
@@ -181,8 +207,17 @@
   .page-scale-shell :is(.document-folders,.document-gallery,.schedule-list,.college-email-history,.chat-suggestions) > :nth-child(n+7) { --scale-delay: .37s; }
   .page-scale-shell .notices-page .figma-mobile-feed > .figma-mobile-entry,
   .page-scale-shell .notices-page .notice-mail-list > .notice-mail-item {
-    --scale-delay: calc(.16s + var(--inbox-index) * .17s);
+    --scale-delay: var(--inbox-mobile-delay);
   }
+  .page-scale-shell .uni-calendar .uni-cal-filter-wrap { --scale-delay: .07s; }
+  .page-scale-shell .uni-calendar .uni-cal-toolbar { --scale-delay: .14s; }
+  .page-scale-shell .uni-calendar .uni-cal-grid { --scale-delay: .23s; }
+  .page-scale-shell .uni-calendar .uni-cal-selected-head { --scale-delay: .33s; }
+  .page-scale-shell .uni-calendar :is(.uni-cal-empty,.uni-cal-day-empty) { --scale-delay: .41s; }
+  .page-scale-shell .uni-calendar .uni-cal-upcoming-head { --scale-delay: .43s; }
+  .page-scale-shell .uni-calendar .uni-cal-no-upcoming { --scale-delay: .52s; }
+  .page-scale-shell .uni-calendar .uni-cal-event,
+  .page-scale-shell .uni-calendar .uni-cal-upcoming { --scale-delay: var(--calendar-mobile-delay); }
 }
 
 @keyframes unisync-scale-open-mobile {
@@ -216,6 +251,13 @@
     .ask-ai-page > .page-intro,
     .chat-layout > *,
     .profile-layout > *,
+    .uni-calendar .uni-cal-heading,
+    .uni-calendar .uni-cal-filter-wrap,
+    .uni-calendar .uni-cal-toolbar,
+    .uni-calendar .uni-cal-grid,
+    .uni-calendar .uni-cal-selected-head,
+    .uni-calendar :is(.uni-cal-empty,.uni-cal-day-empty,.uni-cal-event),
+    .uni-calendar :is(.uni-cal-upcoming-head,.uni-cal-upcoming,.uni-cal-no-upcoming),
     .notices-page > .inbox-intro-reveal,
     .notices-page > .page-toolbar,
     .notices-page .figma-mobile-feed > .mobile-inbox-filter-reveal,
