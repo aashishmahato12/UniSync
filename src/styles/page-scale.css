@@ -78,7 +78,7 @@
 .page-scale-shell :is(.document-folders,.document-gallery,.schedule-list,.college-email-history,.chat-suggestions) > :nth-child(n+7) { --scale-delay: .61s; }
 .page-scale-shell .notices-page .figma-mobile-feed > .figma-mobile-entry,
 .page-scale-shell .notices-page .notice-mail-list > .notice-mail-item {
-  --scale-delay: calc(.22s + var(--inbox-index) * .1s);
+  --scale-delay: calc(.22s + var(--inbox-index) * .15s);
 }
 
 @keyframes unisync-scale-open {
@@ -181,7 +181,7 @@
   .page-scale-shell :is(.document-folders,.document-gallery,.schedule-list,.college-email-history,.chat-suggestions) > :nth-child(n+7) { --scale-delay: .37s; }
   .page-scale-shell .notices-page .figma-mobile-feed > .figma-mobile-entry,
   .page-scale-shell .notices-page .notice-mail-list > .notice-mail-item {
-    --scale-delay: calc(.16s + var(--inbox-index) * .11s);
+    --scale-delay: calc(.16s + var(--inbox-index) * .17s);
   }
 }
 
