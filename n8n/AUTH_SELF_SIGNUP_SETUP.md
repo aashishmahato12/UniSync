@@ -6,6 +6,8 @@ Keep email sign-in and new user sign-up enabled in Supabase Authentication. The 
 
 The migration assigns the existing college notices, calendar entries, and attachments to the original connected mailbox. New accounts can sign in and use their own uploads and custom calendar events, but their college inbox starts empty. The current n8n Gmail intake and outgoing email credential stay with the original account. Connect and scope a separate intake and sender before enabling those features for another user.
 
+The attachment, college-email, and payment-receipt tables are optional. The migration skips any that are not installed, so a missing `college_email_jobs` table does not block sign-up. If you install `003_payment_receipts.sql`, `004_college_attachments.sql`, or `007_college_email_jobs.sql` later, rerun the full `009_private_self_signup.sql` immediately afterward to apply the private-account policies before using those features.
+
 To make the six-digit CodeSlots field usable, edit **Supabase → Authentication → Email Templates → Magic link / OTP** and include the OTP variable in the email body:
 
 ```html

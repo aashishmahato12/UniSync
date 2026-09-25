@@ -48,33 +48,25 @@ alter table public.college_notices
   add column if not exists owner_id uuid references auth.users(id);
 alter table public.college_events
   add column if not exists owner_id uuid references auth.users(id);
-alter table public.college_attachments
-  add column if not exists owner_id uuid references auth.users(id);
 
 update public.college_notices set owner_id = public.original_mailbox_owner_id() where owner_id is null;
 update public.college_events set owner_id = public.original_mailbox_owner_id() where owner_id is null;
-update public.college_attachments set owner_id = public.original_mailbox_owner_id() where owner_id is null;
 
 alter table public.college_notices alter column owner_id set default public.original_mailbox_owner_id();
 alter table public.college_events alter column owner_id set default public.original_mailbox_owner_id();
-alter table public.college_attachments alter column owner_id set default public.original_mailbox_owner_id();
 alter table public.college_notices alter column owner_id set not null;
 alter table public.college_events alter column owner_id set not null;
-alter table public.college_attachments alter column owner_id set not null;
 create index if not exists college_notices_owner_received_idx on public.college_notices(owner_id, received_at desc);
 create index if not exists college_events_owner_date_idx on public.college_events(owner_id, event_date);
-create index if not exists college_attachments_owner_received_idx on public.college_attachments(owner_id, received_at desc);
 
 -- Replace the old allowlist-wide read policies: merely creating an account
 -- must never reveal the original student's messages, events, or attachments.
 drop policy if exists owner_reads_notices on public.college_notices;
 drop policy if exists owner_reads_events on public.college_events;
 drop policy if exists owner_updates_event_status on public.college_events;
-drop policy if exists owner_reads_college_attachments on public.college_attachments;
 drop policy if exists users_read_own_notices on public.college_notices;
 drop policy if exists users_read_own_events on public.college_events;
 drop policy if exists users_update_own_event_status on public.college_events;
-drop policy if exists users_read_own_college_attachments on public.college_attachments;
 create policy users_read_own_notices on public.college_notices
   for select to authenticated using (owner_id = (select auth.uid()));
 create policy users_read_own_events on public.college_events
@@ -83,46 +75,69 @@ create policy users_update_own_event_status on public.college_events
   for update to authenticated
   using (owner_id = (select auth.uid()))
   with check (owner_id = (select auth.uid()));
-create policy users_read_own_college_attachments on public.college_attachments
-  for select to authenticated using (owner_id = (select auth.uid()));
+-- Attachments are an optional integration (004_college_attachments.sql).
+do $optional_attachments$
+begin
+  if to_regclass('public.college_attachments') is not null then
+    execute 'alter table public.college_attachments add column if not exists owner_id uuid references auth.users(id)';
+    execute 'update public.college_attachments set owner_id = public.original_mailbox_owner_id() where owner_id is null';
+    execute 'alter table public.college_attachments alter column owner_id set default public.original_mailbox_owner_id()';
+    execute 'alter table public.college_attachments alter column owner_id set not null';
+    execute 'create index if not exists college_attachments_owner_received_idx on public.college_attachments(owner_id, received_at desc)';
+    execute 'drop policy if exists owner_reads_college_attachments on public.college_attachments';
+    execute 'drop policy if exists users_read_own_college_attachments on public.college_attachments';
+    execute $policy$create policy users_read_own_college_attachments on public.college_attachments
+      for select to authenticated using (owner_id = (select auth.uid()))$policy$;
 
-drop policy if exists owner_opens_college_attachments on storage.objects;
-drop policy if exists users_open_own_college_attachments on storage.objects;
-create policy users_open_own_college_attachments on storage.objects
-  for select to authenticated using (
-    bucket_id = 'college-attachments'
-    and exists (
-      select 1 from public.college_attachments
-      where storage_path = name and owner_id = (select auth.uid())
-    )
-  );
+    execute 'drop policy if exists owner_opens_college_attachments on storage.objects';
+    execute 'drop policy if exists users_open_own_college_attachments on storage.objects';
+    execute $policy$create policy users_open_own_college_attachments on storage.objects
+      for select to authenticated using (
+        bucket_id = 'college-attachments'
+        and exists (
+          select 1 from public.college_attachments
+          where storage_path = name and owner_id = (select auth.uid())
+        )
+      )$policy$;
+  end if;
+end $optional_attachments$;
 
 -- Outgoing n8n still uses the original Gmail credential. Until each new
 -- account can connect its own sender, prevent it from sending as that owner.
-drop policy if exists users_queue_own_college_emails on public.college_email_jobs;
-create policy users_queue_own_college_emails on public.college_email_jobs
-  for insert to authenticated with check (
-    owner_id = (select auth.uid())
-    and public.has_connected_mailbox()
-    and status = 'queued'
-    and gmail_message_id is null and error_message is null
-    and processing_at is null and sent_at is null
-  );
+do $optional_outgoing$
+begin
+  if to_regclass('public.college_email_jobs') is not null then
+    execute 'drop policy if exists users_queue_own_college_emails on public.college_email_jobs';
+    execute $policy$create policy users_queue_own_college_emails on public.college_email_jobs
+      for insert to authenticated with check (
+        owner_id = (select auth.uid())
+        and public.has_connected_mailbox()
+        and status = 'queued'
+        and gmail_message_id is null and error_message is null
+        and processing_at is null and sent_at is null
+      )$policy$;
+  end if;
 
-drop policy if exists owner_queues_receipt_jobs on public.payment_receipt_jobs;
-create policy owner_queues_receipt_jobs on public.payment_receipt_jobs
-  for insert to authenticated with check (
-    owner_id = (select auth.uid())
-    and public.has_connected_mailbox()
-    and status = 'queued'
-    and gmail_message_id is null and error_message is null
-    and processing_at is null and sent_at is null
-    and receipt_path like (select auth.uid())::text || '/%'
-    and signed_receipt_url like
-      'https://qozetqmklegcnjgxtgpd.supabase.co/storage/v1/object/sign/payment-receipts/%'
-  );
-drop policy if exists owner_reads_receipt_settings on public.payment_receipt_settings;
-create policy owner_reads_receipt_settings on public.payment_receipt_settings
-  for select to authenticated using (public.has_connected_mailbox());
+  if to_regclass('public.payment_receipt_jobs') is not null then
+    execute 'drop policy if exists owner_queues_receipt_jobs on public.payment_receipt_jobs';
+    execute $policy$create policy owner_queues_receipt_jobs on public.payment_receipt_jobs
+      for insert to authenticated with check (
+        owner_id = (select auth.uid())
+        and public.has_connected_mailbox()
+        and status = 'queued'
+        and gmail_message_id is null and error_message is null
+        and processing_at is null and sent_at is null
+        and receipt_path like (select auth.uid())::text || '/%'
+        and signed_receipt_url like
+          'https://qozetqmklegcnjgxtgpd.supabase.co/storage/v1/object/sign/payment-receipts/%'
+      )$policy$;
+  end if;
+
+  if to_regclass('public.payment_receipt_settings') is not null then
+    execute 'drop policy if exists owner_reads_receipt_settings on public.payment_receipt_settings';
+    execute $policy$create policy owner_reads_receipt_settings on public.payment_receipt_settings
+      for select to authenticated using (public.has_connected_mailbox())$policy$;
+  end if;
+end $optional_outgoing$;
 
 commit;
