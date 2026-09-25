@@ -78,7 +78,7 @@ export default function Calendar({ events, onEvent, updateCalendar, createEvent 
   const eventCard = (event: EventItem, compact = false, index = 0) => <article
     className={`uni-cal-event uni-cal-${tone(event)} ${compact ? 'is-compact' : 'is-expanded'}`}
     key={`${filter}-${view}-${event.id}`}
-    style={{ '--calendar-delay': `${.45 + index * .15}s`, '--calendar-mobile-delay': `${.41 + index * .17}s` } as CSSProperties}
+    style={{ '--calendar-delay': `${1.02 + index * .15}s`, '--calendar-mobile-delay': `${.98 + index * .17}s` } as CSSProperties}
   >
     <button className="uni-cal-event-main" onClick={() => compact ? choose(event.date) : onEvent(event)} aria-label={`View ${event.title}`}>
       <span className="uni-cal-event-icon"><EventIcon event={event} /></span>
@@ -111,12 +111,12 @@ export default function Calendar({ events, onEvent, updateCalendar, createEvent 
         </div>
         {view === 'month' ? <>
           <div className="uni-cal-grid">
-            {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(day => <span className="uni-cal-weekday" key={day}>{day}</span>)}
+            {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map((day, index) => <span className="uni-cal-weekday" key={day} style={{ '--calendar-delay': `${.3 + index * .045}s`, '--calendar-mobile-delay': `${.27 + index * .045}s` } as CSSProperties}>{day}</span>)}
             {Array.from({ length: month.getDay() }, (_, i) => <span key={`blank-${i}`} />)}
             {Array.from({ length: days }, (_, i) => {
               const value = key(new Date(month.getFullYear(), month.getMonth(), i + 1))
               const hits = visibleEvents.filter(event => event.date === value)
-              return <button key={value} className={`uni-cal-date ${selected === value ? 'is-selected' : ''} ${today === value ? 'is-today' : ''}`} onClick={() => setSelected(value)} onDoubleClick={() => choose(value)} aria-pressed={selected === value} aria-label={`${formatDate(value, { month:'long', day:'numeric' })}, ${hits.length} events`}><span>{i + 1}</span>{hits.length > 0 && <i className={`uni-cal-dot uni-cal-${tone(hits[0])}`} />}</button>
+              return <button key={value} className={`uni-cal-date ${selected === value ? 'is-selected' : ''} ${today === value ? 'is-today' : ''}`} style={{ '--calendar-delay': `${.52 + i * .03}s`, '--calendar-mobile-delay': `${.48 + i * .03}s` } as CSSProperties} onClick={() => setSelected(value)} onDoubleClick={() => choose(value)} aria-pressed={selected === value} aria-label={`${formatDate(value, { month:'long', day:'numeric' })}, ${hits.length} events`}><span>{i + 1}</span>{hits.length > 0 && <i className={`uni-cal-dot uni-cal-${tone(hits[0])}`} />}</button>
             })}
           </div>
           <div className="uni-cal-selected-head"><strong>{formatDate(selected, { weekday:'short', month:'short', day:'numeric', year:'numeric' })}{selected === today ? ' · Today' : ''}</strong><button onClick={() => setView('day')}>Detail view <ChevronRight size={14} /></button></div>
@@ -127,7 +127,7 @@ export default function Calendar({ events, onEvent, updateCalendar, createEvent 
         <div className="uni-cal-upcoming-head"><h2>Upcoming</h2><button onClick={() => setShowAll(value => !value)}>{showAll ? 'Show less' : 'View all'} <ChevronRight size={13} /></button></div>
         {upcoming.length ? <div className="uni-cal-upcoming-list">{upcoming.slice(0, showAll ? undefined : 5).map((event, index) => {
           const distance = Math.round((parsed(event.date).getTime() - date.getTime()) / 86400000)
-          return <button className={`uni-cal-upcoming uni-cal-${tone(event)}`} key={`${filter}-${event.id}`} onClick={() => choose(event.date)} style={{ '--calendar-delay': `${.56 + index * .15}s`, '--calendar-mobile-delay': `${.52 + index * .17}s` } as CSSProperties}>
+          return <button className={`uni-cal-upcoming uni-cal-${tone(event)}`} key={`${filter}-${event.id}`} onClick={() => choose(event.date)} style={{ '--calendar-delay': `${1.04 + index * .15}s`, '--calendar-mobile-delay': `${1 + index * .17}s` } as CSSProperties}>
             <span className="uni-cal-upcoming-date"><EventIcon event={event} /><small>{formatDate(event.date, { month:'short' }).toUpperCase()}</small><strong>{formatDate(event.date, { day:'2-digit' })}</strong></span>
             <span className="uni-cal-upcoming-copy"><small>{distance === 1 ? 'Tomorrow' : `In ${distance} days`}</small><strong>{event.title}</strong><em>{event.category}</em></span>
           </button>

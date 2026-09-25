@@ -17,13 +17,14 @@
   .ask-ai-page > .page-intro,
   .chat-layout > *,
   .profile-layout > *,
-  .uni-calendar .uni-cal-heading,
+  .uni-calendar .uni-cal-heading :is(small,h1,p,.uni-cal-add),
   .uni-calendar .uni-cal-filter-wrap,
-  .uni-calendar .uni-cal-toolbar,
-  .uni-calendar .uni-cal-grid,
-  .uni-calendar .uni-cal-selected-head,
+  .uni-calendar .uni-cal-toolbar :is(.uni-cal-title,.uni-cal-controls > button),
+  .uni-calendar .uni-cal-grid > :is(.uni-cal-weekday,.uni-cal-date),
+  .uni-calendar .uni-cal-selected-head > *,
   .uni-calendar :is(.uni-cal-empty,.uni-cal-day-empty,.uni-cal-event),
-  .uni-calendar :is(.uni-cal-upcoming-head,.uni-cal-upcoming,.uni-cal-no-upcoming),
+  .uni-calendar .uni-cal-upcoming-head > *,
+  .uni-calendar :is(.uni-cal-upcoming,.uni-cal-no-upcoming),
   .notices-page > .inbox-intro-reveal,
   .notices-page > .page-toolbar,
   .notices-page .figma-mobile-feed > .mobile-inbox-filter-reveal,
@@ -87,12 +88,22 @@
   --scale-delay: var(--inbox-delay);
 }
 .page-scale-shell .uni-calendar .uni-cal-filter-wrap { --scale-delay: .1s; }
-.page-scale-shell .uni-calendar .uni-cal-toolbar { --scale-delay: .18s; }
-.page-scale-shell .uni-calendar .uni-cal-grid { --scale-delay: .27s; }
-.page-scale-shell .uni-calendar .uni-cal-selected-head { --scale-delay: .37s; }
-.page-scale-shell .uni-calendar :is(.uni-cal-empty,.uni-cal-day-empty) { --scale-delay: .45s; }
-.page-scale-shell .uni-calendar .uni-cal-upcoming-head { --scale-delay: .46s; }
-.page-scale-shell .uni-calendar .uni-cal-no-upcoming { --scale-delay: .56s; }
+.page-scale-shell .uni-calendar .uni-cal-heading small { --scale-delay: 0s; }
+.page-scale-shell .uni-calendar .uni-cal-heading h1 { --scale-delay: .08s; }
+.page-scale-shell .uni-calendar .uni-cal-heading p { --scale-delay: .16s; }
+.page-scale-shell .uni-calendar .uni-cal-heading .uni-cal-add { --scale-delay: .24s; }
+.page-scale-shell .uni-calendar .uni-cal-toolbar .uni-cal-title { --scale-delay: .18s; }
+.page-scale-shell .uni-calendar .uni-cal-controls > button:nth-child(1) { --scale-delay: .23s; }
+.page-scale-shell .uni-calendar .uni-cal-controls > button:nth-child(2) { --scale-delay: .28s; }
+.page-scale-shell .uni-calendar .uni-cal-controls > button:nth-child(3) { --scale-delay: .33s; }
+.page-scale-shell .uni-calendar .uni-cal-controls > button:nth-child(4) { --scale-delay: .38s; }
+.page-scale-shell .uni-calendar .uni-cal-grid > :is(.uni-cal-weekday,.uni-cal-date) { --scale-delay: var(--calendar-delay); }
+.page-scale-shell .uni-calendar .uni-cal-selected-head > strong { --scale-delay: .78s; }
+.page-scale-shell .uni-calendar .uni-cal-selected-head > button { --scale-delay: .86s; }
+.page-scale-shell .uni-calendar :is(.uni-cal-empty,.uni-cal-day-empty) { --scale-delay: .94s; }
+.page-scale-shell .uni-calendar .uni-cal-upcoming-head > h2 { --scale-delay: .88s; }
+.page-scale-shell .uni-calendar .uni-cal-upcoming-head > button { --scale-delay: .96s; }
+.page-scale-shell .uni-calendar .uni-cal-no-upcoming { --scale-delay: 1.04s; }
 .page-scale-shell .uni-calendar .uni-cal-event,
 .page-scale-shell .uni-calendar .uni-cal-upcoming { --scale-delay: var(--calendar-delay); }
 .page-scale-shell .uni-calendar .uni-cal-layout :is(.uni-cal-upcoming,.uni-cal-event) {
@@ -137,13 +148,14 @@
     .ask-ai-page > .page-intro,
     .chat-layout > *,
     .profile-layout > *,
-    .uni-calendar .uni-cal-heading,
+    .uni-calendar .uni-cal-heading :is(small,h1,p,.uni-cal-add),
     .uni-calendar .uni-cal-filter-wrap,
-    .uni-calendar .uni-cal-toolbar,
-    .uni-calendar .uni-cal-grid,
-    .uni-calendar .uni-cal-selected-head,
+    .uni-calendar .uni-cal-toolbar :is(.uni-cal-title,.uni-cal-controls > button),
+    .uni-calendar .uni-cal-grid > :is(.uni-cal-weekday,.uni-cal-date),
+    .uni-calendar .uni-cal-selected-head > *,
     .uni-calendar :is(.uni-cal-empty,.uni-cal-day-empty,.uni-cal-event),
-    .uni-calendar :is(.uni-cal-upcoming-head,.uni-cal-upcoming,.uni-cal-no-upcoming),
+    .uni-calendar .uni-cal-upcoming-head > *,
+    .uni-calendar :is(.uni-cal-upcoming,.uni-cal-no-upcoming),
     .notices-page > .inbox-intro-reveal,
     .notices-page > .page-toolbar,
     .notices-page .figma-mobile-feed > .mobile-inbox-filter-reveal,
@@ -210,12 +222,18 @@
     --scale-delay: var(--inbox-mobile-delay);
   }
   .page-scale-shell .uni-calendar .uni-cal-filter-wrap { --scale-delay: .07s; }
-  .page-scale-shell .uni-calendar .uni-cal-toolbar { --scale-delay: .14s; }
-  .page-scale-shell .uni-calendar .uni-cal-grid { --scale-delay: .23s; }
-  .page-scale-shell .uni-calendar .uni-cal-selected-head { --scale-delay: .33s; }
-  .page-scale-shell .uni-calendar :is(.uni-cal-empty,.uni-cal-day-empty) { --scale-delay: .41s; }
-  .page-scale-shell .uni-calendar .uni-cal-upcoming-head { --scale-delay: .43s; }
-  .page-scale-shell .uni-calendar .uni-cal-no-upcoming { --scale-delay: .52s; }
+  .page-scale-shell .uni-calendar .uni-cal-toolbar .uni-cal-title { --scale-delay: .14s; }
+  .page-scale-shell .uni-calendar .uni-cal-controls > button:nth-child(1) { --scale-delay: .2s; }
+  .page-scale-shell .uni-calendar .uni-cal-controls > button:nth-child(2) { --scale-delay: .25s; }
+  .page-scale-shell .uni-calendar .uni-cal-controls > button:nth-child(3) { --scale-delay: .3s; }
+  .page-scale-shell .uni-calendar .uni-cal-controls > button:nth-child(4) { --scale-delay: .35s; }
+  .page-scale-shell .uni-calendar .uni-cal-grid > :is(.uni-cal-weekday,.uni-cal-date) { --scale-delay: var(--calendar-mobile-delay); }
+  .page-scale-shell .uni-calendar .uni-cal-selected-head > strong { --scale-delay: .74s; }
+  .page-scale-shell .uni-calendar .uni-cal-selected-head > button { --scale-delay: .82s; }
+  .page-scale-shell .uni-calendar :is(.uni-cal-empty,.uni-cal-day-empty) { --scale-delay: .9s; }
+  .page-scale-shell .uni-calendar .uni-cal-upcoming-head > h2 { --scale-delay: .84s; }
+  .page-scale-shell .uni-calendar .uni-cal-upcoming-head > button { --scale-delay: .92s; }
+  .page-scale-shell .uni-calendar .uni-cal-no-upcoming { --scale-delay: 1s; }
   .page-scale-shell .uni-calendar .uni-cal-event,
   .page-scale-shell .uni-calendar .uni-cal-upcoming { --scale-delay: var(--calendar-mobile-delay); }
 }
@@ -251,13 +269,14 @@
     .ask-ai-page > .page-intro,
     .chat-layout > *,
     .profile-layout > *,
-    .uni-calendar .uni-cal-heading,
+    .uni-calendar .uni-cal-heading :is(small,h1,p,.uni-cal-add),
     .uni-calendar .uni-cal-filter-wrap,
-    .uni-calendar .uni-cal-toolbar,
-    .uni-calendar .uni-cal-grid,
-    .uni-calendar .uni-cal-selected-head,
+    .uni-calendar .uni-cal-toolbar :is(.uni-cal-title,.uni-cal-controls > button),
+    .uni-calendar .uni-cal-grid > :is(.uni-cal-weekday,.uni-cal-date),
+    .uni-calendar .uni-cal-selected-head > *,
     .uni-calendar :is(.uni-cal-empty,.uni-cal-day-empty,.uni-cal-event),
-    .uni-calendar :is(.uni-cal-upcoming-head,.uni-cal-upcoming,.uni-cal-no-upcoming),
+    .uni-calendar .uni-cal-upcoming-head > *,
+    .uni-calendar :is(.uni-cal-upcoming,.uni-cal-no-upcoming),
     .notices-page > .inbox-intro-reveal,
     .notices-page > .page-toolbar,
     .notices-page .figma-mobile-feed > .mobile-inbox-filter-reveal,
