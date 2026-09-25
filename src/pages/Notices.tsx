@@ -106,7 +106,7 @@ export default function Notices({
           return <div
             className="figma-mobile-entry"
             key={`${filter}-${notice.id}`}
-            style={{ '--inbox-delay': `${.22 + index * .15}s`, '--inbox-mobile-delay': `${.16 + index * .17}s` } as CSSProperties}
+            style={{ '--inbox-delay': `${.08 + Math.min(index, 8) * .07}s`, '--inbox-mobile-delay': `${.06 + Math.min(index, 8) * .08}s` } as CSSProperties}
           >
             {index === 0
               ? <GlassSurface className="figma-mail-glass" borderRadius={21} backgroundOpacity={0.38}>{card}</GlassSurface>
@@ -135,7 +135,7 @@ export default function Notices({
           {filtered.map((notice, index) => <button
             className={`notice-mail-item ${selected?.id === notice.id ? 'selected' : ''} ${!readNoticeIds.has(notice.id) ? 'is-unread' : ''}`}
             key={notice.id}
-            style={{ '--inbox-delay': `${.22 + index * .15}s`, '--inbox-mobile-delay': `${.16 + index * .17}s` } as CSSProperties}
+            style={{ '--inbox-delay': `${.08 + Math.min(index, 8) * .07}s`, '--inbox-mobile-delay': `${.06 + Math.min(index, 8) * .08}s` } as CSSProperties}
             onClick={() => selectNotice(notice)}
             aria-pressed={selected?.id === notice.id}
             aria-label={`${!readNoticeIds.has(notice.id) ? 'Unread: ' : ''}${notice.title}`}

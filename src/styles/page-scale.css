@@ -72,8 +72,8 @@
 .page-scale-shell .desk-main-grid > :nth-child(3) { --scale-delay: .52s; }
 .page-scale-shell .desk-main-grid > :nth-child(4) { --scale-delay: .585s; }
 .page-scale-shell .notices-page > .page-toolbar,
-.page-scale-shell .notices-page .figma-mobile-feed > .mobile-inbox-hint { --scale-delay: .065s; }
-.page-scale-shell .notices-page :is(.notice-reader,.notice-reader-empty) { --scale-delay: .13s; }
+.page-scale-shell .notices-page .figma-mobile-feed > .mobile-inbox-hint { --scale-delay: .035s; }
+.page-scale-shell .notices-page :is(.notice-reader,.notice-reader-empty) { --scale-delay: .07s; }
 
 /* Repeating cards open in sequence after their containing section appears. */
 .page-scale-shell :is(.document-folders,.document-gallery,.schedule-list,.college-email-history,.chat-suggestions) > :nth-child(1) { --scale-delay: .22s; }
@@ -87,23 +87,23 @@
 .page-scale-shell .notices-page .notice-mail-list > .notice-mail-item {
   --scale-delay: var(--inbox-delay);
 }
-.page-scale-shell .uni-calendar .uni-cal-filter-wrap { --scale-delay: .1s; }
+.page-scale-shell .uni-calendar .uni-cal-filter-wrap { --scale-delay: .04s; }
 .page-scale-shell .uni-calendar .uni-cal-heading small { --scale-delay: 0s; }
-.page-scale-shell .uni-calendar .uni-cal-heading h1 { --scale-delay: .08s; }
-.page-scale-shell .uni-calendar .uni-cal-heading p { --scale-delay: .16s; }
-.page-scale-shell .uni-calendar .uni-cal-heading .uni-cal-add { --scale-delay: .24s; }
-.page-scale-shell .uni-calendar .uni-cal-toolbar .uni-cal-title { --scale-delay: .18s; }
-.page-scale-shell .uni-calendar .uni-cal-controls > button:nth-child(1) { --scale-delay: .23s; }
-.page-scale-shell .uni-calendar .uni-cal-controls > button:nth-child(2) { --scale-delay: .28s; }
-.page-scale-shell .uni-calendar .uni-cal-controls > button:nth-child(3) { --scale-delay: .33s; }
-.page-scale-shell .uni-calendar .uni-cal-controls > button:nth-child(4) { --scale-delay: .38s; }
+.page-scale-shell .uni-calendar .uni-cal-heading h1 { --scale-delay: .04s; }
+.page-scale-shell .uni-calendar .uni-cal-heading p { --scale-delay: .08s; }
+.page-scale-shell .uni-calendar .uni-cal-heading .uni-cal-add { --scale-delay: .12s; }
+.page-scale-shell .uni-calendar .uni-cal-toolbar .uni-cal-title { --scale-delay: .09s; }
+.page-scale-shell .uni-calendar .uni-cal-controls > button:nth-child(1) { --scale-delay: .12s; }
+.page-scale-shell .uni-calendar .uni-cal-controls > button:nth-child(2) { --scale-delay: .15s; }
+.page-scale-shell .uni-calendar .uni-cal-controls > button:nth-child(3) { --scale-delay: .18s; }
+.page-scale-shell .uni-calendar .uni-cal-controls > button:nth-child(4) { --scale-delay: .21s; }
 .page-scale-shell .uni-calendar .uni-cal-grid > :is(.uni-cal-weekday,.uni-cal-date) { --scale-delay: var(--calendar-delay); }
-.page-scale-shell .uni-calendar .uni-cal-selected-head > strong { --scale-delay: .78s; }
-.page-scale-shell .uni-calendar .uni-cal-selected-head > button { --scale-delay: .86s; }
-.page-scale-shell .uni-calendar :is(.uni-cal-empty,.uni-cal-day-empty) { --scale-delay: .94s; }
-.page-scale-shell .uni-calendar .uni-cal-upcoming-head > h2 { --scale-delay: .88s; }
-.page-scale-shell .uni-calendar .uni-cal-upcoming-head > button { --scale-delay: .96s; }
-.page-scale-shell .uni-calendar .uni-cal-no-upcoming { --scale-delay: 1.04s; }
+.page-scale-shell .uni-calendar .uni-cal-selected-head > strong { --scale-delay: .38s; }
+.page-scale-shell .uni-calendar .uni-cal-selected-head > button { --scale-delay: .42s; }
+.page-scale-shell .uni-calendar :is(.uni-cal-empty,.uni-cal-day-empty) { --scale-delay: .47s; }
+.page-scale-shell .uni-calendar .uni-cal-upcoming-head > h2 { --scale-delay: .43s; }
+.page-scale-shell .uni-calendar .uni-cal-upcoming-head > button { --scale-delay: .47s; }
+.page-scale-shell .uni-calendar .uni-cal-no-upcoming { --scale-delay: .52s; }
 .page-scale-shell .uni-calendar .uni-cal-event,
 .page-scale-shell .uni-calendar .uni-cal-upcoming { --scale-delay: var(--calendar-delay); }
 .page-scale-shell .uni-calendar .uni-cal-layout :is(.uni-cal-upcoming,.uni-cal-event) {
@@ -206,9 +206,9 @@
   .page-scale-shell .desk-main-grid > :nth-child(2) { --scale-delay: .28s; }
   .page-scale-shell .desk-main-grid > :nth-child(3) { --scale-delay: .32s; }
   .page-scale-shell .desk-main-grid > :nth-child(4) { --scale-delay: .36s; }
-  .page-scale-shell .notices-page .figma-mobile-feed > .mobile-inbox-hint { --scale-delay: .04s; }
-  .page-scale-shell .notices-page > .page-toolbar { --scale-delay: .04s; }
-  .page-scale-shell .notices-page :is(.notice-reader,.notice-reader-empty) { --scale-delay: .08s; }
+  .page-scale-shell .notices-page .figma-mobile-feed > .mobile-inbox-hint { --scale-delay: .025s; }
+  .page-scale-shell .notices-page > .page-toolbar { --scale-delay: .025s; }
+  .page-scale-shell .notices-page :is(.notice-reader,.notice-reader-empty) { --scale-delay: .05s; }
 
   .page-scale-shell :is(.document-folders,.document-gallery,.schedule-list,.college-email-history,.chat-suggestions) > :nth-child(1) { --scale-delay: .1s; }
   .page-scale-shell :is(.document-folders,.document-gallery,.schedule-list,.college-email-history,.chat-suggestions) > :nth-child(2) { --scale-delay: .145s; }
@@ -221,19 +221,19 @@
   .page-scale-shell .notices-page .notice-mail-list > .notice-mail-item {
     --scale-delay: var(--inbox-mobile-delay);
   }
-  .page-scale-shell .uni-calendar .uni-cal-filter-wrap { --scale-delay: .07s; }
-  .page-scale-shell .uni-calendar .uni-cal-toolbar .uni-cal-title { --scale-delay: .14s; }
-  .page-scale-shell .uni-calendar .uni-cal-controls > button:nth-child(1) { --scale-delay: .2s; }
-  .page-scale-shell .uni-calendar .uni-cal-controls > button:nth-child(2) { --scale-delay: .25s; }
-  .page-scale-shell .uni-calendar .uni-cal-controls > button:nth-child(3) { --scale-delay: .3s; }
-  .page-scale-shell .uni-calendar .uni-cal-controls > button:nth-child(4) { --scale-delay: .35s; }
+  .page-scale-shell .uni-calendar .uni-cal-filter-wrap { --scale-delay: .03s; }
+  .page-scale-shell .uni-calendar .uni-cal-toolbar .uni-cal-title { --scale-delay: .07s; }
+  .page-scale-shell .uni-calendar .uni-cal-controls > button:nth-child(1) { --scale-delay: .1s; }
+  .page-scale-shell .uni-calendar .uni-cal-controls > button:nth-child(2) { --scale-delay: .13s; }
+  .page-scale-shell .uni-calendar .uni-cal-controls > button:nth-child(3) { --scale-delay: .16s; }
+  .page-scale-shell .uni-calendar .uni-cal-controls > button:nth-child(4) { --scale-delay: .19s; }
   .page-scale-shell .uni-calendar .uni-cal-grid > :is(.uni-cal-weekday,.uni-cal-date) { --scale-delay: var(--calendar-mobile-delay); }
-  .page-scale-shell .uni-calendar .uni-cal-selected-head > strong { --scale-delay: .74s; }
-  .page-scale-shell .uni-calendar .uni-cal-selected-head > button { --scale-delay: .82s; }
-  .page-scale-shell .uni-calendar :is(.uni-cal-empty,.uni-cal-day-empty) { --scale-delay: .9s; }
-  .page-scale-shell .uni-calendar .uni-cal-upcoming-head > h2 { --scale-delay: .84s; }
-  .page-scale-shell .uni-calendar .uni-cal-upcoming-head > button { --scale-delay: .92s; }
-  .page-scale-shell .uni-calendar .uni-cal-no-upcoming { --scale-delay: 1s; }
+  .page-scale-shell .uni-calendar .uni-cal-selected-head > strong { --scale-delay: .36s; }
+  .page-scale-shell .uni-calendar .uni-cal-selected-head > button { --scale-delay: .4s; }
+  .page-scale-shell .uni-calendar :is(.uni-cal-empty,.uni-cal-day-empty) { --scale-delay: .45s; }
+  .page-scale-shell .uni-calendar .uni-cal-upcoming-head > h2 { --scale-delay: .41s; }
+  .page-scale-shell .uni-calendar .uni-cal-upcoming-head > button { --scale-delay: .45s; }
+  .page-scale-shell .uni-calendar .uni-cal-no-upcoming { --scale-delay: .5s; }
   .page-scale-shell .uni-calendar .uni-cal-event,
   .page-scale-shell .uni-calendar .uni-cal-upcoming { --scale-delay: var(--calendar-mobile-delay); }
 }
