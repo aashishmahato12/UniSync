@@ -124,7 +124,25 @@ html[data-theme='dark'] .notices-page .notice-reader-tags :is(.badge-payments,.b
   background: #fff;
   box-shadow: 0 10px 28px #3043690c;
 }
+.notice-mail-list-shell { position: relative; min-width: 0; }
 .notice-mail-list { min-width: 0; max-height: 740px; overflow-y: auto; border-right: 1px solid #e9edf4; }
+.mobile-progressive-blur.inbox-list-progressive-blur { display: none; }
+@media (min-width: 851px) {
+  .mobile-progressive-blur.inbox-list-progressive-blur {
+    position: absolute;
+    z-index: 2;
+    inset: auto 8px 0 0;
+    display: block;
+    height: 68px;
+    pointer-events: none;
+    background: linear-gradient(to bottom, transparent, rgba(246,250,255,.36));
+    --blur-direction: to bottom;
+    --mobile-menu-blur: 6px;
+  }
+  html[data-theme='dark'] .mobile-progressive-blur.inbox-list-progressive-blur {
+    background: linear-gradient(to bottom, transparent, rgba(20,34,50,.48));
+  }
+}
 .notice-mail-list-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 20px; border-bottom: 1px solid #edf0f6; }
 .notice-mail-list-heading strong { color: #292f3a; font-size: 15px; }
 .notice-mail-list-heading span { color: #9ca7b5; font-size: 11px; }

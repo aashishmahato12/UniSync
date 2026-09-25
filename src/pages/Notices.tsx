@@ -1,5 +1,5 @@
 import './Notices.css'
-import { useState, type CSSProperties } from 'react'
+import { useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 import {
   ArrowUpRight,
   ExternalLink,
@@ -53,6 +53,8 @@ export default function Notices({
 }) {
   const [filter, setFilter] = useState('All')
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [showListBlur, setShowListBlur] = useState(false)
+  const listRef = useRef<HTMLDivElement>(null)
 
   const categories = [
     'All',
@@ -68,6 +70,22 @@ export default function Notices({
       ? notices
       : notices.filter(n => n.category === filter)
   const selected = filtered.find(notice => notice.id === selectedId)
+
+  useLayoutEffect(() => {
+    const list = listRef.current
+    if (!list) return
+    const update = () => setShowListBlur(list.scrollHeight - list.scrollTop - list.clientHeight > 2)
+    update()
+    const observer = new ResizeObserver(update)
+    observer.observe(list)
+    list.addEventListener('scroll', update, { passive: true })
+    window.addEventListener('resize', update)
+    return () => {
+      observer.disconnect()
+      list.removeEventListener('scroll', update)
+      window.removeEventListener('resize', update)
+    }
+  }, [filter, notices])
 
   const changeFilter = (category: string) => {
     setFilter(category)
@@ -130,7 +148,8 @@ export default function Notices({
       </div>
 
       {filtered.length ? <div className="notice-mail-layout">
-        <div className="notice-mail-list" aria-label="College notices" key={filter}>
+        <div className="notice-mail-list-shell">
+        <div className="notice-mail-list" aria-label="College notices" key={filter} ref={listRef}>
           <div className="notice-mail-list-heading"><strong>Inbox</strong><span>{filtered.length} updates</span></div>
           {filtered.map((notice, index) => <button
             className={`notice-mail-item ${selected?.id === notice.id ? 'selected' : ''} ${!readNoticeIds.has(notice.id) ? 'is-unread' : ''}`}
@@ -151,6 +170,10 @@ export default function Notices({
             <span className="notice-mail-snippet">{notice.summary}</span>
             <span className="notice-mail-item-bottom">{notice.attachment && <span><Paperclip size={13} /> Attachment</span>}<ArrowUpRight size={15} /></span>
           </button>)}
+        </div>
+        {showListBlur && <div className="mobile-progressive-blur inbox-list-progressive-blur" aria-hidden="true">
+          {Array.from({ length: 6 }, (_, index) => <div key={index} />)}
+        </div>}
         </div>
         {selected ? <article
           key={selected.id}
