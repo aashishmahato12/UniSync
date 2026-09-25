@@ -780,9 +780,9 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
 {selectedNotice && (
   <motion.section
     className="notice-detail-page"
-    initial={reduceMotion ? false : { opacity: 0, y: 18, scale: .985 }}
-    animate={noticeClosing ? { opacity: 0, y: 10, scale: .99 } : { opacity: 1, y: 0, scale: 1 }}
-    transition={reduceMotion ? { duration: 0 } : noticeClosing ? { duration: .22, ease: 'easeIn' } : { duration: .36, ease: [.22, 1, .36, 1] }}
+    initial={reduceMotion ? false : { opacity: 0, scale: .88 }}
+    animate={noticeClosing ? { opacity: 0, scale: .94 } : { opacity: 1, scale: 1 }}
+    transition={reduceMotion ? { duration: 0 } : noticeClosing ? { duration: .22, ease: 'easeIn' } : { duration: .62, ease: [.16, 1, .3, 1] }}
     onAnimationComplete={() => { if (noticeClosing) finishCloseNotice() }}
   >
 <button className="secondary-button" onClick={closeNotice} disabled={noticeClosing}>← Back</button>

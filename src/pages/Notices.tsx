@@ -29,12 +29,14 @@ import JellyRadio from '../components/JellyRadio'
 import InboxEventActions from '../components/InboxEventActions'
 
 const inboxEntryTransition = (index: number) => {
-  const delay = Math.min(index, 8) * .055
+  const delay = Math.min(index, 9) * .065
   return {
-    scale: { duration: .5, ease: [.2, .8, .2, 1] as const, delay },
-    opacity: { duration: .24, delay },
+    scale: { duration: .62, ease: [.16, 1, .3, 1] as const, delay },
+    opacity: { duration: .38, ease: 'easeOut' as const, delay },
   }
 }
+const inboxEntry = { opacity: 0, scale: .88 }
+const inboxSettled = { opacity: 1, scale: 1 }
 const inboxFilterTones: Record<string, string> = {
   All: 'all',
   Payments: 'payment',
@@ -90,8 +92,10 @@ export default function Notices({
   return (
     <div className="notices-page">
       <section className="figma-mobile-feed" aria-label="Latest college emails">
-        <JellyRadio items={categories} value={filter} onChange={changeFilter} toneForItem={item => inboxFilterTones[item]} ariaLabel="Filter college emails" className="mobile-inbox-filter" />
-        <p className="mobile-inbox-hint">Tap an email to read its details</p>
+        <motion.div className="mobile-inbox-filter-reveal" initial={reduceMotion ? false : inboxEntry} animate={inboxSettled} transition={reduceMotion ? { duration: 0 } : inboxEntryTransition(0)}>
+          <JellyRadio items={categories} value={filter} onChange={changeFilter} toneForItem={item => inboxFilterTones[item]} ariaLabel="Filter college emails" className="mobile-inbox-filter" />
+        </motion.div>
+        <motion.p className="mobile-inbox-hint" initial={reduceMotion ? false : inboxEntry} animate={inboxSettled} transition={reduceMotion ? { duration: 0 } : inboxEntryTransition(1)}>Tap an email to read its details</motion.p>
         {filtered.map((notice, index) => {
           const unread = !readNoticeIds.has(notice.id)
           const card = <button
@@ -113,9 +117,9 @@ export default function Notices({
           return <motion.div
             className="figma-mobile-entry"
             key={`${filter}-${notice.id}`}
-            initial={reduceMotion ? false : { opacity: .2, scale: .94 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={reduceMotion ? { duration: 0 } : inboxEntryTransition(index)}
+            initial={reduceMotion ? false : inboxEntry}
+            animate={inboxSettled}
+            transition={reduceMotion ? { duration: 0 } : inboxEntryTransition(index + 2)}
           >
             {index === 0
               ? <GlassSurface className="figma-mail-glass" borderRadius={21} backgroundOpacity={0.38}>{card}</GlassSurface>
@@ -125,16 +129,18 @@ export default function Notices({
         {!filtered.length && <div className="figma-feed-empty">Your Herald College emails will appear here.</div>}
       </section>
 
-      <PageIntro
-        title="College inbox"
-        copy="Read the useful part first, then open the full email or its attachments when needed."
-      />
+      <motion.div className="inbox-intro-reveal" initial={reduceMotion ? false : inboxEntry} animate={inboxSettled} transition={reduceMotion ? { duration: 0 } : inboxEntryTransition(0)}>
+        <PageIntro
+          title="College inbox"
+          copy="Read the useful part first, then open the full email or its attachments when needed."
+        />
+      </motion.div>
 
-      <div className="page-toolbar">
+      <motion.div className="page-toolbar" initial={reduceMotion ? false : inboxEntry} animate={inboxSettled} transition={reduceMotion ? { duration: 0 } : inboxEntryTransition(1)}>
         <JellyRadio items={categories} value={filter} onChange={changeFilter} toneForItem={item => inboxFilterTones[item]} ariaLabel="Filter college emails" className="inbox-category-filter" />
 
         <span className="result-count">{filtered.length} notices</span>
-      </div>
+      </motion.div>
 
       {filtered.length ? <div className="notice-mail-layout">
         <div className="notice-mail-list" aria-label="College notices" key={filter}>
@@ -142,8 +148,8 @@ export default function Notices({
           {filtered.map((notice, index) => <motion.button
             className={`notice-mail-item ${selected?.id === notice.id ? 'selected' : ''} ${!readNoticeIds.has(notice.id) ? 'is-unread' : ''}`}
             key={notice.id}
-            initial={reduceMotion ? false : { opacity: .2, scale: .94 }}
-            animate={{ opacity: 1, scale: 1 }}
+            initial={reduceMotion ? false : inboxEntry}
+            animate={inboxSettled}
             transition={reduceMotion ? { duration: 0 } : inboxEntryTransition(index)}
             onClick={() => selectNotice(notice)}
             aria-pressed={selected?.id === notice.id}
@@ -164,9 +170,9 @@ export default function Notices({
         {selected ? <motion.article
           key={selected.id}
           className="notice-reader"
-          initial={reduceMotion ? false : { opacity: 0, filter: 'blur(4px)' }}
-          animate={{ opacity: 1, filter: 'blur(0px)' }}
-          transition={reduceMotion ? { duration: 0 } : { duration: .32, ease: 'easeOut' }}
+          initial={reduceMotion ? false : inboxEntry}
+          animate={inboxSettled}
+          transition={reduceMotion ? { duration: 0 } : inboxEntryTransition(2)}
         >
           <div className="notice-reader-bar"><span><Mail size={16} /> COLLEGE EMAIL</span><span>{selected.receivedAt ? new Date(selected.receivedAt).toLocaleString('en-US', { timeZone: 'Asia/Kathmandu', dateStyle: 'medium', timeStyle: 'short' }) : formatDate(selected.date, { month: 'long', day: 'numeric', year: 'numeric' })}</span></div>
           <div className="notice-reader-body">
@@ -188,9 +194,9 @@ export default function Notices({
         </motion.article> : <motion.aside
           className="notice-reader-empty"
           aria-label="Select an email"
-          initial={reduceMotion ? false : { opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={reduceMotion ? { duration: 0 } : { duration: .3, ease: 'easeOut' }}
+          initial={reduceMotion ? false : inboxEntry}
+          animate={inboxSettled}
+          transition={reduceMotion ? { duration: 0 } : inboxEntryTransition(2)}
         >
           <span className="notice-reader-empty-icon"><Mail size={27} strokeWidth={1.7} /></span>
           <span className="notice-reader-empty-kicker">YOUR COLLEGE INBOX</span>
