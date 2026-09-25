@@ -111,11 +111,10 @@
   animation-fill-mode: backwards;
 }
 
-/* Entry effects should never delay a view or filter change after a click. */
+/* Calendar interactions keep a quick card reveal without replaying page-entry delays. */
 .page-scale-shell .uni-calendar.uni-calendar-interacted :is(
   .uni-cal-grid > .uni-cal-weekday,
   .uni-cal-grid > .uni-cal-date,
-  .uni-cal-event,
   .uni-cal-upcoming,
   .uni-cal-empty,
   .uni-cal-day-empty,
@@ -124,6 +123,12 @@
   animation: none;
   opacity: 1;
   transform: none;
+  clip-path: none;
+  filter: none;
+}
+.page-scale-shell .uni-calendar.uni-calendar-interacted .uni-cal-events > .uni-cal-event {
+  animation: unisync-scale-open-mobile .32s cubic-bezier(.2,.8,.2,1) 0s backwards;
+  opacity: 1;
   clip-path: none;
   filter: none;
 }
@@ -268,6 +273,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .page-scale-shell .uni-calendar.uni-calendar-interacted .uni-cal-events > .uni-cal-event {
+    animation: none;
+  }
   .page-scale-shell :is(
     .desk-heading,
     .desk-lead-grid > *,
