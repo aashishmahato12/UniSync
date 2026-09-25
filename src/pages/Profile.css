@@ -236,6 +236,9 @@
   font-weight: 800;
 }
 
+.profile-legal { display: flex; justify-content: center; gap: 18px; flex-wrap: wrap; margin-top: 16px; font-size: 12px; }
+.profile-legal a { color: #6384b5; text-decoration: underline; text-underline-offset: 2px; }
+
 @media (max-width: 520px) {
   .preference-row:has(.theme-options) {
     align-items: flex-start;

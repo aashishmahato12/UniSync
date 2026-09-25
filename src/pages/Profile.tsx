@@ -219,6 +219,10 @@ export default function Profile({
           <button className="profile-signout" onClick={() => void supabase.auth.signOut()}>
             Sign out
           </button>
+          <nav className="profile-legal" aria-label="Legal pages">
+            <a href="/privacy.html">Privacy Policy</a>
+            <a href="/terms.html">Terms of Service</a>
+          </nav>
         </section>
       </div>
     </>

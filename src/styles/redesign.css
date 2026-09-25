@@ -204,6 +204,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .auth-submit:hover { background: #373f4e; }
 .auth-secondary { border-color: #dce4f0; color: #2a64bd; }
 .auth-footer { position: absolute; right: 6%; bottom: 25px; margin: 0; color: #a3acb9; font-size: 9px; letter-spacing: .1em; }
+.auth-footer a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
 
 @media (max-width: 1200px) {
   .sidebar { width: 215px; }

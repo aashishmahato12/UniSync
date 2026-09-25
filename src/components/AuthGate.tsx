@@ -202,6 +202,6 @@ export default function AuthGate({ children }: {
         </>
       )}
     </section>
-    <p className="auth-footer">PRIVATE ACCESS · POWERED BY UNISYNC</p>
+    <p className="auth-footer">PRIVATE ACCESS · POWERED BY UNISYNC <span aria-hidden="true">·</span> <a href="/privacy.html">Privacy</a> <span aria-hidden="true">·</span> <a href="/terms.html">Terms</a></p>
   </main>
 }
