@@ -1,5 +1,5 @@
 import './Notices.css'
-import { useState } from 'react'
+import { useState, type CSSProperties } from 'react'
 import {
   ArrowUpRight,
   ExternalLink,
@@ -106,6 +106,7 @@ export default function Notices({
           return <div
             className="figma-mobile-entry"
             key={`${filter}-${notice.id}`}
+            style={{ '--inbox-index': index } as CSSProperties}
           >
             {index === 0
               ? <GlassSurface className="figma-mail-glass" borderRadius={21} backgroundOpacity={0.38}>{card}</GlassSurface>
@@ -131,9 +132,10 @@ export default function Notices({
       {filtered.length ? <div className="notice-mail-layout">
         <div className="notice-mail-list" aria-label="College notices" key={filter}>
           <div className="notice-mail-list-heading"><strong>Inbox</strong><span>{filtered.length} updates</span></div>
-          {filtered.map(notice => <button
+          {filtered.map((notice, index) => <button
             className={`notice-mail-item ${selected?.id === notice.id ? 'selected' : ''} ${!readNoticeIds.has(notice.id) ? 'is-unread' : ''}`}
             key={notice.id}
+            style={{ '--inbox-index': index } as CSSProperties}
             onClick={() => selectNotice(notice)}
             aria-pressed={selected?.id === notice.id}
             aria-label={`${!readNoticeIds.has(notice.id) ? 'Unread: ' : ''}${notice.title}`}
