@@ -13,18 +13,26 @@ function authorized(request) {
 }
 
 async function importMail(connection, accessToken, admin) {
-  const query = new URLSearchParams({ q: 'from:(@heraldcollege.edu.np) newer_than:90d',
-    maxResults: '100' })
-  const list = await gmailRequest(`messages?${query}`, accessToken)
-  const ids = (list.messages || []).map(item => String(item.id || '')).filter(Boolean)
-  if (!ids.length) return 0
-  const keys = ids.map(id => `${connection.owner_id}:${id}`)
-  const { data: existing, error: readError } = await admin.from('college_notices')
-    .select('gmail_message_id').in('gmail_message_id', keys)
-  if (readError) throw readError
-  const saved = new Set((existing || []).map(row => row.gmail_message_id))
+  // Gmail lists newest first. Walk past already-imported pages so accounts can
+  // gradually load their older college mail without a separate backfill flow.
+  const pending = []
+  let pageToken
+  do {
+    const query = new URLSearchParams({ q: 'from:(@heraldcollege.edu.np)', maxResults: '100' })
+    if (pageToken) query.set('pageToken', pageToken)
+    const list = await gmailRequest(`messages?${query}`, accessToken)
+    const ids = (list.messages || []).map(item => String(item.id || '')).filter(Boolean)
+    if (!ids.length) break
+    const keys = ids.map(id => `${connection.owner_id}:${id}`)
+    const { data: existing, error: readError } = await admin.from('college_notices')
+      .select('gmail_message_id').in('gmail_message_id', keys)
+    if (readError) throw readError
+    const saved = new Set((existing || []).map(row => row.gmail_message_id))
+    pending.push(...ids.filter(id => !saved.has(`${connection.owner_id}:${id}`)).slice(0, 2 - pending.length))
+    pageToken = list.nextPageToken
+  } while (pending.length < 2 && pageToken)
   let imported = 0
-  for (const remoteId of ids.filter(id => !saved.has(`${connection.owner_id}:${id}`)).slice(0, 2)) {
+  for (const remoteId of pending) {
     const full = await gmailRequest(`messages/${encodeURIComponent(remoteId)}?format=full`, accessToken)
     const message = parseGmailMessage(full)
     if (!message || !message.id) continue

@@ -196,8 +196,8 @@ export default function Profile({
 
             <p>{mailConnection?.status === 'connected'
               ? `College mail is connected through ${mailConnection.email}. ${mailConnection.lastSyncedAt
-                ? 'Your inbox and sent emails stay in your account.'
-                : 'Waiting for the first inbox sync.'}`
+                ? 'Older college emails continue to load as the inbox syncs.'
+                : 'Waiting for the first inbox sync. Older college emails will load gradually.'}`
               : mailConnection?.status === 'legacy' || (!mailConnection && hasConnectedMailbox(email))
                 ? 'Your original college Gmail workflow is connected to this workspace.'
                 : mailUnavailable
