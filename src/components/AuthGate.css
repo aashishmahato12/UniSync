@@ -11,3 +11,4 @@
 .auth-resend{margin-top:18px}.auth-resend:disabled{cursor:wait;opacity:.55}
 .auth-plain-button{display:block;margin:14px auto 0;padding:6px;border:0;background:none;color:#376f4d;font-size:12px;font-weight:750}
 .auth-plain-button:hover{text-decoration:underline}
+.auth-google{display:flex;align-items:center;justify-content:center;gap:11px;width:100%;min-height:46px;border:1px solid #dbe5dc;border-radius:10px;background:#fff;color:#1d3028;font:800 13px 'DM Sans',sans-serif;cursor:pointer}.auth-google:hover{background:#f5faf5;border-color:#b9d0bf}.auth-google:disabled{opacity:.6;cursor:wait}.auth-google-mark{font:800 21px Arial,sans-serif;color:#4285f4}.auth-divider{display:flex;align-items:center;gap:12px;margin:19px 0;color:#8a9b8f;font:700 11px 'DM Sans',sans-serif}.auth-divider::before,.auth-divider::after{content:'';height:1px;flex:1;background:#e3ebe2}

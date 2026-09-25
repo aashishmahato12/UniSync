@@ -18,6 +18,7 @@ export default function AuthGate({ children }: {
   const [email, setEmail] = useState('')
   const [sentTo, setSentTo] = useState('')
   const [sending, setSending] = useState(false)
+  const [googleBusy, setGoogleBusy] = useState(false)
   const [verifying, setVerifying] = useState(false)
   const [code, setCode] = useState('')
   const [codeStatus, setCodeStatus] = useState<'idle' | 'error' | 'success'>('idle')
@@ -126,6 +127,19 @@ export default function AuthGate({ children }: {
     }
   }
 
+  async function signInWithGoogle() {
+    setGoogleBusy(true)
+    setFormError('')
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin },
+    })
+    if (error) {
+      setFormError(error.message)
+      setGoogleBusy(false)
+    }
+  }
+
   async function verifyCode(value: string) {
     if (verifying || !sentTo) return
     setVerifying(true)
@@ -173,7 +187,12 @@ export default function AuthGate({ children }: {
       ) : (
         <>
           <h1>Your college, in one place.</h1>
-          <p>Sign in or create your private UniSync account with your email.</p>
+          <p>Sign in or create your private UniSync account.</p>
+          <button className="auth-google" type="button" disabled={googleBusy || sending} onClick={() => void signInWithGoogle()}>
+            <span className="auth-google-mark" aria-hidden="true">G</span>
+            {googleBusy ? 'Opening Google…' : 'Continue with Google'}
+          </button>
+          <div className="auth-divider"><span>or use email</span></div>
           <form onSubmit={requestCode}>
             <label htmlFor="sign-in-email">Email address</label>
             <div className="auth-input"><Mail size={18} /><input id="sign-in-email" type="email" autoComplete="email" required value={email} onChange={event => setEmail(event.target.value)} placeholder="you@example.com" /></div>
