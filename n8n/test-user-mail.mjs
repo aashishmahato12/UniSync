@@ -4,9 +4,13 @@ import test from 'node:test'
 import { decryptToken, encryptToken, parseGmailMessage, rfc822Message } from '../mail-core.mjs'
 import { messageKey } from '../api/mail-sync.mjs'
 
-test('original mailbox reuses legacy Gmail IDs instead of duplicating notices', () => {
-  assert.equal(messageKey({ owner_id: 'owner-1', mailbox_email: 'mahatoaashish5@gmail.com' }, 'gmail-1'), 'gmail-1')
+test('original Gmail imports stay separate between main and test accounts', () => {
+  assert.equal(messageKey({ owner_id: 'owner-1', original_owner_id: 'owner-1',
+    mailbox_email: 'mahatoaashish5@gmail.com' }, 'gmail-1'), 'gmail-1')
+  assert.equal(messageKey({ owner_id: 'owner-2', original_owner_id: 'owner-1',
+    mailbox_email: 'mahatoaashish5@gmail.com' }, 'gmail-1'), 'owner-2:gmail-1')
   assert.equal(messageKey({ owner_id: 'owner-2', mailbox_email: 'student@gmail.com' }, 'gmail-1'), 'owner-2:gmail-1')
+  assert.equal(messageKey({ owner_id: 'owner-2', mailbox_email: 'mahatoaashish5@gmail.com' }, 'gmail-1'), 'owner-2:gmail-1')
 })
 
 test('Gmail refresh tokens are encrypted and authenticated', () => {

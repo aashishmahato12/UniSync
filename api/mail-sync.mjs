@@ -13,13 +13,19 @@ function authorized(request) {
 }
 
 export function messageKey(connection, id) {
-  // Original n8n imports used the raw Gmail ID. Reuse it when testing the
-  // original mailbox so the new importer does not duplicate saved notices.
-  return connection.mailbox_email === 'mahatoaashish5@gmail.com'
+  // Only the legacy owner's rows use raw Gmail IDs. A different UniSync
+  // account may connect that mailbox for testing, but its rows stay separate.
+  return connection.mailbox_email === 'mahatoaashish5@gmail.com' &&
+    connection.owner_id === connection.original_owner_id
     ? id : `${connection.owner_id}:${id}`
 }
 
 async function importMail(connection, accessToken, admin) {
+  if (connection.mailbox_email === 'mahatoaashish5@gmail.com') {
+    const { data: originalOwnerId, error } = await admin.rpc('original_mailbox_owner_id')
+    if (error || !originalOwnerId) throw new Error('Could not identify original mailbox owner')
+    connection.original_owner_id = originalOwnerId
+  }
   // Gmail lists newest first. Walk past already-imported pages so accounts can
   // gradually load their older college mail without a separate backfill flow.
   const pending = []
