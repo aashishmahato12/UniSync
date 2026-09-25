@@ -272,7 +272,7 @@ export default function AskAI({ payments, events, updateCalendar, theme }: {
           <div className="chat-messages">
             {!messages.length && !busy && <div className="chat-welcome">
               <Sparkles className="chat-welcome-mark" size={50} fill="currentColor" strokeWidth={1.3} />
-              <h2>Hi Aashish, What’s on<br />your mind?</h2>
+              <h2>What’s on<br />your mind?</h2>
             </div>}
             {messages.map((message, index) => (
               <div

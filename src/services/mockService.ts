@@ -1,6 +1,7 @@
 import { supabase } from './supabase'
 import { answerFromSavedRecords } from './localAssistant'
 import { cleanEmailForReading } from './emailText'
+import { hasConnectedMailbox } from './accountIdentity'
 
 import {
   payments,
@@ -200,7 +201,8 @@ export const studentService = {
   // The fee schedule is still a local student-maintained record.
   async getPayments(): Promise<Payment[]> {
     await delay()
-    return structuredClone(payments)
+    const { data } = await supabase.auth.getUser()
+    return hasConnectedMailbox(data.user?.email ?? '') ? structuredClone(payments) : []
   },
 
   async getDocuments(notices: Notice[] = []): Promise<DocumentItem[]> {

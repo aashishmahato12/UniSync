@@ -12,6 +12,7 @@ import {
   SectionHeading,
 } from '../components/UI'
 import { supabase } from '../services/supabase'
+import { accountInitials, accountName, hasConnectedMailbox } from '../services/accountIdentity'
 
 export default function Profile({
   notify,
@@ -44,9 +45,9 @@ export default function Profile({
           <div className="profile-cover" />
 
           <div className="profile-main">
-            <span className="profile-avatar">AM</span>
+            <span className="profile-avatar">{accountInitials(email)}</span>
 
-            <h2>Aashish Mahato</h2>
+            <h2>{accountName(email)}</h2>
             <p>Herald College student</p>
 
             <div className="profile-details">
@@ -146,12 +147,11 @@ export default function Profile({
               <strong>Integrations</strong>
             </div>
 
-            <p>
-              Gmail → n8n → Supabase is connected to your
-              workspace.
-            </p>
+            <p>{hasConnectedMailbox(email)
+              ? 'Your college Gmail intake is connected to this workspace.'
+              : 'Your account is private. College Gmail intake and outgoing email are not connected yet.'}</p>
 
-            <span>Development</span>
+            <span>{hasConnectedMailbox(email) ? 'Connected' : 'Not connected'}</span>
           </div>
 
           <button className="profile-signout" onClick={() => void supabase.auth.signOut()}>

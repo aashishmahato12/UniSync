@@ -58,6 +58,7 @@ import Notices from './pages/Notices'
 import Calendar from './pages/Calendar'
 import Payments from './pages/Payments'
 import { loadPaymentStatuses, savePaymentStatuses } from './services/paymentStatusStore'
+import { accountInitials, accountName, hasConnectedMailbox } from './services/accountIdentity'
 import { loadReadNoticeIds, saveReadNoticeIds } from './services/noticeReadStore'
 import { gmailUrlForNotice } from './services/gmailLinks'
 import Documents from './pages/Documents'
@@ -135,8 +136,6 @@ const mobileLiquidNav: {
   { name: 'Profile', label: 'Profile', icon: UserRound, x: 90, y: -68 },
 ]
 
-const initials = 'AM'
-
 function MobileSortIcon() {
   return <svg className="mobile-sort-icon" viewBox="0 0 24 24" aria-hidden="true">
     <path className="mobile-sort-lines" d="M10 6h9M10 11h6M10 16h3" />
@@ -208,6 +207,7 @@ function WorkspaceSkeleton() {
 }
 
 function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { email: string; theme: Theme; themeMode: ThemeMode; setThemeMode: (mode: ThemeMode) => void; toggleTheme: () => void }) {
+  const initials = accountInitials(email)
   const reduceMotion = useReducedMotion()
   useEffect(() => {
     if (reduceMotion) return
@@ -287,11 +287,11 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
     useState(true)
 
   const [payments, setPayments] =
-    useState<Payment[]>(() => loadPaymentStatuses(seedPayments))
+    useState<Payment[]>(() => loadPaymentStatuses(hasConnectedMailbox(email) ? seedPayments : [], email))
 
   useEffect(() => {
-    savePaymentStatuses(payments)
-  }, [payments])
+    savePaymentStatuses(payments, email)
+  }, [payments, email])
 
   const [documents, setDocuments] =
     useState<DocumentItem[]>([])
@@ -660,7 +660,7 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
 
             <span>
               <strong>
-                Aashish Mahato
+                {accountName(email)}
               </strong>
 
               <small>

@@ -1,6 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
 
-const ownerEmail = 'mahatoaashish5@gmail.com'
 const json = (body, status = 200) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store' } })
 const tokens = text => [...new Set((text.toLowerCase().match(/[a-z0-9]{3,}/g) || [])
   .filter(word => !'the and for from have with your about what when where which please show tell college herald does say'.split(' ').includes(word)))]
@@ -31,7 +30,10 @@ export default { async fetch(request) {
     auth: { persistSession: false, autoRefreshToken: false },
   })
   const { data: userData, error: authError } = await client.auth.getUser(auth[1])
-  if (authError || userData.user?.email?.toLowerCase() !== ownerEmail) return json({ error: 'Access denied.' }, 403)
+  if (authError || !userData.user?.email) return json({ error: 'Access denied.' }, 403)
+  const { data: account, error: accountError } = await client.from('app_users')
+    .select('email').eq('email', userData.user.email.toLowerCase()).maybeSingle()
+  if (accountError || !account) return json({ error: 'Access denied.' }, 403)
 
   const [noticesResult, eventsResult, documentsResult] = await Promise.all([
     client.from('college_notices').select('id,subject,summary,category,priority,received_at,source_url').order('received_at', { ascending: false }).limit(120),

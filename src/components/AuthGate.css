@@ -8,3 +8,6 @@
 .auth-card form label{display:block;font-size:12px;font-weight:700;margin:0 0 8px}.auth-input{display:flex;align-items:center;gap:10px;border:1px solid #dbe5dc;border-radius:10px;padding:0 13px;color:#799283}.auth-input:focus-within{border-color:#54896a;box-shadow:0 0 0 3px #54896a1c}.auth-input input{width:100%;height:47px;border:0;outline:0;background:transparent;color:#1d3028;font-size:14px}
 .auth-submit,.auth-secondary{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:46px;border-radius:10px;font-size:13px;font-weight:800}.auth-submit{margin-top:18px;background:#256245;color:#fff;border:0}.auth-submit:hover{background:#1b5038}.auth-secondary{background:#fff;color:#256245;border:1px solid #cddfce}.auth-secondary:hover{background:#f5faf5}.auth-card .auth-error{color:#b33838;margin:10px 0 0;font-size:12px}.auth-card .auth-help{font-size:11px;overflow-wrap:anywhere}.auth-footer{font-size:11px;color:#8fa094;margin:24px 0 0}
 @media(max-width:480px){.auth-card{padding:32px 24px;border-radius:18px}.auth-brand small{display:none}.auth-card h1{font-size:24px}}
+.auth-resend{margin-top:18px}.auth-resend:disabled{cursor:wait;opacity:.55}
+.auth-plain-button{display:block;margin:14px auto 0;padding:6px;border:0;background:none;color:#376f4d;font-size:12px;font-weight:750}
+.auth-plain-button:hover{text-decoration:underline}

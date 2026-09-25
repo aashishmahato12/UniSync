@@ -1,11 +1,13 @@
 import type { Payment } from '../data'
+import { hasConnectedMailbox } from './accountIdentity'
 
 // Personal payment checklist only. No receipt or banking details are stored here.
-const key = 'unisync:autumn-2026-payment-statuses:v1'
+const legacyKey = 'unisync:autumn-2026-payment-statuses:v1'
+const storageKey = (email: string) => `unisync:payment-statuses:v2:${email.trim().toLowerCase()}`
 
-export function loadPaymentStatuses(schedule: Payment[]): Payment[] {
+export function loadPaymentStatuses(schedule: Payment[], email: string): Payment[] {
   try {
-    const stored = JSON.parse(localStorage.getItem(key) || '{}') as Record<string, unknown>
+    const stored = JSON.parse(localStorage.getItem(storageKey(email)) || (hasConnectedMailbox(email) ? localStorage.getItem(legacyKey) : null) || '{}') as Record<string, unknown>
     if (!stored || typeof stored !== 'object' || Array.isArray(stored)) return schedule
     return schedule.map(payment => {
       const status = stored[payment.id]
@@ -16,14 +18,15 @@ export function loadPaymentStatuses(schedule: Payment[]): Payment[] {
   }
 }
 
-export function savePaymentStatuses(schedule: Payment[]): void {
+export function savePaymentStatuses(schedule: Payment[], email: string): void {
   try {
     const statuses = Object.fromEntries(
       schedule
         .filter(payment => payment.status === 'Due' || payment.status === 'Paid')
         .map(payment => [payment.id, payment.status])
     )
-    localStorage.setItem(key, JSON.stringify(statuses))
+    localStorage.setItem(storageKey(email), JSON.stringify(statuses))
+    if (hasConnectedMailbox(email)) localStorage.removeItem(legacyKey)
   } catch {
     // The schedule still works if browser storage is unavailable.
   }
