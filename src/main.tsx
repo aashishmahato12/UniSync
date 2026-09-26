@@ -1,5 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+import { Analytics } from '@vercel/analytics/react'
 import App from './App'
 import './styles.css'
 import './styles/globals.css'
@@ -20,5 +21,10 @@ ReactDOM.createRoot(
 ).render(
   <React.StrictMode>
     <App />
+    <Analytics beforeSend={event => {
+      // Login callbacks can carry temporary credentials in the URL.
+      const url = new URL(event.url)
+      return { ...event, url: `${url.origin}${url.pathname}` }
+    }} />
   </React.StrictMode>
 )
