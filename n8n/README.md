@@ -70,7 +70,7 @@ Run `node n8n/build-calendar-workflow.mjs` after changing the two calendar Code 
 
 ## Payment receipt email
 
-The separate [payment receipt workflow](https://catty-amino-bulldozer.ngrok-free.dev/workflow/7eFeBe0xlgu1jyEi) is published in n8n. Its project source is [payment-receipts-to-gmail.json](./payment-receipts-to-gmail.json). The website uploads receipts into a private Supabase bucket and queues jobs; n8n claims a job, downloads the file, sends it with Gmail, then records the Gmail message ID. A successful five-minute queue check alone does **not** prove an email was sent.
+The separate [payment receipt workflow](https://catty-amino-bulldozer.ngrok-free.dev/workflow/7eFeBe0xlgu1jyEi) is published in n8n for the original account. Its project source is [payment-receipts-to-gmail.json](./payment-receipts-to-gmail.json). The website uploads receipts into a private Supabase bucket and queues jobs; n8n claims the original owner's job, downloads the file, sends it with Gmail, then records the Gmail message ID. Other connected students' sample receipts use the shared connected-mail sync and go only to `aashishmahato8000@gmail.com`; they do not use this original-account workflow. A successful queue check alone does **not** prove an email was sent.
 
 The workflow currently targets `aashishmahato8000@gmail.com`, confirmed as the owner's **test inbox**, not the college's receipt address. The app labels that destination as test mode when `recipient_label` matches it. Keep real payment proofs out of the test flow until the college's exact address is verified.
 

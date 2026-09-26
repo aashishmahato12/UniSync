@@ -1,6 +1,6 @@
 import { timingSafeEqual } from 'node:crypto'
 import { accessTokenForConnection, adminClient, config, extractNotice, gmailRequest,
-  json, parseGmailMessage, rfc822Message } from '../mail-core.mjs'
+  json, parseGmailMessage, rfc822Message, rfc822ReceiptMessage } from '../mail-core.mjs'
 import { claimGeminiRateSlot } from '../gemini-rate-limit.mjs'
 
 export const maxDuration = 60
@@ -21,12 +21,11 @@ export function messageKey(connection, id) {
     ? id : `${connection.owner_id}:${id}`
 }
 
+export function usesLegacySender(connection) {
+  return connection.owner_id === connection.original_owner_id
+}
+
 async function importMail(connection, accessToken, admin) {
-  if (connection.mailbox_email === 'mahatoaashish5@gmail.com') {
-    const { data: originalOwnerId, error } = await admin.rpc('original_mailbox_owner_id')
-    if (error || !originalOwnerId) throw new Error('Could not identify original mailbox owner')
-    connection.original_owner_id = originalOwnerId
-  }
   // Gmail lists newest first. Walk past already-imported pages so accounts can
   // gradually load their older college mail without a separate backfill flow.
   const pending = []
@@ -104,8 +103,8 @@ async function importMail(connection, accessToken, admin) {
 }
 
 async function sendOne(connection, accessToken, admin) {
-  // The original mailbox still has its own n8n sender. This connection is
-  // only for testing the new inbox/backfill path and must not compete to send.
+  // Keep normal college-email sending off for the legacy mailbox during the
+  // test, regardless of which UniSync account authorized it.
   if (connection.mailbox_email === 'mahatoaashish5@gmail.com') return 0
   const { data, error } = await admin.rpc('claim_next_connected_college_email', {
     p_owner: connection.owner_id,
@@ -135,6 +134,51 @@ async function sendOne(connection, accessToken, admin) {
   }
 }
 
+async function sendReceiptOne(connection, accessToken, admin) {
+  if (usesLegacySender(connection)) return 0
+  const { data: pending, error: readError } = await admin.from('payment_receipt_jobs')
+    .select('*').eq('owner_id', connection.owner_id).eq('status', 'queued')
+    .order('created_at', { ascending: true }).limit(1).maybeSingle()
+  if (readError && ['42P01', 'PGRST205'].includes(readError.code)) return 0
+  if (readError) throw readError
+  if (!pending) return 0
+  const { data: job, error: claimError } = await admin.from('payment_receipt_jobs')
+    .update({ status: 'processing', processing_at: new Date().toISOString(),
+      updated_at: new Date().toISOString() })
+    .eq('id', pending.id).eq('owner_id', connection.owner_id).eq('status', 'queued')
+    .select('*').maybeSingle()
+  if (claimError) throw claimError
+  if (!job) return 0
+  try {
+    if (!job.receipt_path.startsWith(`${connection.owner_id}/`)) throw new Error('Invalid receipt path')
+    const { data: file, error: downloadError } = await admin.storage.from('payment-receipts')
+      .download(job.receipt_path)
+    if (downloadError || !file) throw new Error('Could not download receipt')
+    const bytes = Buffer.from(await file.arrayBuffer())
+    const raw = rfc822ReceiptMessage(job, connection.mailbox_email,
+      'aashishmahato8000@gmail.com', bytes)
+    const sent = await gmailRequest('messages/send', accessToken, {
+      method: 'POST', body: JSON.stringify({ raw }),
+    })
+    if (!sent.id) throw new Error('Gmail did not confirm receipt delivery')
+    const { error: saveError } = await admin.from('payment_receipt_jobs').update({
+      status: 'sent', gmail_message_id: sent.id, sent_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }).eq('id', job.id).eq('status', 'processing')
+    if (saveError) throw saveError
+    return 1
+  } catch (caught) {
+    console.error('Test receipt delivery failed', caught instanceof Error ? caught.message : 'unknown')
+    // A failed response does not prove Gmail rejected the message: never retry automatically.
+    const { error: saveError } = await admin.from('payment_receipt_jobs').update({
+      status: 'failed', error_message: 'Delivery was not confirmed. Check Gmail Sent before retrying.',
+      updated_at: new Date().toISOString(),
+    }).eq('id', job.id).eq('status', 'processing')
+    if (saveError) throw saveError
+    return 0
+  }
+}
+
 export default { async fetch(request) {
   if (request.method !== 'POST') return json({ error: 'Method not allowed.' }, 405)
   if (!authorized(request)) return json({ error: 'Unauthorized.' }, 401)
@@ -149,14 +193,18 @@ export default { async fetch(request) {
   const connection = connections?.[0]
   if (!connection) return json({ status: 'idle' })
   try {
+    const { data: originalOwnerId, error: ownerError } = await admin.rpc('original_mailbox_owner_id')
+    if (ownerError || !originalOwnerId) throw new Error('Could not identify original mailbox owner')
+    connection.original_owner_id = originalOwnerId
     const accessToken = await accessTokenForConnection(connection, settings, admin)
     const sent = await sendOne(connection, accessToken, admin)
+    const receiptsSent = await sendReceiptOne(connection, accessToken, admin)
     const imported = await importMail(connection, accessToken, admin)
     const { error: updateError } = await admin.from('mail_connections').update({
       last_synced_at: new Date().toISOString(), updated_at: new Date().toISOString(),
     }).eq('owner_id', connection.owner_id)
     if (updateError) throw updateError
-    return json({ status: 'processed', imported, sent })
+    return json({ status: 'processed', imported, sent, receiptsSent })
   } catch (caught) {
     console.error('Mailbox sync failed', caught instanceof Error ? caught.message : 'unknown')
     await admin.from('mail_connections').update({ last_synced_at: new Date().toISOString() })

@@ -37,14 +37,14 @@ const deliveryTitle = (job: ReceiptJob) => job.status === 'queued' ? 'Receipt qu
       : job.status === 'sent' ? 'Delivery needs checking' : 'Email not sent'
 
 const deliveryCopy = (job: ReceiptJob) => job.status === 'queued'
-  ? 'Your receipt is saved and waiting for the n8n email workflow. It has not been sent yet.'
+  ? 'Your receipt is saved and waiting for Gmail delivery. It has not been sent yet.'
   : job.status === 'processing'
-    ? 'n8n is handling your receipt. Wait for Gmail to confirm delivery before treating it as sent.'
+    ? 'Your receipt is being sent. Wait for Gmail to confirm delivery before treating it as sent.'
     : job.status === 'sent' && job.gmail_message_id
       ? 'Gmail accepted the email. Keep the receipt until the college confirms your payment.'
       : job.status === 'sent'
-        ? 'This job is marked sent, but no Gmail message ID was saved. Check Gmail Sent and the n8n run.'
-        : job.error_message || 'Delivery failed. Check the n8n run and Gmail Sent before trying again.'
+        ? 'This job is marked sent, but no Gmail message ID was saved. Check Gmail Sent.'
+        : job.error_message || 'Delivery failed. Check Gmail Sent before trying again.'
 
 export default function Payments({
   studentName,
@@ -183,8 +183,8 @@ export default function Payments({
       setPreview(false)
       setTrackedJobId(job.id)
       notify(testRecipient
-        ? 'Test receipt queued for your inbox. This is not a college submission.'
-        : 'Receipt queued for n8n. Check its status here before assuming it was sent.')
+        ? 'Test receipt queued for UniSync’s test inbox. This is not a college submission.'
+        : 'Receipt queued for delivery. Check its status here before assuming it was sent.')
     } catch (error) {
       const duplicate = typeof error === 'object' && error !== null &&
         'code' in error && error.code === '23505'
@@ -270,11 +270,11 @@ export default function Payments({
           <SectionHeading eyebrow="PAYMENT PROOF" title="Prepare a receipt email" />
           <div className="demo-note"><AlertCircle size={17} /><span>{receiptSettings?.enabled && receiptSettings.recipient_label
             ? testRecipient
-              ? `Test mode: receipts go to your inbox (${receiptSettings.recipient_label}), not the college. Check the status below after sending.`
-              : `Ready to queue through n8n for ${receiptSettings.recipient_label}. A receipt is only marked Sent after Gmail accepts it.`
+              ? `Test mode: receipts go to UniSync’s test inbox (${receiptSettings.recipient_label}), not the college. Send sample receipts only and check the status below.`
+              : `Ready to send to ${receiptSettings.recipient_label}. A receipt is only marked Sent after Gmail accepts it.`
             : receiptSetupError
               ? 'Receipt sending needs the Supabase setup. Your draft has not been sent.'
-              : 'Receipt sending is waiting for the college email address and n8n setup. You can still prepare a draft.'}</span></div>
+              : 'Receipt sending is waiting for an email connection or recipient setup. You can still prepare a draft.'}</span></div>
           <div className="form-grid">
             <label className="field full"><span>Payment for</span><select value={selectedPayment} onChange={e => choosePayment(e.target.value)}>{payments.map(p => <option key={p.id} value={p.id}>{p.title} · {money(p.amount)}</option>)}</select></label>
             <label className="field"><span>Amount paid (NPR)</span><input type="number" min="1" value={amount} onChange={e => setAmount(e.target.value)} /></label>
@@ -312,7 +312,7 @@ export default function Payments({
             <button className="secondary-button" onClick={() => void refreshDelivery()} disabled={refreshingJobs}><RefreshCw size={15} /> {refreshingJobs ? 'Checking…' : 'Check status'}</button>
           </div>
         </div>
-        <p className="receipt-delivery-intro">Showing {showAllReceiptJobs ? 'all' : 'the latest five'} emails sent through n8n and Gmail. College payment confirmation is separate.</p>
+        <p className="receipt-delivery-intro">Showing {showAllReceiptJobs ? 'all' : 'the latest five'} receipt emails. College payment confirmation is separate.</p>
         {trackedJob && <div className="receipt-status-inline">
           <section className="receipt-status-sheet" aria-labelledby="receipt-status-title" aria-live="polite">
             <button className="receipt-status-close" aria-label="Close email status" onClick={() => setTrackedJobId(null)}><X size={18} /></button>
@@ -354,8 +354,8 @@ export default function Payments({
             <pre>{body}</pre>
           </div>
           <div className="demo-note"><AlertCircle size={17} /><span>{testRecipient
-            ? 'Test mode: this email is addressed to your inbox, not the college. Sending queues it in Supabase for n8n.'
-            : 'This is a preview. Sending queues the receipt in Supabase; n8n will deliver it through Gmail.'}</span></div>
+            ? `Test mode: this email and attachment will go to UniSync’s test inbox (${receiptSettings.recipient_label}), not the college.`
+            : 'This is a preview. Sending queues the receipt for Gmail delivery.'}</span></div>
           <div className="modal-actions">
             <button className="secondary-button" onClick={() => setPreview(false)}>Edit details</button>
             <button className="primary-button" onClick={submit} disabled={!receiptSettings?.enabled || !receiptSettings.recipient_label || sending}>

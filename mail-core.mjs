@@ -192,3 +192,27 @@ export function rfc822Message(job, sender) {
   const raw = `From: ${safeSender}\r\nTo: ${job.recipient}\r\nSubject: ${encodedSubject}\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n${Buffer.from(String(job.message || ''), 'utf8').toString('base64')}`
   return Buffer.from(raw, 'utf8').toString('base64url')
 }
+
+export function rfc822ReceiptMessage(job, sender, recipient, fileBytes) {
+  if (recipient !== 'aashishmahato8000@gmail.com') throw new Error('Invalid test receipt recipient')
+  if (!['application/pdf', 'image/jpeg', 'image/png'].includes(job.receipt_mime) ||
+    !Buffer.isBuffer(fileBytes) || fileBytes.length < 1 || fileBytes.length > 10 * 1024 * 1024)
+    throw new Error('Invalid receipt attachment')
+  const boundary = `unisync-${randomBytes(12).toString('hex')}`
+  const safeSender = String(sender || '').replace(/[\r\n]/g, '')
+  const filename = String(job.receipt_name || 'receipt').replace(/[^a-zA-Z0-9._ -]/g, '_').slice(0, 180)
+  const subject = `Herald College payment receipt — ${String(job.payment_title || '').replace(/[\r\n]/g, ' ').slice(0, 120)}`
+  const body = `${String(job.email_body || '').trim()}\n\nPayment details\nFee: ${job.payment_title}\nAmount: NPR ${Number(job.amount).toLocaleString('en-US')}\nPaid on: ${job.paid_on}\nMethod: ${job.payment_type}\nTransaction ID: ${job.transaction_id}`
+  const wrapped = bytes => Buffer.from(bytes).toString('base64').match(/.{1,76}/g).join('\r\n')
+  const raw = [
+    `From: ${safeSender}`, `To: ${recipient}`,
+    `Subject: =?UTF-8?B?${Buffer.from(subject).toString('base64')}?=`,
+    'MIME-Version: 1.0', `Content-Type: multipart/mixed; boundary="${boundary}"`, '',
+    `--${boundary}`, 'Content-Type: text/plain; charset=UTF-8',
+    'Content-Transfer-Encoding: base64', '', wrapped(Buffer.from(body)),
+    `--${boundary}`, `Content-Type: ${job.receipt_mime}; name="${filename}"`,
+    `Content-Disposition: attachment; filename="${filename}"`,
+    'Content-Transfer-Encoding: base64', '', wrapped(fileBytes), `--${boundary}--`, '',
+  ].join('\r\n')
+  return Buffer.from(raw).toString('base64url')
+}

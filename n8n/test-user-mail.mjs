@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict'
 import { randomBytes } from 'node:crypto'
 import test from 'node:test'
-import { decryptToken, encryptToken, parseGmailMessage, rfc822Message } from '../mail-core.mjs'
-import { messageKey } from '../api/mail-sync.mjs'
+import { decryptToken, encryptToken, parseGmailMessage, rfc822Message,
+  rfc822ReceiptMessage } from '../mail-core.mjs'
+import { messageKey, usesLegacySender } from '../api/mail-sync.mjs'
 
 test('original Gmail imports stay separate between main and test accounts', () => {
   assert.equal(messageKey({ owner_id: 'owner-1', original_owner_id: 'owner-1',
@@ -11,6 +12,11 @@ test('original Gmail imports stay separate between main and test accounts', () =
     mailbox_email: 'mahatoaashish5@gmail.com' }, 'gmail-1'), 'owner-2:gmail-1')
   assert.equal(messageKey({ owner_id: 'owner-2', mailbox_email: 'student@gmail.com' }, 'gmail-1'), 'owner-2:gmail-1')
   assert.equal(messageKey({ owner_id: 'owner-2', mailbox_email: 'mahatoaashish5@gmail.com' }, 'gmail-1'), 'owner-2:gmail-1')
+})
+
+test('the legacy sender handles only the original owner, not another connected account', () => {
+  assert.equal(usesLegacySender({ owner_id: 'owner-1', original_owner_id: 'owner-1' }), true)
+  assert.equal(usesLegacySender({ owner_id: 'owner-2', original_owner_id: 'owner-1' }), false)
 })
 
 test('Gmail refresh tokens are encrypted and authenticated', () => {
@@ -45,4 +51,18 @@ test('outgoing mail uses the authorized college recipient and encodes subject', 
   assert.match(decoded, /To: office@heraldcollege\.edu\.np/)
   assert.doesNotMatch(decoded, /\r\nBcc:/)
   assert.match(decoded, /SGVsbG8gY29sbGVnZQ==/)
+})
+
+test('test receipts include an attachment and can only target the test inbox', () => {
+  const job = { payment_title: '1st semester', email_body: 'Sample receipt only',
+    amount: 100, paid_on: '2026-09-26', payment_type: 'Bank transfer',
+    transaction_id: 'TEST-1', receipt_name: 'sample.pdf', receipt_mime: 'application/pdf' }
+  const file = Buffer.from('%PDF-1.4\nsample')
+  assert.throws(() => rfc822ReceiptMessage(job, 'student@gmail.com', 'fee@heraldcollege.edu.np', file))
+  const raw = rfc822ReceiptMessage(job, 'student@gmail.com',
+    'aashishmahato8000@gmail.com', file)
+  const decoded = Buffer.from(raw, 'base64url').toString('utf8')
+  assert.match(decoded, /To: aashishmahato8000@gmail\.com/)
+  assert.match(decoded, /Content-Disposition: attachment; filename="sample\.pdf"/)
+  assert.match(decoded, /JVBERi0xLjQ/)
 })

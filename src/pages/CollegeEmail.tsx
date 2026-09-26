@@ -9,8 +9,10 @@ const statusLabel = (job: CollegeEmailJob) => job.status === 'sent' ? 'Sent' : j
 
 export default function CollegeEmail({ senderEmail, notify }: { senderEmail: string; notify: (message: string) => void }) {
   const [connection, setConnection] = useState<MailConnection | null>(null)
-  const canSend = connection?.status === 'connected' || connection?.status === 'legacy'
-    || (!connection && hasConnectedMailbox(senderEmail))
+  const importOnlyTestMailbox = connection?.email?.toLowerCase() === 'mahatoaashish5@gmail.com'
+    && !hasConnectedMailbox(senderEmail)
+  const canSend = !importOnlyTestMailbox && (connection?.status === 'connected'
+    || connection?.status === 'legacy' || (!connection && hasConnectedMailbox(senderEmail)))
   const [recipient, setRecipient] = useState('')
   const [subject, setSubject] = useState('')
   const [message, setMessage] = useState('')
@@ -44,7 +46,7 @@ export default function CollegeEmail({ senderEmail, notify }: { senderEmail: str
     } finally { setBusy(false) }
   }
   return <div className="college-email-page">
-    <div className="page-intro"><div><h1>Email college</h1><p>{canSend ? 'Write to a verified Herald College address from your student space.' : 'Draft your message here. Sending is available after your own email is connected.'}</p></div></div>
+    <div className="page-intro"><div><h1>Email college</h1><p>{canSend ? 'Write to a verified Herald College address from your student space.' : importOnlyTestMailbox ? 'This shared Gmail connection is for testing imports and sample receipts. Connect your own Gmail to email the college.' : 'Draft your message here. Sending is available after your own email is connected.'}</p></div></div>
     <div className="college-email-layout">
       <section className="college-email-compose">
         <div className="college-email-paper-head"><span><Mail size={20} /></span><div><small>NEW MESSAGE</small><strong>Compose email</strong></div></div>

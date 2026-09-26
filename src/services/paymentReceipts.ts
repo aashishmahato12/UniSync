@@ -1,4 +1,6 @@
 import { supabase } from './supabase'
+import { hasConnectedMailbox } from './accountIdentity'
+import { getMailConnection } from './mailConnection'
 
 const bucket = 'payment-receipts'
 const signedUrlLifetimeSeconds = 7 * 24 * 60 * 60
@@ -31,6 +33,13 @@ export type ReceiptRequest = {
 }
 
 export async function getReceiptSendingSettings(): Promise<ReceiptSendingSettings> {
+  const { data: userData, error: authError } = await supabase.auth.getUser()
+  if (authError || !userData.user?.email) throw new Error('Sign in before checking receipt delivery.')
+  if (!hasConnectedMailbox(userData.user.email)) {
+    const connection = await getMailConnection()
+    return { enabled: connection.status === 'connected',
+      recipient_label: 'aashishmahato8000@gmail.com' }
+  }
   const { data, error } = await supabase
     .from('payment_receipt_settings')
     .select('enabled,recipient_label')
@@ -68,6 +77,26 @@ export async function queueReceipt(request: ReceiptRequest): Promise<ReceiptJob>
       upsert: false,
     })
   if (uploadError) throw uploadError
+
+  if (!hasConnectedMailbox(user.email ?? '')) {
+    const { data: session } = await supabase.auth.getSession()
+    if (!session.session?.access_token) throw new Error('Sign in again before sending a receipt.')
+    const response = await fetch('/api/payment-receipt', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.session.access_token}` },
+      body: JSON.stringify({
+        paymentId: request.paymentId, paymentTitle: request.paymentTitle,
+        amount: request.amount, paidOn: request.paidOn,
+        transactionId: request.transactionId.trim(), paymentType: request.paymentType,
+        body: request.body.trim(), receiptPath, receiptName: request.file.name.slice(0, 180),
+        receiptMime: request.file.type,
+      }),
+    })
+    const result = await response.json().catch(() => ({}))
+    if (!response.ok) throw new Error(result.error || 'Could not queue the receipt.')
+    return result as ReceiptJob
+  }
 
   const { data: signed, error: signError } = await supabase.storage
     .from(bucket)
