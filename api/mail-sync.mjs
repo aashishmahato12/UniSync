@@ -1,6 +1,7 @@
 import { timingSafeEqual } from 'node:crypto'
 import { accessTokenForConnection, adminClient, config, extractNotice, gmailRequest,
   json, parseGmailMessage, rfc822Message } from '../mail-core.mjs'
+import { claimGeminiRateSlot } from '../gemini-rate-limit.mjs'
 
 export const maxDuration = 60
 
@@ -49,6 +50,8 @@ async function importMail(connection, accessToken, admin) {
     const full = await gmailRequest(`messages/${encodeURIComponent(remoteId)}?format=full`, accessToken)
     const message = parseGmailMessage(full)
     if (!message || !message.id) continue
+    // A skipped message remains unsaved and will be picked up on a later run.
+    if (!await claimGeminiRateSlot(admin)) break
     const extracted = await extractNotice(message)
     const gmailMessageId = messageKey(connection, message.id)
     for (const [index, attachment] of message.attachments.entries()) {

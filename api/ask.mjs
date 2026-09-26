@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { claimGeminiRateSlot } from '../gemini-rate-limit.mjs'
 
 const json = (body, status = 200) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store' } })
 const tokens = text => [...new Set((text.toLowerCase().match(/[a-z0-9]{3,}/g) || [])
@@ -9,9 +10,10 @@ export default { async fetch(request) {
   if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405)
   const url = process.env.VITE_SUPABASE_URL
   const key = process.env.VITE_SUPABASE_PUBLISHABLE_KEY
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
   const webhook = process.env.UNISYNC_N8N_AI_URL
   const secret = process.env.UNISYNC_N8N_AI_SECRET
-  if (!url || !key || !webhook || !secret) return json({ error: 'AI chat is not configured yet.' }, 503)
+  if (!url || !key || !serviceKey || !webhook || !secret) return json({ error: 'AI chat is not configured yet.' }, 503)
   let webhookUrl
   try {
     webhookUrl = new URL(webhook)
@@ -96,6 +98,16 @@ export default { async fetch(request) {
     ? (matchingDocuments.length ? matchingDocuments.slice(0, 4).map(entry => entry.item) : documents.slice(0, 4))
     : ranked.filter(entry => entry.rank > 0).slice(0, 12).map(entry => entry.item)
   if (!context.length) return json({ answer: 'I could not find a matching saved college record.', sources: [], actions: [], mode: 'ai' })
+
+  try {
+    const admin = createClient(url, serviceKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    })
+    if (!await claimGeminiRateSlot(admin))
+      return json({ error: 'AI is busy. Please try again in about a minute.' }, 429)
+  } catch {
+    return json({ error: 'AI rate limit is not configured yet.' }, 503)
+  }
 
   let upstream
   try {
