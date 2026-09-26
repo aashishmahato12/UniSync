@@ -21,8 +21,9 @@ export function messageKey(connection, id) {
     ? id : `${connection.owner_id}:${id}`
 }
 
-export function usesLegacySender(connection) {
-  return connection.owner_id === connection.original_owner_id
+export function canSendCollegeEmail(connection) {
+  return connection.mailbox_email !== 'mahatoaashish5@gmail.com' ||
+    connection.owner_id === connection.original_owner_id
 }
 
 async function importMail(connection, accessToken, admin) {
@@ -103,9 +104,9 @@ async function importMail(connection, accessToken, admin) {
 }
 
 async function sendOne(connection, accessToken, admin) {
-  // Keep normal college-email sending off for the legacy mailbox during the
-  // test, regardless of which UniSync account authorized it.
-  if (connection.mailbox_email === 'mahatoaashish5@gmail.com') return 0
+  // A test account may import the original mailbox, but only its actual owner
+  // may send college email from that shared Gmail address.
+  if (!canSendCollegeEmail(connection)) return 0
   const { data, error } = await admin.rpc('claim_next_connected_college_email', {
     p_owner: connection.owner_id,
   })
@@ -135,7 +136,6 @@ async function sendOne(connection, accessToken, admin) {
 }
 
 async function sendReceiptOne(connection, accessToken, admin) {
-  if (usesLegacySender(connection)) return 0
   const { data: pending, error: readError } = await admin.from('payment_receipt_jobs')
     .select('*').eq('owner_id', connection.owner_id).eq('status', 'queued')
     .order('created_at', { ascending: true }).limit(1).maybeSingle()

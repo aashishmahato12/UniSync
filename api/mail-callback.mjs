@@ -35,7 +35,7 @@ export default { async fetch(request) {
     }, { onConflict: 'owner_id' })
     if (saveError) {
       console.error('Could not save Gmail connection', saveError.code)
-      return finish(settings.origin, 'failed')
+      return finish(settings.origin, saveError.code === '23505' ? 'in_use' : 'failed')
     }
     return finish(settings.origin, 'connected')
   } catch (caught) {

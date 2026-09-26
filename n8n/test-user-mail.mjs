@@ -3,7 +3,7 @@ import { randomBytes } from 'node:crypto'
 import test from 'node:test'
 import { decryptToken, encryptToken, parseGmailMessage, rfc822Message,
   rfc822ReceiptMessage } from '../mail-core.mjs'
-import { messageKey, usesLegacySender } from '../api/mail-sync.mjs'
+import { canSendCollegeEmail, messageKey } from '../api/mail-sync.mjs'
 
 test('original Gmail imports stay separate between main and test accounts', () => {
   assert.equal(messageKey({ owner_id: 'owner-1', original_owner_id: 'owner-1',
@@ -14,9 +14,13 @@ test('original Gmail imports stay separate between main and test accounts', () =
   assert.equal(messageKey({ owner_id: 'owner-2', mailbox_email: 'mahatoaashish5@gmail.com' }, 'gmail-1'), 'owner-2:gmail-1')
 })
 
-test('the legacy sender handles only the original owner, not another connected account', () => {
-  assert.equal(usesLegacySender({ owner_id: 'owner-1', original_owner_id: 'owner-1' }), true)
-  assert.equal(usesLegacySender({ owner_id: 'owner-2', original_owner_id: 'owner-1' }), false)
+test('only the original owner can send from the shared test Gmail', () => {
+  assert.equal(canSendCollegeEmail({ owner_id: 'owner-1', original_owner_id: 'owner-1',
+    mailbox_email: 'mahatoaashish5@gmail.com' }), true)
+  assert.equal(canSendCollegeEmail({ owner_id: 'owner-2', original_owner_id: 'owner-1',
+    mailbox_email: 'mahatoaashish5@gmail.com' }), false)
+  assert.equal(canSendCollegeEmail({ owner_id: 'owner-2', original_owner_id: 'owner-1',
+    mailbox_email: 'student@gmail.com' }), true)
 })
 
 test('Gmail refresh tokens are encrypted and authenticated', () => {

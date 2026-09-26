@@ -12,7 +12,7 @@ import {
   SectionHeading,
 } from '../components/UI'
 import { supabase } from '../services/supabase'
-import { accountInitials, accountName, hasConnectedMailbox } from '../services/accountIdentity'
+import { accountInitials, accountName } from '../services/accountIdentity'
 import { connectMail, disconnectMail, getMailConnection, type MailConnection } from '../services/mailConnection'
 
 export default function Profile({
@@ -57,6 +57,7 @@ export default function Profile({
     url.searchParams.delete('mail')
     window.history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`)
     if (result === 'connected') notify('Gmail connected to your account.')
+    else if (result === 'in_use') setMailError('That Gmail is connected to another UniSync account. Disconnect it there first.')
     else if (result === 'failed') setMailError('Gmail could not be connected. Please try again.')
     else setMailError('Gmail connection was cancelled.')
   }, [notify])
@@ -199,20 +200,17 @@ export default function Profile({
               ? `College mail is connected through ${mailConnection.email}. ${mailConnection.lastSyncedAt
                 ? 'Older college emails continue to load as the inbox syncs.'
                 : 'Waiting for the first inbox sync. Older college emails will load gradually.'}`
-              : mailConnection?.status === 'legacy' || (!mailConnection && hasConnectedMailbox(email))
-                ? 'Your original college Gmail workflow is connected to this workspace.'
-                : mailUnavailable
+              : mailUnavailable
                   ? 'Personal Gmail connection is being set up.'
                   : mailConnection?.status === 'reconnect_required'
                   ? 'Google access expired. Reconnect Gmail to resume your inbox and sending.'
                   : 'Google will ask for mailbox read and send access. UniSync imports college-sender messages and summarizes them with the assistant.'}</p>
 
-            <span>{mailConnection?.status === 'connected' || mailConnection?.status === 'legacy'
-              || (!mailConnection && hasConnectedMailbox(email)) ? 'Connected' : 'Not connected'}</span>
+            <span>{mailConnection?.status === 'connected' ? 'Connected' : 'Not connected'}</span>
             {!mailUnavailable && <div className="connection-actions">
               {mailConnection?.status === 'connected'
                 ? <button type="button" disabled={mailBusy} onClick={() => void removeMailConnection()}>Disconnect Gmail</button>
-                : <button type="button" disabled={mailBusy} onClick={() => void startMailConnection()}>{mailBusy ? 'Opening Google…' : mailConnection?.status === 'legacy' ? 'Connect Gmail for older mail' : 'Connect Gmail'}</button>}
+                : <button type="button" disabled={mailBusy} onClick={() => void startMailConnection()}>{mailBusy ? 'Opening Google…' : 'Connect Gmail'}</button>}
             </div>}
             {mailError && <p className="connection-error" role="alert">{mailError}</p>}
           </div>

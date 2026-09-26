@@ -1,5 +1,7 @@
 # Connect each student's own Gmail
 
+> For the current all-account setup and fresh-start sequence, follow [CONNECTED_ONLY_CUTOVER.md](./CONNECTED_ONLY_CUTOVER.md). The original-account legacy notes below describe the earlier setup and no longer apply after cutover.
+
 The app can now ask each signed-in student to connect Gmail from **Profile → Integrations**. A shared n8n schedule calls UniSync's server once per minute. The server refreshes that student's Google token, imports their Herald College messages, saves extracted events and supported attachments under their user ID, and sends their queued college emails from their own mailbox. Google refresh tokens stay encrypted on the server and are never returned to the browser or n8n. The original account keeps its existing Gmail workflows. Its owner can also connect that same mailbox in Profile to test historical imports; the new importer reuses legacy Gmail IDs to avoid duplicate notices, while the old n8n sender remains responsible for that account's outgoing messages. A separate empty test account can also authorize that original Gmail. Its imported rows receive account-specific IDs, so the main account's saved data is not changed. A Gmail address can only be connected to one UniSync account at a time; disconnect it from one account before connecting it to another.
 
 ## Before enabling the Connect Gmail button

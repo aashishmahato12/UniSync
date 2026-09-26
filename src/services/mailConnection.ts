@@ -1,7 +1,7 @@
 import { supabase } from './supabase'
 
 export type MailConnection = {
-  status: 'legacy' | 'connected' | 'reconnect_required' | 'not_connected'
+  status: 'connected' | 'reconnect_required' | 'not_connected'
   email?: string
   lastSyncedAt?: string | null
 }

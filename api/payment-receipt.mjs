@@ -12,8 +12,6 @@ export default { async fetch(request) {
   const admin = adminClient(settings)
   const user = await signedInUser(request, admin)
   if (!user) return json({ error: 'Sign in before sending a receipt.' }, 401)
-  if (user.email.trim().toLowerCase() === 'mahatoaashish5@gmail.com')
-    return json({ error: 'This account uses the original receipt workflow.' }, 403)
   const { data: connection, error: connectionError } = await admin.from('mail_connections')
     .select('status').eq('owner_id', user.id).maybeSingle()
   if (connectionError || connection?.status !== 'connected')

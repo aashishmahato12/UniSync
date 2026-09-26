@@ -95,14 +95,14 @@ export default function Calendar({ events, onEvent, updateCalendar, createEvent 
     {!compact && <div className="uni-cal-event-more">
       <p>{event.description}</p>
       <div><button onClick={() => onEvent(event)}>View details <ArrowRight size={13} /></button>
-        {event.calendarState === 'Pending' && <button onClick={() => updateCalendar(event, 'Added')}><Plus size={13} /> Add to calendar</button>}
-        {event.calendarState === 'Added' && <span>{event.isCustom ? 'Added by you' : event.googleCalendarEventId ? 'Synced to calendar' : 'Added · syncing'}</span>}
+        {event.calendarState === 'Pending' && <button onClick={() => updateCalendar(event, 'Added')}><Plus size={13} /> Add to UniSync calendar</button>}
+        {event.calendarState === 'Added' && <span>{event.isCustom ? 'Added by you' : event.googleCalendarEventId ? 'Previously synced to Google' : 'Added to UniSync'}</span>}
       </div>
     </div>}
   </article>
 
   return <div className={`uni-calendar uni-calendar-${view}${hasInteracted ? ' uni-calendar-interacted' : ''}`} onClickCapture={() => setHasInteracted(true)}>
-    <header className="uni-cal-heading"><div><small>YOUR SCHEDULE</small><h1>Calendar</h1><p>Classes, college events and deadlines in one place.</p></div><button className="uni-cal-add" onClick={openComposer}><Plus size={16} /> Add event</button></header>
+    <header className="uni-cal-heading"><div><small>YOUR SCHEDULE</small><h1>Calendar</h1><p>Classes, college events and deadlines in one place. Google Calendar sync is paused; events stay in UniSync.</p></div><button className="uni-cal-add" onClick={openComposer}><Plus size={16} /> Add event</button></header>
     <div className="uni-cal-filter-wrap"><JellyRadio items={calendarFilters} value={filter} onChange={changeFilter} toneForItem={item => filterTone[item] || 'all'} ariaLabel="Filter calendar dates" className="uni-cal-filters" /></div>
     <div className="uni-cal-layout">
       <section className="uni-cal-main">

@@ -1,20 +1,17 @@
 import type { Payment } from '../data'
-import { hasConnectedMailbox } from './accountIdentity'
-
 // Personal payment checklist only. No receipt or banking details are stored here.
-const legacyKey = 'unisync:autumn-2026-payment-statuses:v1'
-const storageKey = (email: string) => `unisync:payment-statuses:v2:${email.trim().toLowerCase()}`
+const storageKey = (email: string) => `unisync:payment-statuses:v3:${email.trim().toLowerCase()}`
 
-export function paymentScheduleForAccount(schedule: Payment[], email: string): Payment[] {
+export function paymentScheduleForAccount(schedule: Payment[], _email: string): Payment[] {
   // The fee amounts are shared by this batch; payment status is personal.
   return schedule.map(payment => ({ ...payment,
-    status: hasConnectedMailbox(email) ? payment.status : 'Due' as const,
+    status: 'Due' as const,
   }))
 }
 
 export function loadPaymentStatuses(schedule: Payment[], email: string): Payment[] {
   try {
-    const stored = JSON.parse(localStorage.getItem(storageKey(email)) || (hasConnectedMailbox(email) ? localStorage.getItem(legacyKey) : null) || '{}') as Record<string, unknown>
+    const stored = JSON.parse(localStorage.getItem(storageKey(email)) || '{}') as Record<string, unknown>
     if (!stored || typeof stored !== 'object' || Array.isArray(stored)) return schedule
     return schedule.map(payment => {
       const status = stored[payment.id]
@@ -33,7 +30,6 @@ export function savePaymentStatuses(schedule: Payment[], email: string): void {
         .map(payment => [payment.id, payment.status])
     )
     localStorage.setItem(storageKey(email), JSON.stringify(statuses))
-    if (hasConnectedMailbox(email)) localStorage.removeItem(legacyKey)
   } catch {
     // The schedule still works if browser storage is unavailable.
   }

@@ -1,5 +1,5 @@
-// The existing Gmail workflow and fee schedule belong to this original account.
-// Other verified users receive their own private, initially empty records.
+// Used only for the original student's display name and to protect the shared
+// test Gmail from sending college mail through a different UniSync account.
 export const connectedMailboxEmail = 'mahatoaashish5@gmail.com'
 
 export const hasConnectedMailbox = (email: string) =>

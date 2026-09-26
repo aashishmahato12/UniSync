@@ -1,8 +1,6 @@
 import { randomBytes } from 'node:crypto'
 import { adminClient, callbackUrl, config, decryptToken, json, signedInUser, stateHash } from '../mail-core.mjs'
 
-const legacyMailbox = 'mahatoaashish5@gmail.com'
-
 export default { async fetch(request) {
   const settings = config()
   if (!settings) return json({ error: 'Gmail connection is not configured yet.' }, 503)
@@ -16,7 +14,6 @@ export default { async fetch(request) {
     if (error) return json({ error: 'Could not check mailbox connection.' }, 502)
     if (data) return json({ status: data.status, email: data.mailbox_email,
       lastSyncedAt: data.last_synced_at })
-    if (user.email.toLowerCase() === legacyMailbox) return json({ status: 'legacy', email: legacyMailbox })
     return json({ status: 'not_connected' })
   }
 

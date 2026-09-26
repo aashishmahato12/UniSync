@@ -1,4 +1,4 @@
-const storageKey = (email: string) => `unisync:read-notices:v1:${email.trim().toLowerCase()}`
+const storageKey = (email: string) => `unisync:read-notices:v2:${email.trim().toLowerCase()}`
 
 export function loadReadNoticeIds(email: string): Set<string> {
   try {

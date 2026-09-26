@@ -11,8 +11,7 @@ export default function CollegeEmail({ senderEmail, notify }: { senderEmail: str
   const [connection, setConnection] = useState<MailConnection | null>(null)
   const importOnlyTestMailbox = connection?.email?.toLowerCase() === 'mahatoaashish5@gmail.com'
     && !hasConnectedMailbox(senderEmail)
-  const canSend = !importOnlyTestMailbox && (connection?.status === 'connected'
-    || connection?.status === 'legacy' || (!connection && hasConnectedMailbox(senderEmail)))
+  const canSend = !importOnlyTestMailbox && connection?.status === 'connected'
   const [recipient, setRecipient] = useState('')
   const [subject, setSubject] = useState('')
   const [message, setMessage] = useState('')

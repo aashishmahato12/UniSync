@@ -1,9 +1,7 @@
 import { supabase } from './supabase'
-import { hasConnectedMailbox } from './accountIdentity'
 import { getMailConnection } from './mailConnection'
 
 const bucket = 'payment-receipts'
-const signedUrlLifetimeSeconds = 7 * 24 * 60 * 60
 
 export type ReceiptJob = {
   id: string
@@ -35,18 +33,9 @@ export type ReceiptRequest = {
 export async function getReceiptSendingSettings(): Promise<ReceiptSendingSettings> {
   const { data: userData, error: authError } = await supabase.auth.getUser()
   if (authError || !userData.user?.email) throw new Error('Sign in before checking receipt delivery.')
-  if (!hasConnectedMailbox(userData.user.email)) {
-    const connection = await getMailConnection()
-    return { enabled: connection.status === 'connected',
-      recipient_label: 'aashishmahato8000@gmail.com' }
-  }
-  const { data, error } = await supabase
-    .from('payment_receipt_settings')
-    .select('enabled,recipient_label')
-    .eq('id', true)
-    .single()
-  if (error) throw error
-  return data as ReceiptSendingSettings
+  const connection = await getMailConnection()
+  return { enabled: connection.status === 'connected',
+    recipient_label: 'aashishmahato8000@gmail.com' }
 }
 
 export async function getReceiptJobs(): Promise<ReceiptJob[]> {
@@ -78,50 +67,22 @@ export async function queueReceipt(request: ReceiptRequest): Promise<ReceiptJob>
     })
   if (uploadError) throw uploadError
 
-  if (!hasConnectedMailbox(user.email ?? '')) {
-    const { data: session } = await supabase.auth.getSession()
-    if (!session.session?.access_token) throw new Error('Sign in again before sending a receipt.')
-    const response = await fetch('/api/payment-receipt', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json',
-        Authorization: `Bearer ${session.session.access_token}` },
-      body: JSON.stringify({
-        paymentId: request.paymentId, paymentTitle: request.paymentTitle,
-        amount: request.amount, paidOn: request.paidOn,
-        transactionId: request.transactionId.trim(), paymentType: request.paymentType,
-        body: request.body.trim(), receiptPath, receiptName: request.file.name.slice(0, 180),
-        receiptMime: request.file.type,
-      }),
-    })
-    const result = await response.json().catch(() => ({}))
-    if (!response.ok) throw new Error(result.error || 'Could not queue the receipt.')
-    return result as ReceiptJob
-  }
-
-  const { data: signed, error: signError } = await supabase.storage
-    .from(bucket)
-    .createSignedUrl(receiptPath, signedUrlLifetimeSeconds)
-  if (signError || !signed?.signedUrl) throw signError || new Error('Could not prepare receipt attachment.')
-
-  const { data, error } = await supabase
-    .from('payment_receipt_jobs')
-    .insert({
-      owner_id: user.id,
-      payment_id: request.paymentId,
-      payment_title: request.paymentTitle,
-      amount: request.amount,
-      paid_on: request.paidOn,
-      transaction_id: request.transactionId.trim(),
-      payment_type: request.paymentType,
-      email_body: request.body.trim(),
-      receipt_path: receiptPath,
-      receipt_name: request.file.name.slice(0, 180),
-      receipt_mime: request.file.type,
-      signed_receipt_url: signed.signedUrl,
-    })
-    .select('id,payment_id,transaction_id,status,gmail_message_id,error_message,created_at,sent_at')
-    .single()
-  if (error) throw error
-  return data as ReceiptJob
+  const { data: session } = await supabase.auth.getSession()
+  if (!session.session?.access_token) throw new Error('Sign in again before sending a receipt.')
+  const response = await fetch('/api/payment-receipt', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json',
+      Authorization: `Bearer ${session.session.access_token}` },
+    body: JSON.stringify({
+      paymentId: request.paymentId, paymentTitle: request.paymentTitle,
+      amount: request.amount, paidOn: request.paidOn,
+      transactionId: request.transactionId.trim(), paymentType: request.paymentType,
+      body: request.body.trim(), receiptPath, receiptName: request.file.name.slice(0, 180),
+      receiptMime: request.file.type,
+    }),
+  })
+  const result = await response.json().catch(() => ({}))
+  if (!response.ok) throw new Error(result.error || 'Could not queue the receipt.')
+  return result as ReceiptJob
 }
 
