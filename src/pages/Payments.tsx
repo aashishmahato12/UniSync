@@ -16,7 +16,7 @@ const dateText = (payment: Payment) =>
     ? formatDate(payment.dueDate, { day: 'numeric', month: 'short', year: 'numeric' })
     : payment.dateLabel
 
-const draftBody = (payment: Payment) =>
+const draftBody = (payment: Payment, studentName: string) =>
   `Dear Accounts Office,
 
 I have paid the ${payment.title} fee through mobile banking. Please find my payment receipt attached for your records.
@@ -24,7 +24,7 @@ I have paid the ${payment.title} fee through mobile banking. Please find my paym
 Kindly confirm when the payment has been received.
 
 Thank you,
-Aashish Mahato`
+${studentName}`
 
 const deliveryLabel = (job: ReceiptJob) => job.status === 'queued' ? 'Queued'
   : job.status === 'processing' ? 'Sending'
@@ -47,10 +47,12 @@ const deliveryCopy = (job: ReceiptJob) => job.status === 'queued'
         : job.error_message || 'Delivery failed. Check the n8n run and Gmail Sent before trying again.'
 
 export default function Payments({
+  studentName,
   payments,
   setPayments,
   notify,
 }: {
+  studentName: string
   payments: Payment[]
   setPayments: React.Dispatch<React.SetStateAction<Payment[]>>
   notify: (message: string) => void
@@ -61,7 +63,7 @@ export default function Payments({
   const [paidOn, setPaidOn] = useState(today)
   const [transactionId, setTransactionId] = useState('')
   const [paymentType, setPaymentType] = useState('Mobile banking')
-  const [body, setBody] = useState(firstPayment ? draftBody(firstPayment) : '')
+  const [body, setBody] = useState(firstPayment ? draftBody(firstPayment, studentName) : '')
   const [file, setFile] = useState<File | null>(null)
   const [preview, setPreview] = useState(false)
   const [receiptSettings, setReceiptSettings] = useState<ReceiptSendingSettings | null>(null)
@@ -128,7 +130,7 @@ export default function Payments({
     if (!payment) return
     setSelectedPayment(id)
     setAmount(String(payment.amount))
-    setBody(draftBody(payment))
+    setBody(draftBody(payment, studentName))
     setFile(null)
     if (inputRef.current) inputRef.current.value = ''
   }
@@ -220,7 +222,7 @@ export default function Payments({
 
       <section className="panel schedule-panel">
         <SectionHeading eyebrow="AUTUMN 2026 BATCH" title="Fee plan" />
-        <div className="schedule-note"><AlertCircle size={18} /><span>Dates are tentative. Check the latest college notice before paying.</span></div>
+        <div className="schedule-note"><AlertCircle size={18} /><span>Batch fee amounts are shared. Your Paid / Due choices are private to this account on this device. Dates are tentative; check the latest college notice before paying.</span></div>
         <div className="schedule-list">
           {payments.map(payment => (
             <div

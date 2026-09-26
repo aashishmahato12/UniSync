@@ -5,6 +5,13 @@ import { hasConnectedMailbox } from './accountIdentity'
 const legacyKey = 'unisync:autumn-2026-payment-statuses:v1'
 const storageKey = (email: string) => `unisync:payment-statuses:v2:${email.trim().toLowerCase()}`
 
+export function paymentScheduleForAccount(schedule: Payment[], email: string): Payment[] {
+  // The fee amounts are shared by this batch; payment status is personal.
+  return schedule.map(payment => ({ ...payment,
+    status: hasConnectedMailbox(email) ? payment.status : 'Due' as const,
+  }))
+}
+
 export function loadPaymentStatuses(schedule: Payment[], email: string): Payment[] {
   try {
     const stored = JSON.parse(localStorage.getItem(storageKey(email)) || (hasConnectedMailbox(email) ? localStorage.getItem(legacyKey) : null) || '{}') as Record<string, unknown>

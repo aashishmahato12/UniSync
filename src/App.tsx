@@ -57,8 +57,8 @@ import Dashboard from './pages/Dashboard'
 import Notices from './pages/Notices'
 import Calendar from './pages/Calendar'
 import Payments from './pages/Payments'
-import { loadPaymentStatuses, savePaymentStatuses } from './services/paymentStatusStore'
-import { accountInitials, accountName, hasConnectedMailbox } from './services/accountIdentity'
+import { loadPaymentStatuses, paymentScheduleForAccount, savePaymentStatuses } from './services/paymentStatusStore'
+import { accountInitials, accountName } from './services/accountIdentity'
 import { loadReadNoticeIds, saveReadNoticeIds } from './services/noticeReadStore'
 import { gmailUrlForNotice } from './services/gmailLinks'
 import Documents from './pages/Documents'
@@ -287,7 +287,7 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
     useState(true)
 
   const [payments, setPayments] =
-    useState<Payment[]>(() => loadPaymentStatuses(hasConnectedMailbox(email) ? seedPayments : [], email))
+    useState<Payment[]>(() => loadPaymentStatuses(paymentScheduleForAccount(seedPayments, email), email))
 
   useEffect(() => {
     savePaymentStatuses(payments, email)
@@ -932,6 +932,7 @@ function Workspace({ email, theme, themeMode, setThemeMode, toggleTheme }: { ema
               {page ===
                 'Payments' && (
                 <Payments
+                  studentName={accountName(email)}
                   payments={
                     payments
                   }

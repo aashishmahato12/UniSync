@@ -1,7 +1,7 @@
 import { supabase } from './supabase'
 import { answerFromSavedRecords } from './localAssistant'
 import { cleanEmailForReading } from './emailText'
-import { hasConnectedMailbox } from './accountIdentity'
+import { loadPaymentStatuses, paymentScheduleForAccount } from './paymentStatusStore'
 
 import {
   payments,
@@ -210,7 +210,8 @@ export const studentService = {
   async getPayments(): Promise<Payment[]> {
     await delay()
     const { data } = await supabase.auth.getUser()
-    return hasConnectedMailbox(data.user?.email ?? '') ? structuredClone(payments) : []
+    const email = data.user?.email ?? ''
+    return email ? loadPaymentStatuses(paymentScheduleForAccount(payments, email), email) : []
   },
 
   async getDocuments(notices: Notice[] = []): Promise<DocumentItem[]> {
