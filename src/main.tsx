@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { Analytics } from '@vercel/analytics/react'
+import { SpeedInsights } from '@vercel/speed-insights/react'
 import App from './App'
 import './styles.css'
 import './styles/globals.css'
@@ -23,6 +24,11 @@ ReactDOM.createRoot(
     <App />
     <Analytics beforeSend={event => {
       // Login callbacks can carry temporary credentials in the URL.
+      const url = new URL(event.url)
+      return { ...event, url: `${url.origin}${url.pathname}` }
+    }} />
+    <SpeedInsights beforeSend={event => {
+      // Performance events can include the current URL, including login callbacks.
       const url = new URL(event.url)
       return { ...event, url: `${url.origin}${url.pathname}` }
     }} />
